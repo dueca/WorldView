@@ -1,0 +1,70 @@
+; -*-scheme-*-
+(Header "
+        item            : ViewSpec.dco
+        made by         : Rene' van Paassen
+        date            : 1612xx
+        description     : View specifications for WorldView
+        copyright       : (c) 2016 TUDelft-AE-C&S")
+
+(Type vstring "#include <stringoptions.h>")
+(IterableType vector_int_t "
+#include <inttypes.h>
+#include <vector>
+typedef std::vector<int> vector_int_t;")
+(IterableType vector_float_t "
+#include <vector>
+typedef std::vector<float> vector_float_t;")
+(Type bool)
+(Type float)
+
+;; Helper struct that defines the parameters for a view
+(Event ViewSpec
+       (IncludeFile ViewSpecExtra)
+       (ConstructorCode "
+frustum_data[0] = 1.0;
+frustum_data[1] = 1000.0, frustum_data[2] = 0.8;
+shadow_colour[0] = 0.2;
+shadow_colour[1] = 0.2;
+shadow_colour[2] = 0.2;")
+
+       ;; Name for this specification
+       (vstring name)
+
+       ;; Name for the window it should be in. Empty for default
+       (vstring winname)
+
+       ;; Optionally, specify (by OGRE name) a display overlay with mask
+       (vstring overlay)
+
+       ;; Coordinates for the viewport. If empty, the complete window
+       ;; is assumed: left, top, width, height
+       (vector_int_t portcoords )
+
+       ;; Eye position and optionally rotation, offset from a base (cg or
+       ;; otherwise) position
+       (vector_float_t eye_pos (Default 6, 0.0f))
+
+       ;; Frustrum data, containing, in this order
+       ;; near plane distance
+       ;; far plane distance
+       ;; and then, option 1: field of view y
+       ;; option 2: left, right, bottom, top, of near plane in eye coord
+       (vector_float_t frustum_data (Default 3))
+
+       ;; Flag to turn rendering of shadows in the window on (TRUE) or off
+       ;; (FALSE) Tested for OGRE only so far and only
+       ;; SHADOWTYPE_STENCIL_MODULATIVE technique.  Make sure that in your
+       ;; scene the groundplane and large structures you don't want to
+       ;; cast shadows you specify the castShadows parameter of an entity
+       ;; is set to "false".<br> Added by Mark Mulder 17/08/2010
+       (bool render_shadows (Default false))
+
+       ;; shadowing technique
+       (vstring shadow_technique (Default "stencil"))
+       
+       ;; color for shadow
+       (vector_float_t shadow_colour (Default 3))
+
+       ;; far distance for shadowing
+       (float shadow_farDistance (Default 100.0))
+       )

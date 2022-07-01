@@ -1,0 +1,48 @@
+<scene formatVersion="">
+    <nodes>
+        <node name="Omni01" id="5">
+            <position x="0" y="50" z="150" />
+            <rotation qx="0" qy="0" qz="0" qw="1" />
+            <scale x="1" y="1" z="1" />
+            <light name="Omni01" type="point" intensity="1" contrast="0">
+                <colourDiffuse r="0.4" g="0.4" b="0.5" />
+                <colourSpecular r="0.5" g="0.5" b="0.5" />
+                <colourAmbient r="0.0" g="0.0" b="0.0" />
+            </light>
+        </node>
+	<node name="house9" id="6">
+            <position x="0.0" y="0" z="-30.5" />
+            <scale x="1" y="1" z="1" />
+            <entity name="house9" meshFile="Barrel.mesh" static="false" />
+        </node>
+	<node name="house2" id="7">
+            <position x="0.0" y="0" z="30.5" />
+            <scale x="0.1" y="0.1" z="0.1" />
+            <entity name="house2" meshFile="athene.mesh" static="true" />
+        </node>
+	<node name="house3" id="8">
+            <position x="30.0" y="0" z="0" />
+            <scale x="0.1" y="0.1" z="0.1" />
+            <entity name="house3" meshFile="ninja.mesh" static="true" />
+        </node>
+	<node name="house4" id="9">
+            <position x="-30.0" y="0" z="0" />
+	    <rotation qx="0" qy="0.7" qz="0" qw="0.7" /> 
+            <scale x="2" y="3" z="3" />
+            <entity name="house4" meshFile="WoodPallet.mesh" static="true" />
+        </node>
+	<node name="roman" id="10">
+	  <position x="0" y="0" z="0" />
+	  <scale x="1" y="1" z="1" />
+	  <entity name="roman" meshFile="RomanBathLower.mesh" castShadows="false"
+	  static="true" />
+	</node>
+	<node name="romanu" id="11">
+	  <position x="0" y="0" z="0" />
+	  <scale x="1" y="1" z="1" />
+	  <entity name="romanu" meshFile="RomanBathUpper.mesh" castShadows="false"
+	  static="true" />
+	</node>
+    </nodes>
+</scene>
+

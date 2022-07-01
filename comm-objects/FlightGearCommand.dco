@@ -1,0 +1,21 @@
+;; -*-scheme-*-
+
+(Type double "struct FGLocalAxis;\nclass ObjectMotion;")
+      
+;; This covers the placement of an "own" object in FlightGear. It is 
+;; recommended to define this as location of the aircraft CG, and use
+;; an xml view file to define the transformation from CG to viewpoint
+;; A conversion to construct this data from an ObjectMotion object is 
+;; provided
+(Stream FlightGearCommand
+	(ConstructorCode 
+	 "for (int ii = 6; ii--; ) latlonalt_phithtpsi[ii] = 0.0;")
+	;; latitude, in degrees
+	;; longitude, in degrees
+	;; altitude, feet
+	;; roll, in degrees
+	;; pitch, in degrees
+	;; heading, in degrees
+	(double latlonalt_phithtpsi 6)
+	)	
+	

@@ -1,0 +1,250 @@
+// masks for the hmi lab blending
+HMILabOverlays/MaskEmpty
+{
+	zorder 200
+	container Panel(HMILab/EmptyPanel)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskempty
+	}
+}
+
+HMILabOverlays/MaskOccluded
+{
+	zorder 200
+	container Panel(HMILab/OccludedPanel)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskblack
+	}
+}
+
+HMILabOverlays/MaskLeftSide
+{
+	zorder 200
+	container Panel(HMILab/LeftSidePanel)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskleftside
+	}
+}
+
+HMILabOverlays/MaskRightSide
+{
+	zorder 200
+	container Panel(HMILab/RightSidePanel)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskrightside
+	}
+}
+
+HMILabOverlays/MaskFront
+{
+	zorder 200
+	container Panel(HMILab/FrontPanel)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskfront
+	}
+}
+
+template container Panel(HMILab/TULogo)
+{
+		left 0
+		top 0
+		width 0.15
+		height 0.0705
+		material hmilab/TUlogo
+}
+
+template container Panel(HMILab/LogoBackground)
+{
+		left 0
+		top 0
+		width 0.15
+		height 0.0705
+		material hmilab/LogoBackground
+}
+
+HMILabOverlays/TULogo
+{
+	zorder 200
+	container Panel(HMILab/Logo) : HMILab/TULogo
+	{
+		left 0
+		top 0
+		width 0.15
+		height 0.0705
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+/////// The following overlays are sharp, and for testing          ///////
+/////// RvP 10/08/2016                                             ///////
+//////////////////////////////////////////////////////////////////////////
+HMILabOverlays/MaskLeftSideSharp
+{
+	zorder 200
+	container Panel(HMILab/LeftSidePanelSharp)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/masklefttest
+	}
+}
+
+HMILabOverlays/MaskRightSideSharp
+{
+	zorder 200
+	container Panel(HMILab/RightSidePanelSharp)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskrighttest
+	}
+}
+
+HMILabOverlays/MaskFrontSharp
+{
+	zorder 200
+	container Panel(HMILab/FrontPanelSharp)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskfronttest
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+/////// The following overlays are kept for backward compatibility ///////
+/////// Mark Mulder 8/12/2014                                      ///////
+//////////////////////////////////////////////////////////////////////////
+
+HMILabOverlays/MaskLeftFront
+{
+	zorder 200
+	container Panel(HMILab/LeftFrontPanel)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskleftfront
+	}
+}
+
+HMILabOverlays/MaskLeftFrontTest
+{
+	zorder 200
+	container Panel(HMILab/LeftFrontPanelTest)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskleftfronttest
+	}
+}
+
+
+HMILabOverlays/MaskLeftFrontFull
+{
+	zorder 200
+	container Panel(HMILab/LeftFrontPanelFull)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskleftfrontfull
+	}
+}
+
+HMILabOverlays/MaskRightFront
+{
+	zorder 200
+	container Panel(HMILab/RightFrontPanel)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskrightfront
+	}
+}
+
+HMILabOverlays/MaskRightFrontTest
+{
+	zorder 200
+	container Panel(HMILab/RightFrontPanelTest)
+{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskrightfronttest
+}
+}
+
+
+HMILabOverlays/MaskRightFrontFull
+{
+	zorder 200
+	container Panel(HMILab/RightFrontPanelFull)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskrightfrontfull
+	}
+}
+
+HMILabOverlays/MaskLeftFrontDemo
+{
+	zorder 200
+	container Panel(HMILab/LeftFrontPanelDemo)
+	{
+		left 0
+		top 0 
+		width 1
+		height 1
+		material hmilab/maskleftfront
+	}
+	
+	container Panel(HMILab/DemoLogoBackGround) : HMILab/LogoBackground
+	{
+		left 0.02
+		top 0.02	
+		element Panel(HMILab/DemoLogo) : HMILab/TULogo
+		{
+			left 0
+			top 0
+			width 0.15
+			height 0.0705
+		}
+	}
+}

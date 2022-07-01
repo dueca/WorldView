@@ -1,0 +1,3 @@
+#!/bin/sh
+
+fgms -c fgms.conf -v 4

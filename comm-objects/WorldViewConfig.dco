@@ -1,0 +1,32 @@
+;; -*-scheme-*-
+
+(Type WorldDataSpec "#include \"WorldDataSpec.hxx\"")
+(Type ViewSpec "#include \"ViewSpec.hxx\"")
+
+(Enum ConfigCommand uint8_t
+      ; clear all current models
+      ClearModels
+      ; remove a node or branch (if possible)
+      RemoveNode
+      ; read scene files (OGRE, for now), file names in the filename list
+      ReadScene
+      ; read a new overlay (OGRE, for now)
+      LoadOverlay
+      ; remove an overlay from displaying on a viewport
+      RemoveOverlay
+      ; load a single object (specified by the WorldDataSpec)
+      LoadObject
+      ; modify an object, only adapts location	
+      MoveObject
+      ; list available nodes	
+      ListNodes)
+
+; An event for runtime configuration of the WorldViewer view.
+(Event WorldViewConfig
+       ; Event action type
+       (ConfigCommand command)
+       ; Data, if needed
+       (WorldDataSpec config)
+       ; ViewSpecs, if needed
+       (ViewSpec viewspecs)
+)

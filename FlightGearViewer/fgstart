@@ -1,0 +1,6 @@
+#!/bin/sh
+fgfs --config=emptypanel.xml \
+     --generic=socket,in,50,127.0.0.1,7202,udp,duecavis-ascii \
+     --multiplay=out,10,127.0.0.1,4999 \
+     --multiplay=in,10,127.0.0.1,5000 \
+     --httpd=5480

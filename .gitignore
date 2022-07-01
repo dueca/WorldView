@@ -1,0 +1,27 @@
+# ignore generated and built files
+build/**
+
+# by default, all patterns ignored in the run folders
+run/*/*/**
+
+# Only these patterns should be allowed there
+!run/*/*/dueca.cnf
+!run/*/*/dueca.mod
+!run/*/*/dueca_cnf.py
+!run/*/*/dueca_mod.py
+!run/*/*/links.script
+!run/*/*/clean.script
+!run/run-data/**
+
+# ignore emacs backup files
+*~
+
+# ignore generated comm-objects.h
+*/comm-objects.h
+
+# and .orig files from patches
+*.orig
+*.rej
+
+# machine file should not be in repository
+.config/machine

@@ -1,0 +1,147 @@
+// materials/bitmaps with masks for the mmslab displays
+material hmilab/maskleftside
+{
+    transparency_casts_shadows off
+    receive_shadows off 
+	technique 
+	{
+		pass 	
+		{
+			ambient 0 0 0 0
+			diffuse 0 0 0 0
+			specular 0 0 0 0
+			emissive 0 0 0 0
+			scene_blend alpha_blend
+			depth_check off
+			depth_write off
+			lighting off
+			fog_override true
+	
+			texture_unit
+			{
+				texture_alias HMILabMask
+				texture hmilabmaskleft-blur.png 2d 0 
+				filtering none
+			}
+		}
+	}	
+}
+
+material hmilab/TUlogo
+{
+    transparency_casts_shadows off
+    receive_shadows off 
+	technique 
+	{
+		pass 	
+		{
+			scene_blend alpha_blend
+			depth_check off
+			depth_write off
+			lighting off
+			fog_override true
+	
+			texture_unit
+			{
+				texture TU_d_line_P1_color.png 2d 0 
+				filtering none
+			}
+		}
+	}		
+}
+material hmilab/LogoBackground
+{
+    transparency_casts_shadows off
+    receive_shadows off 
+	technique 
+	{
+		pass 	
+		{
+			scene_blend alpha_blend
+			depth_check off
+			depth_write off
+			lighting off
+			fog_override true
+	
+			texture_unit
+			{
+				texture rect4207.png 2d 0 
+				filtering none
+			}
+		}
+	}		
+}
+
+material hmilab/maskfront : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfront-blur.png 
+}
+
+material hmilab/masklefttest : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmasklefttest.png 
+}
+
+material hmilab/maskfronttest : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfronttest.png 
+}
+
+material hmilab/maskrightside : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskright-blur.png 
+}
+
+material hmilab/maskrighttest : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskrighttest.png 
+}
+
+material hmilab/maskempty : hmilab/maskleftside
+{
+//	set_texture_alias HMILabMask hmilabmaskempty.png 
+}
+
+material hmilab/maskblack : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskblack.png 
+}
+
+////////////////////////////////////////////////////////////////
+////// some definitions for backward compatibility /////////////
+////////////////////////////////////////////////////////////////
+
+material hmilab/maskleftfront : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfront-blur.png 
+}
+
+material hmilab/maskleftfronttest : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfront-blur.png 
+}
+
+material hmilab/maskleftfrontfull : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfront-blur.png 
+}
+
+material hmilab/maskrightside : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfront-blur.png 
+}
+
+material hmilab/maskrightfront : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfront-blur.png 
+}
+
+material hmilab/maskrightfronttest : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfront-blur.png 
+}
+
+material hmilab/maskrightfrontfull : hmilab/maskleftside
+{
+	set_texture_alias HMILabMask hmilabmaskfront-blur.png 
+}

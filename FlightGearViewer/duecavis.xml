@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+
+<PropertyList>
+  
+  <generic>
+    
+    <output>
+      <binary_mode>true</binary_mode>
+      <binary_footer>magic,0x454C4556</binary_footer>
+      
+      <chunk>
+	<name>elevation</name>
+	<type>float</type>
+	<node>/environment/ground-elevation-m</node>
+      </chunk>
+      
+      <chunk>
+	<name>nx</name>
+	<type>float</type>
+	<node>/environment/normal-x</node>
+      </chunk>
+      
+      <chunk>
+	<name>ny</name>
+	<type>float</type>
+	<node>/environment/normal-y</node>
+      </chunk>
+      
+      <chunk>
+	<name>nz</name>
+	<type>float</type>
+	<node>/environment/normal-z</node>
+      </chunk>
+      
+    </output>
+    
+    <input>
+      <binary_mode>true</binary_mode>
+      <binary_footer>magic,0x44544543</binary_footer>
+
+      <chunk>
+	<name>latitude</name>
+	<type>float</type>
+	<node>/position/latitude-deg</node>
+      </chunk>
+      
+      <chunk>
+	<name>longitude</name>
+	<type>float</type>
+	<node>/position/longitude-deg</node>
+      </chunk>
+      
+      <chunk>
+	<name>altitude</name>
+	<type>float</type>
+	<node>/position/altitude-ft</node>
+      </chunk>
+      
+      <chunk>
+	<name>roll</name>
+	<type>float</type>
+	<node>/orientation/roll-deg</node>
+      </chunk>
+      
+      <chunk>
+	<name>pitch</name>
+	<type>float</type>
+	<node>/orientation/pitch-deg</node>
+      </chunk>
+      
+      <chunk>
+	<name>heading</name>
+	<type>float</type>
+	<node>/orientation/heading-deg</node>
+      </chunk>
+    </input>
+  </generic>
+</PropertyList>

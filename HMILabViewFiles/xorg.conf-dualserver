@@ -1,0 +1,137 @@
+Section "ServerLayout"
+	Identifier     "front"
+	Screen      0  "ScreenFront"
+	InputDevice    "Mouse0" "CorePointer"
+	InputDevice    "Keyboard0" "CoreKeyboard"
+EndSection
+
+Section "ServerLayout"
+	Identifier	"sides"
+	Screen	    0   "ScreenSides"
+	InputDevice     "Mouse1" "CorePointer"
+	InputDevice     "Keyboard1" "CoreKeyboard"
+EndSection
+
+Section "ServerFlags"
+	Option		"BlankTime" "540"
+	Option		"StandbyTime" "541"
+	Option		"SuspendTime" "542"
+	Option		"OffTime" "543"
+	Option		"AllowMouseOpenFail" "true"
+	Option  	"DefaultServerLayout" "front"
+EndSection
+
+Section "Files"
+	RgbPath      "/usr/share/X11/rgb"
+	ModulePath   "/usr/lib64/xorg/modules/updates"
+	ModulePath   "/usr/lib64/xorg/modules"
+	FontPath     "/usr/share/fonts/misc/"
+	FontPath     "/usr/share/fonts/TTF/"
+	FontPath     "/usr/share/fonts/OTF"
+	FontPath     "/usr/share/fonts/Type1/"
+	FontPath     "/usr/share/fonts/100dpi/"
+	FontPath     "/usr/share/fonts/75dpi/"
+EndSection
+
+Section "Module"
+	Load  "glx"
+	Load  "xtrap"
+	Load  "extmod"
+	Load  "record"
+	Load  "dbe"
+	Load  "type1"
+	Load  "freetype"
+EndSection
+
+Section "InputDevice"
+	Identifier  "Keyboard0"
+	Driver      "kbd"
+EndSection
+Section "InputDevice"
+	Identifier  "Keyboard1"
+	Driver      "kbd"
+EndSection
+
+Section "InputDevice"
+	Identifier  "Mouse0"
+	Driver      "mouse"
+	Option	    "Protocol" "auto"
+	Option	    "Device" "/dev/input/mice"
+	Option	    "ZAxisMapping" "4 5 6 7"
+EndSection
+
+Section "InputDevice"
+	Identifier  "Mouse1"
+	Driver      "mouse"
+	# Option	    "Protocol" "auto"
+	Option	    "Device" "/dev/null"
+	Option	    "ZAxisMapping" "4 5 6 7"
+EndSection
+
+Section "Monitor"
+	Identifier   "Monitor0"
+	VendorName   "Monitor Vendor"
+	ModelName    "Monitor Model"
+EndSection
+
+Section "Monitor"
+	Identifier   "Monitor1"
+	VendorName   "Monitor Vendor"
+	ModelName    "Monitor Model"
+EndSection
+
+Section "Monitor"
+	Identifier   "Monitor2"
+	VendorName   "Monitor Vendor"
+	ModelName    "Monitor Model"
+EndSection
+
+Section "Monitor"
+	Identifier   "Monitor3"
+	VendorName   "Monitor Vendor"
+	ModelName    "Monitor Model"
+EndSection
+
+Section "Device"
+	Identifier  "Card0"
+	Driver      "nvidia"
+	VendorName  "nVidia Corporation"
+	BoardName   "Unknown Board"
+	BusID       "PCI:2:0:0"
+	Option	    "TwinView" "true"
+	Option	    "TwinViewOrientation" "RightOf"	
+	Option	    "UseEdidFreqs" "true"
+EndSection
+
+Section "Device"
+	Identifier  "Card1"
+	Driver      "nvidia"
+	VendorName  "nVidia Corporation"
+	BoardName   "Unknown Board"
+	BusID       "PCI:3:0:0"
+	Option	    "TwinView" "true"
+	Option	    "TwinViewOrientation" "RightOf"	
+	Option	    "UseEdidFreqs" "true"
+EndSection
+
+Section "Screen"
+	Identifier "ScreenFront"
+	Device     "Card0"
+	Monitor    "Monitor0"
+	SubSection "Display"
+		Viewport   0 0
+		Depth     24
+	EndSubSection
+EndSection
+
+Section "Screen"
+	Identifier "ScreenSides"
+	Device     "Card1"
+	Monitor    "Monitor2"
+	SubSection "Display"
+		Viewport   0 0
+		Depth     24
+	EndSubSection
+EndSection
+
+

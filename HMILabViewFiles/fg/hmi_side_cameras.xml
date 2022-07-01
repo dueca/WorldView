@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<PropertyList>
+  <sim>
+    <rendering>
+      <camera-group>
+	<window>
+	  <name type="string">wide</name>
+	  <host-name type="string"></host-name>
+	  <display>1</display>
+	  <screen>0</screen>
+	  <width>3840</width>
+	  <height>1080</height>
+	  <fullscreen type = "bool">true</fullscreen>
+	</window>
+
+	<!-- Frustum Calculation Parameters -->
+	<!-- front wall width	                        4.687	[m] -->
+	<!-- projection height	                        2.025	[m] -->
+	<!-- projection width	                        2.700	[m] -->
+	<!-- projection bottom above floor	                0.780	[m] -->
+	<!-- projection top above floor	                2.805	[m] -->
+	<!-- platform height	                        0.700	[m] -->
+	<!-- left eye point above platform	        0.900	[m] -->
+	<!-- right eye point above platform	        0.900	[m] -->
+	<!-- left to right seat center distance         1.050	[m] -->
+	<!-- left eye center distance from left wall	1.730	[m] -->
+	<!-- right eye center distance from left wall	2.780	[m] -->
+	<!-- left eye center distance from right wall	2.957	[m] -->
+	<!-- right eye center distance from right wall	1.907	[m] -->
+	<!-- left eye distance from front wall	        2.850	[m] -->
+	<!-- right eye distance from front wall	        2.900	[m] -->
+	<!-- left eye from floor	                1.600	[m] -->
+	<!-- right eye from floor	                1.600	[m] -->
+	
+	<!-- Projector parameters		 -->
+		
+	<!-- height to width ratio	        0.75	 -->
+	<!-- throw ratio (distance / width)	0.7	 -->
+	<!-- projection distance	        1.89 -->
+   
+	<!-- pixels width	1024	 -->
+	<!-- pixels height	768	 -->
+		
+	<!-- View parameters		 -->
+	
+	<!-- near clipping plane distance	1	[m] -->
+
+	<camera>
+	  <!-- Left wall -->
+          <window>
+            <name>wide</name>
+          </window>
+          <viewport>
+            <x>121</x>
+            <y>0</y>
+            <width>1719</width>
+            <height>1080</height>
+          </viewport>
+	  <frustum>
+	    <left>-0.75011761385</left>
+	    <right>0.675155946186</right>
+	    <bottom>-0.376500155079</bottom>
+	    <top>0.518959673217</top>
+	    <near>        1.0    </near>
+	    <far>    120000.0    </far>
+	  </frustum>
+          <view>
+            <heading-deg type = "double">82.36</heading-deg>
+          </view>
+        </camera>
+
+	<!-- Right wall -->
+	<camera>
+          <window>
+            <name>wide</name>
+          </window>
+          <viewport>
+            <x>2175</x>
+            <y>0</y>
+            <width>1325</width>
+            <height>1080</height>
+          </viewport>
+	  <frustum>
+
+	    <left>-1.21819795407</left>
+	    <right>0.588489166461</right>
+	    <bottom>-0.60996297175</bottom>
+	    <top>0.840759771872</top>
+	    <near>        1.0    </near>
+	    <far>    120000.0    </far>
+	  </frustum>
+          <view>
+            <heading-deg type = "double">-85.1129901651</heading-deg>
+          </view>
+        </camera>
+
+	<gui>
+          <window>
+            <name type="string">wide</name>
+          </window>
+        </gui>
+	
+      </camera-group>
+    </rendering>
+  </sim>
+</PropertyList>

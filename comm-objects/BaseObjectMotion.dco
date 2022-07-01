@@ -1,0 +1,35 @@
+;; -*-scheme-*-
+
+(Header "
+        item            : BaseObjectMotion.dco
+        made by         : Rene' van Paassen
+        date            : 171119
+        description     : Describes position and speed of object in 3d space
+        copyright       : (c) 2017 TUDelft-AE-C&S")
+ 
+(IterableType dueca::fixvector<3,float> "#include <fixvector.hxx>")
+(Type float)
+(Type BaseObjectPosition "#include \"BaseObjectPosition.hxx\"")
+
+;; This provides the movement of an object, and the first derivative of that
+;; the class has a simple extrapolation method (extrapolate), that provides
+;; an object with extrapolated position. 
+(Stream BaseObjectMotion
+	(Inherits BaseObjectPosition)
+        (Option hdf5)
+	(IncludeFile BaseObjectMotionExtra)
+
+       ;; rotational rate of the object, in body-fixed coordinate system
+       (dueca::fixvector<3,float> omega (Default 0.0f))
+
+       ;; rate of the object, in body-fixed coordinate system, 
+       ;; the sign of dt determines whether this vector is earth-fixed or
+       ;; body fixed over integration
+       (dueca::fixvector<3,float> uvw (Default 0.0f))
+
+       ;; time step of a possible integration/extrapolation
+       ;; if positive; integrate with velocity vector following body
+       ;; if zero; no integration
+       ;; if negative; integrate with velocity vector fixed in the world
+       (float dt (Default 0.0f) ) 
+       )

@@ -1,0 +1,12 @@
+;; -*-scheme-*-
+
+(Type double)
+      
+;; This should cover the read back from flight gear
+(Stream FlightGearReadback
+	;; ground elevation, will be actually filled
+	(double elevation)
+	;; ground normal. Does not work currently. How to get these data in?
+	(double normal 3)
+	)	
+	

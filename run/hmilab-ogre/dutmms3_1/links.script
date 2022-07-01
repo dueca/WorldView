@@ -1,0 +1,13 @@
+# this file creates all links to files in the data directory needed for
+# running the application is a specific machine. 
+#
+# example
+# ln -sf $DATADIR/*.cnf .
+DATADIR=../../run-data
+
+# run the link script in the hmi lab data dir; the -t is for test files
+../../../../WorldView/HMILabViewFiles/generate -t
+
+# link the example stuff for ogre
+../../../../WorldView/OgreViewer/generate
+

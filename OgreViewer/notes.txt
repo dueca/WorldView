@@ -1,0 +1,125 @@
+Addition of correction for the HMI lab
+
+- the (one day rounded?) corners in the HMI lab require some distortion correction. Have been reading up on the possibilities in new Ogre's:
+
+http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Compositor
+
+Ogre needs to be >1.7 for this to be bug-free.
+
+shows compositors, which can be added to post-process an Ogre image. These can be added to viewports, see down in the page for some examples:
+
+CompositorManager::getSingleton().addCompositor(mViewport, "Blur");
+CompositorManager::getSingleton().addCompositor(mViewport, "B&W");
+
+An example for distortion correction with oculus uses cg (prefer glsl?):
+
+cg program:
+
+uniform float2 LensCentre;
+uniform float2 ScreenCentre;
+uniform float2 Scale;
+uniform float2 ScaleIn;
+uniform float4 HmdWarpParam;
+
+// Scales input texture coordinates for distortion.
+float2 HmdWarp(float2 in01)
+{
+	float2 theta = (in01 - LensCentre) * ScaleIn; // Scales to [-1, 1]
+	float rSq = theta.x * theta.x + theta.y * theta.y;
+	float2 rvector = theta * (HmdWarpParam.x + HmdWarpParam.y * rSq + HmdWarpParam.z * rSq * rSq + HmdWarpParam.w * rSq * rSq * rSq);
+	return LensCentre + Scale * rvector;
+}
+
+float4 main_fp(float4 pos : POSITION, float2 iTexCoord : TEXCOORD0, uniform sampler2D RT : register(s0)) : COLOR
+{
+	float2 tc = HmdWarp(iTexCoord);
+	return float4(tex2D(RT, tc).rgb,1);
+}
+
+The material:
+
+fragment_program Ogre/Compositor/OculusFP_cg cg
+{
+	source oculus.cg
+	entry_point main_fp
+	profiles ps_4_0 ps_2_0 arbfp1
+	
+	default_params
+	{
+		param_named LensCentre float2 0.5 0.5
+		param_named ScreenCentre float2 0 0
+		param_named Scale float2 0.3 0.3
+		param_named ScaleIn float2 2 2
+		param_named HmdWarpParam float4 1.0f, 0.22f, 0.24f 0
+	}
+}
+
+vertex_program oculusBaseLightMap_vp cg
+{
+	source oculus.cg
+	entry_point oculusBaseLightMap_vp
+	profiles vs_4_0 vs_2_0 arbvp1
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+        param_named_auto ambient ambient_light_colour
+	}
+}
+
+fragment_program oculusBaseLightMap_fp cg
+{
+	source oculus.cg
+	entry_point oculusBaseLightMap_fp
+	profiles ps_4_0 ps_2_0 arbfp1
+}
+
+material Ogre/Compositor/Oculus
+{
+	technique
+	{
+		pass
+		{
+			depth_check off
+
+			vertex_program_ref Ogre/Compositor/StdQuad_vp
+			{
+			}
+
+			fragment_program_ref Ogre/Compositor/OculusFP_cg
+			{
+			}
+
+			texture_unit RT
+			{
+				tex_coord_set 0
+				tex_address_mode border
+				tex_border_colour 0 0 0
+				filtering linear linear linear
+			}
+		}
+	}
+}
+
+and the compositor:
+
+compositor Oculus
+{
+    technique
+    {
+        texture rt0 target_width target_height PF_R8G8B8
+
+        target rt0 { input previous }
+
+        target_output
+        {
+            // Start with clear output
+            input none
+
+            pass render_quad
+            {
+                material Ogre/Compositor/Oculus
+                input 0 rt0
+            }
+        }
+    }
+}

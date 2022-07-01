@@ -1,0 +1,30 @@
+; -*-scheme-*-
+(Header "
+        item            : WinSpec.dco
+        made by         : Rene' van Paassen
+        date            : 1612xx
+        description     : Win specifications for WorldView
+        copyright       : (c) 2016 TUDelft-AE-C&S")
+
+(Type vstring "#include <stringoptions.h>")
+(IterableType std::vector<int32_t> "
+#include <inttypes.h>
+#include <vector>")
+(Type uint32_t "#include <inttypes.h>")
+
+;; Helper struct that defines the parameters for a view
+(Event WinSpec
+       (IncludeFile WinSpecExtra)
+
+       ;; Name for the window
+       (vstring name)
+
+       ;; Window size, or window size and position
+       (std::vector<int32_t> size_and_position)
+
+       ;; Display name
+       (vstring display (Default ""))
+
+       ;; Event map
+       (uint32_t mask (Default 0))
+       )

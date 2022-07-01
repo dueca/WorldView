@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+
+<PropertyList>
+  
+  <generic>
+    
+    <output>
+      <line_separator>newline</line_separator>
+      <var_separator>,</var_separator>
+      
+      
+      <chunk>
+	<name>elevation</name>
+	<format>%f</format>
+	<node>/environment/ground-elevation-m</node>
+      </chunk>
+      
+      <chunk>
+	<name>nx</name>
+	<format>%f</format>
+	<node>/environment/normal-x</node>
+      </chunk>
+      
+      <chunk>
+	<name>ny</name>
+	<format>%f</format>
+	<node>/environment/normal-y</node>
+      </chunk>
+      
+      <chunk>
+	<name>nz</name>
+	<format>%f</format>
+	<node>/environment/normal-z</node>
+      </chunk>
+      
+    </output>
+    
+    <input>
+      <line_separator>newline</line_separator>
+      <var_separator>,</var_separator>
+      <chunk>
+	<name>latitude</name>
+	<type>float</type>
+	<format>%f</format>
+	<node>/position/latitude-deg</node>
+      </chunk>
+      
+      <chunk>
+	<name>longitude</name>
+	<type>float</type>
+	<format>%f</format>
+	<node>/position/longitude-deg</node>
+      </chunk>
+      
+      <chunk>
+	<name>altitude</name>
+	<type>float</type>
+	<format>%f</format>
+	<node>/position/altitude-ft</node>
+      </chunk>
+      
+      <chunk>
+	<name>roll</name>
+	<type>float</type>
+	<format>%f</format>
+	<node>/orientation/roll-deg</node>
+      </chunk>
+      
+      <chunk>
+	<name>pitch</name>
+	<type>float</type>
+	<format>%f</format>
+	<node>/orientation/pitch-deg</node>
+      </chunk>
+      
+      <chunk>
+	<name>heading</name>
+	<type>float</type>
+	<format>%f</format>
+	<node>/orientation/heading-deg</node>
+      </chunk>
+
+      <chunk>
+	<name>visibility1</name>
+	<type>float</type>
+	<format>%f</format>
+	<node>/environment/config/boundary/entry/visibility-m</node>
+      </chunk>
+
+      <chunk>
+	<name>visibility2</name>
+	<type>float</type>
+	<format>%f</format>
+	<node>/environment/config/aloft/entry/visibility-m</node>
+      </chunk>
+      
+    </input>
+  </generic>
+</PropertyList>

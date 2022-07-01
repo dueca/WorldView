@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# using svg files, this script generates masks for the HMI lab
+# projection with a blurred transition zone
+#
+# for adjusting the gap between the masks, use the mask files without the
+# -blur suffix. 
+#
+# for also adjusting the vertical alignment, make the top layer in the
+# svg files visible. This adds blue/yellow stripes, that should
+# overlap to produce white. Then regenerate with ". links.script", and
+# use the unblurred mask files.
+
+
+LFILES="hmilab.material hmilab.overlay TU_d_line_P1_color.png rect4207.png"
+
+BLURFILES="hmilabmaskleft.png hmilabmaskright.png hmilabmaskfront.png"
+
+if test "$1" == "-t"; then
+    MASKOPTS="--export-id=themask --export-id-only --export-area-page"
+else
+    MASKOPTS="--export-area-page"
+fi
+
+BASEDIR=$(dirname $0)
+# echo $BASEDIR
+
+FILES=$(cd $BASEDIR && ls *.svg)
+# echo $FILES
+
+# for every svg, create a png file of the drawing size.
+for f in $FILES; do
+    # real file
+    of=$(basename $f .svg).png
+    inkscape --export-png=$of \
+	     $MASKOPTS  $BASEDIR/$f
+done
+
+if [ -x /usr/bin/convert ]; then
+    CONVERT=/usr/bin/convert
+else
+    echo "Install ImageMagick"
+    exit 1
+fi
+   
+
+# create blurred versions of the crisp masks above, also apply gamma reverse 
+# correction
+for f in $BLURFILES; do
+    $CONVERT $f -channel RGBA -blur 0x5 -gamma 0.45 png32:`basename $f .png`-blur.png
+done
+
+# create left+right part of front blur file, and
+# right resp left part of left resp right blur file
+$CONVERT hmilabmaskfront-blur.png -crop 100x1080+0x0 \
+        +repage png32:hmilabmaskfront-blurl.png
+$CONVERT hmilabmaskfront-blur.png -crop 100x1080+1696x0 \
+        +repage png32:hmilabmaskfront-blurr.png
+$CONVERT hmilabmaskleft-blur.png -crop 100x1080+1619x0 \
+        +repage png32:hmilabmaskleft-blurr.png
+$CONVERT hmilabmaskright-blur.png -crop 100x1080+0x0 \
+        +repage png32:hmilabmaskright-blurl.png
+
+# additionally create a full size mask for masking purposes, check size with
+# frustumcalculator 
+$CONVERT -size 1858x1080 canvas:black -alpha off png32:hmilabmaskblack.png
+$CONVERT -size 1858x1080 canvas:black -alpha transparent png32:hmilabmaskempty.png
+
+# create test screens, with blue/red left and right sides?
+$CONVERT hmilabmaskleft2.png -channel rgba \
+        -fill 'rgba(255,0,0,0.5)' -opaque black hmilabmasklefttest.png
+$CONVERT hmilabmaskright2.png -channel rgba \
+        -fill 'rgba(0,0,255,0.5)' -opaque black hmilabmaskrighttest.png
+$CONVERT hmilabmaskfront2.png -channel rgba \
+        -region 100x1080+0+0 -fill 'rgba(0,0,255,0.5)' -opaque black \
+        +region -fill 'rgba(255,0,0,0.5)' -opaque black \
+        hmilabmaskfronttest.png
+
+# create warp masking files for flightgear
+for f in $BLURFILES; do
+    python3 $BASEDIR/fggenerate.py `basename $f .png`-blur.png 
+done
+
+# create appropriate links
+for f in $LFILES; do
+    ln -sf $BASEDIR/$f $f
+done
+

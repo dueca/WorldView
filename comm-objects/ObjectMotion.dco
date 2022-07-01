@@ -1,0 +1,45 @@
+;; -*-scheme-*-
+
+(IterableType dueca::fixvector<32,char> "#include <fixvector.hxx>")
+(Type string32 "#include <stringoptions.h>")
+(Type BaseObjectMotion
+      "#include \"../../WorldView/comm-objects/BaseObjectMotion.hxx\"")
+(IterableType dueca::fixvector<3,float> "#include <fixvector.hxx>")
+
+;; This provides the movement of an object, and the first derivative of that
+;; the class has a simple extrapolation method (extrapolate), that provides
+;; an object with extrapolated position.
+(Stream ObjectMotion
+        (Inherits BaseObjectMotion)
+        (Option hdf5)
+
+        ;; name of the thing, 31 charactes maximum
+        (string32 name)
+
+        ;; class of the object; 31 characters maximum
+        (string32 klass)
+
+        ;; rotational acceleration of the object, body-fixed coordinate system
+        (dueca::fixvector<3,float> omegadot (Default 0.0f))
+
+        ;; linear acceleration of the object, b-f coordinate system,
+        ;; the sign of dt determines whether this vector is earth-fixed or
+        ;; body fixed over integration
+        (dueca::fixvector<3,float> uvwdot (Default 0.0f))
+
+        ;; custom-determined additional data
+        (dueca::fixvector<32,char> custom)
+        )
+
+
+;; (IncludeFile ObjectMotionExtra)
+;;         (ConstructorCode "for (int ii = 3; ii--; ) {
+;;   xyz[ii] = 0.0;
+;;   uvw[ii] = 0.0f;
+;;   uvwdot[ii] = 0.0f;
+;;   attitude_q[ii+1] = 0.0f;
+;;   omega[ii]= 0.0f;
+;;   omegadot[ii] =0.0f;
+;; }
+;; attitude_q[0] = 1.0f;
+;; ::memset(custom, 0, 32);" )

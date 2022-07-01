@@ -1,0 +1,7 @@
+# this file creates all links to files in the data directory needed for
+# running the application is a specific machine. 
+#
+# example
+# ln -sf $DATADIR/*.cnf .
+DATADIR=../../run-data
+

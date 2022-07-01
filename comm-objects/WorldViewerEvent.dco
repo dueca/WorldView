@@ -1,0 +1,33 @@
+;; -*-scheme-*-
+(Type int)
+(Type unsigned)
+(Enum WVEventType uint8_t
+      ; Pressed a button
+      WVButtonPress
+      ; release a button
+      WVButtonRelease
+      ; Move pointer
+      WVPointerMove
+      ; Key press
+      WVKeyPress
+      ; Key release
+      WVKeyRelease
+      ; No event 
+      WVNone)
+
+; event information from a window, keys and mouse buttons
+(Event WorldViewerEvent
+       ; Type of user action
+       (WVEventType type (Default WVNone))
+       ; pointer X coordinate 
+       (int x (Default 0))
+       ; pointer Y coordinate
+       (int y (Default 0))
+
+       ; Pointer buttons, modifiers pressed (if any)
+       (unsigned state (Default 0))
+
+       ; Button or key code (if any, X keysym, 
+       ; check /usr/include/X11/keysymdef.h)
+       (unsigned code (Default 0))
+)

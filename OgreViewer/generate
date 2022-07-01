@@ -1,0 +1,50 @@
+#!/bin/bash
+
+BASEDIR=$(dirname $0)
+LFILES="sample.scene sample2.scene"
+
+for f in $LFILES; do
+    ln -sf $BASEDIR/$f $f
+done
+
+# remove previous symbolic link tactic
+if [ -L resources.cfg ]; then
+    rm -f resources.cfg
+fi
+
+SYSRESLOC="/etc/OGRE/resources.cfg /usr/share/OGRE/resources.cfg"
+PLUGINS="/etc/OGRE/plugins.cfg"
+if type rpm >/dev/null 2>/dev/null && \
+	rpm -q fedora-release 2>/dev/null >/dev/null; then
+    SYSRESLOC="$SYSRESLOC $BASEDIR/resources-fedora.cfg"
+    PLUGINS="$PLUGINS $BASEDIR/plugins.cfg"
+fi
+if type rpm >/dev/null 2>/dev/null && \
+	rpm -q suse-release 2>/dev/null >/dev/null; then
+    SYSRESLOC="$SYSRESLOC $BASEDIR/resources-suse.cfg"
+    PLUGINS="$PLUGINS $BASEDIR/plugins.cfg"
+fi
+if type dpkg >/dev/null 2>/dev/null && \
+	dpkg -V ubuntu-minimal 2>/dev/null >/dev/null; then
+    SYSRESLOC="$SYSRESLOC $BASEDIR/resources-ubuntu.cfg"
+    PLUGINS="$PLUGINS $BASEDIR/plugins-ubuntu.cfg"
+fi
+
+for R in $SYSRESLOC; do
+    if [ -r "$R" ]; then
+	cp "$R" resources.cfg
+	# add path to the GLSL programs
+	for d in `find /usr/share/OGRE -name GLSL`; do
+ 	    echo FileSystem=$d >> resources.cfg
+	done
+	break
+    fi
+done
+
+for P in $PLUGINS; do
+    if [ -r "$P" ]; then
+	cp "$P" plugins.cfg
+	break
+    fi
+done
+

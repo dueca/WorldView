@@ -1,0 +1,52 @@
+<scene formatVersion="">
+  <environment>
+    <skyBox material="Examples/StormySkyBox" distance="1000"/>
+  </environment>
+  <nodes>	
+    <node name="Omni01">
+      <position x="0" y="150" z="250" />
+      <rotation qx="0" qy="0" qz="0" qw="1" />
+      <scale x="1" y="1" z="1" />
+      <light name="Omni01" type="point" intensity="1" contrast="0">
+        <colourDiffuse r="0.4" g="0.4" b="0.5" />
+        <colourSpecular r="0.5" g="0.5" b="0.5" />
+        <colorAmbient r="0" g="0" b="0" />
+      </light>
+    </node>
+    <node name="groundplane">
+      <plane name="ground" id="Floor" distance="0"
+             material="Ocean" height="1500" width="1500"
+             uTile="15" vTile="15"/>
+    </node>
+    
+    <node name="house9">
+      <position x="30" y="10" z="-100" />
+      <scale x="1" y="1" z="1" />
+      <entity name="house9" meshFile="Barrel.mesh" static="true" />
+    </node>
+    
+    <node name="house3">
+      <position x="30.0" y="0" z="-15" />
+      <scale x=".5" y=".5" z=".5" />
+      <entity name="house3" meshFile="ninja.mesh" static="true" />
+    </node>
+    <node name="house4">
+      <position x="0.0" y="0" z="-20" />
+      <scale x="2" y="2" z="2" />
+      <entity name="house4" meshFile="WoodPallet.mesh" static="true" />
+    </node>
+    <node name="grass">
+      <billboardSet name="grassy_area" material="Examples/GrassBlades" origin="bottomCenter">
+	<billboard> <position x="10.0" y="3.0" z="0.0"/> 	</billboard>
+	<billboard>	<position x="15.0" y="3.0" z="11.0"/>	</billboard>
+	<billboard>	<position x="1.0" y="3.0" z="3.0"/>		</billboard>
+	<billboard>	<position x="25.0" y="3.0" z="21.0"/>	</billboard>
+	<billboard>	<position x="7.0" y="3.0" z="9.0"/>		</billboard>
+	<billboard>	<position x="15.0" y="3.0" z="15.0"/>	</billboard>
+	<billboard>	<position x="21.0" y="3.0" z="21.0"/>	</billboard>
+	<billboard>	<position x="31.0" y="3.0" z="7.0"/>	</billboard>
+      </billboardSet>
+    </node>
+  </nodes>
+</scene>
+

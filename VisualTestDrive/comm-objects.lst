@@ -1,0 +1,9 @@
+# this file contains a list of all communicated objects needed by this 
+# specific module
+# specify these with the .dco extension, examples:
+# RepaTest/comm-objects/MyDataObject.dco
+# Generic/comm-objects/PrimaryControls.dco
+WorldView/comm-objects/ObjectMotion.dco
+WorldView/comm-objects/BaseObjectPosition.dco
+WorldView/comm-objects/BaseObjectMotion.dco
+

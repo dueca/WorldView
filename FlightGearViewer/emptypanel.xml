@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<PropertyList>
+ <sim>
+   
+  <description>simple outside visual</description>
+  <author>Rene van Paassen</author>
+  <status>early-production</status>
+
+  <flight-model>null</flight-model>
+
+  <panel>
+    <visibility>false</visibility>
+  </panel>
+
+  <ai-traffic>
+    <enabled>false</enabled>
+  </ai-traffic>
+
+  <ai>
+    <enabled>false</enabled>
+  </ai>
+
+  <sound>
+    <enabled>false</enabled>
+  </sound>
+  <menubar>
+    <visibility>false</visibility>
+  </menubar>
+
+  <view>
+   <internal archive="y">false</internal>
+   <config>
+     <!-- x/y/z == right/up/back -->
+     <x-offset-m archive="y">0</x-offset-m>
+     <y-offset-m archive="y">0</y-offset-m>
+     <z-offset-m archive="y">0</z-offset-m>
+     <pitch-offset-deg archive="y">-0.0</pitch-offset-deg>
+   </config>
+  </view>
+
+ </sim>
+   
+</PropertyList>
+
+

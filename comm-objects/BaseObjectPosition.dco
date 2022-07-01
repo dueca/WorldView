@@ -1,0 +1,29 @@
+;; -*-scheme-*-
+
+(Header "
+        item            : BaseObjectPosition.dco
+        made by         : Rene' van Paassen
+        date            : 171119
+        description     : Describes position and attitude of object in 3d space
+        copyright       : (c) 2017 TUDelft-AE-C&S")
+ 
+(IterableType dueca::fixvector<3,double> "#include <fixvector.hxx>")
+(IterableType dueca::fixvector<4,double> "#include <fixvector.hxx>")
+
+;; This provides the movement of an object, and the first derivative of that
+;; the class has a simple extrapolation method (extrapolate), that provides
+;; an object with extrapolated position. 
+(Stream BaseObjectPosition
+        (Option hdf5)
+	(IncludeFile BaseObjectPositionExtra)
+	(ConstructorCode "
+attitude_q[0] = 1.0;" )      
+
+       ;; attitude of the object wrt the earth-fixed system, given as a 
+       ;; quaternion. The first parameter is the cosine parameter
+       (dueca::fixvector<4,double> attitude_q (Default 0.0)) 
+
+       ;; position of the object in an earth-fixed coordinate system
+       ;; double, since it might be an ECEF system
+       (dueca::fixvector<3,double> xyz (Default 0.0))	
+       )

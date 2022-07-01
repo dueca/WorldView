@@ -1,0 +1,5 @@
+This directory contains all the data, initial condition files, bitmaps, etc
+that you need for running your application.
+
+Please, please only put data here, not in the run directories
+The only permanent stuff there should be dueca.cnf, dueca.mod, links.script and clean.script
