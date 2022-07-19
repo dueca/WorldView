@@ -15,7 +15,7 @@
 -->
 <machine xmlns="https://dueca.tudelft.nl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://dueca.tudelft.nl modules.xsd">
   <project>
-    <url>git@gitlab.tudelft.nl:ae-cs-dueca-base/WorldView.git</url>
+    <url>remote:///WorldView.git</url>
     <module>WorldView</module>
     <module>VisualTestDrive</module>
     <module>ViewpointHack</module>
@@ -32,8 +32,9 @@
     <module>ControlView</module>
     <module>ConfigureView</module>
     <module pseudo="true">icy-world</module>
+    <module>vsg-viewer</module>
   </project>
   <project>
-    <url>git@gitlab.tudelft.nl:ae-cs-dueca-base/WorldListener.git</url>
+    <url>dgrpub:///WorldListener.git</url>
   </project>
 </machine>
