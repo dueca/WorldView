@@ -50,23 +50,15 @@ class VSGViewer: public WorldViewerBase
   vsg::ref_ptr<vsg::Group>  root;
 
   /** A single viewer, matching a single scene */
-  vsg::ref_ptr<vsgViewer::Viewer> oviewer;
-
-  /** A composite viewer, flexibility multiple scenes */
-  vsg::ref_ptr<vsgViewer::CompositeViewer> cviewer;
+  vsg::ref_ptr<vsg::Viewer> oviewer;
 
   /** counter dynamical creation */
   unsigned config_dynamic_created;
 
 protected:
-  /** Composite viewer used */
-  bool use_compositeviewer;
-
   /** Accept unknown/unconfigured objects */
   bool allow_unknown;
 private:
-
-
 
   /** This class can generate multiple views on the same world. A
       ViewSet encapsulates the stuff needed for a single view. */
@@ -75,25 +67,20 @@ private:
     /** Name, for debugging purposes. */
     std::string name;
 
-    /** The render window */
+    /** The render camera set-up */
     vsg::ref_ptr<vsg::Camera> camera;
 
-    /** Rotation offset */
-    vsg::Matrix view_offset;
-
-    /** View use, if compositeviewer */
-    vsg::ref_ptr<vsgViewer::Viewer> sview;
+    /** Rotation and position offset with respect to ego-motion data*/
+    vsg::dmat4 view_offset;
 
     /** Constructor */
     ViewSet();
 
     /** Initialise */
     void init(const ViewSpec& vs, WindowSet& window,
-              vsg::ref_ptr<vsgViewer::CompositeViewer> cviewer,
-              vsg::ref_ptr<vsgViewer::Viewer> viewer,
+              vsg::ref_ptr<vsg::Viewer> viewer,
               vsg::ref_ptr<vsg::Group> root,
-              int zorder, const std::vector<double>& bg_color,
-              vsg::Camera::Camera::DrawCallback *cb = NULL);
+              int zorder, const std::vector<double>& bg_color);
 
     /** create the camera and window. */
     void complete();
@@ -103,17 +90,12 @@ private:
       views */
   struct WindowSet {
 
+    /** Descriptive name */
     std::string name;
 
-    /** Traits for this thing, to remember */
-    vsg::ref_ptr<vsg::GraphicsContext::Traits> traits;
-
-    /** Graphics context for this window/this window itself */
-    vsg::ref_ptr<vsg::GraphicsContext> gc;
-
-    /** Compositeviewer, one per window */
-    vsg::ref_ptr<vsgViewer::CompositeViewer> cviewer;
-
+    /** The actual window */
+    vsg::ref_ptr<vsgXcb::Xcb_Window> window;
+    
     /** A list of view sets; these represent the different render
         areas within the window */
     std::map<std::string,ViewSet> viewset;
@@ -152,23 +134,6 @@ private:
   /** List of specifications for the wiews, will be applied later */
   std::list<ViewSpec> viewspec;
 
-  /** Global draw callback, for all views. */
-  vsg::Camera::Camera::DrawCallback *global_draw_callback;
-
-  /** View-specific draw callbacks, per viewspec name. */
-  std::map<string, vsg::Camera::Camera::DrawCallback *> draw_callbacks;
-
-public:
-  /** Setting of global draw callback. */
-  void setDrawCallback(vsg::Camera::Camera::DrawCallback *cb) {global_draw_callback=cb;}
-
-  /** Setting of viewspec-specific draw callback. */
-  void setDrawCallback(const string& view_spec_name, vsg::Camera::Camera::DrawCallback *cb);
-
-  /** Set a view-specific draw callback. If the view is not specified,
-      set the callback for all views. */
-  void installPostDrawCallback(vsg::Camera::Camera::DrawCallback *cb,
-                               const std::string& viewname="");
 private:
   /** Helper function, loads resources from resources.cfg */
   void setupResources();
@@ -247,7 +212,7 @@ protected:
   double fog_density;
 
   /** Fog colour */
-  vsg::Vec4 fog_colour;
+  vsg::dvec4 fog_colour;
 
   /** Fog start and end */
   double fog_start, fog_end;

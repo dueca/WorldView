@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------   */
-/*      item            : OSGObjectFactory.hxx
+/*      item            : VSGObjectFactory.hxx
         made by         : Rene van Paassen
         date            : 100208
         category        : header file
@@ -8,10 +8,10 @@
         language        : C++
 */
 
-#ifndef OSGObjectFactory_hxx
-#define OSGObjectFactory_hxx
+#ifndef VSGObjectFactory_hxx
+#define VSGObjectFactory_hxx
 
-#include "OSGObject.hxx"
+#include "VSGObject.hxx"
 #include <ConglomerateFactory.hxx>
 #include "comm-objects.h"
 #include <string>
@@ -19,59 +19,59 @@
 #include <boost/thread/detail/singleton.hpp>
 #include <vector>
 
-/** \file OSGObjectFactory.hxx
+/** \file VSGObjectFactory.hxx
 
     This file defines the specialization of an ObjectFactory singleton
-    for graphical objects to be shown with the OSGViewer */
+    for graphical objects to be shown with the VSGViewer */
 
 /** Index for base types in the factory */
-struct OSGObjectTypeKey
+struct VSGObjectTypeKey
 {
   /** map key, text defines type of object */
   typedef std::string Key;
 
   /** Returned object is simply a pointer */
-  typedef OSGObject* ProductBase;
+  typedef VSGObject* ProductBase;
 
   /** This is a generic strings + doubles object, flexible enough to
       define most stuff */
   typedef WorldDataSpec SpecBase;
 };
 
-/** Define the OSGObjectFactory as an instantiation of the default
+/** Define the VSGObjectFactory as an instantiation of the default
     ConglomerateFactory, combined with the singleton template from
     boost.
 
-    The OSGObjectFactory can create objects for visualisation with
+    The VSGObjectFactory can create objects for visualisation with
     OpenSceneGraph.
 */
 typedef boost::detail::thread::singleton
 <ConglomerateFactory
- <OSGObjectTypeKey,
-  boost::shared_ptr<SubcontractorBase<OSGObjectTypeKey> > > >
-OSGObjectFactory;
+ <VSGObjectTypeKey,
+  boost::shared_ptr<SubcontractorBase<VSGObjectTypeKey> > > >
+VSGObjectFactory;
 
 /** Template for a simple (single case) subcontractor.
 
-    If you want to make your object available for the OSGViewer
+    If you want to make your object available for the VSGViewer
     object factory, create a static SubContractor, as follows:
 
     \code
-    class MyGraphicObject: public OSGObject
+    class MyGraphicObject: public VSGObject
     {
       // need a constructor that uses a WorldDataSpec object
       MyGraphicObject(const WorldDataSpec& spec);
 
-      // for the rest, see what you need to redefine from OSGObject!
+      // for the rest, see what you need to redefine from VSGObject!
     };
 
     // and in your cxx file:
-    static SubContractor<OSGObjectTypeKey, MyGraphicObject>
+    static SubContractor<VSGObjectTypeKey, MyGraphicObject>
     *MyGraphicObject_maker = new
-    SubContractor<OSGObjectTypeKey, MyGraphicObject>("my-graphic-object");
+    SubContractor<VSGObjectTypeKey, MyGraphicObject>("my-graphic-object");
     \endcode
 
-    With this, the OSGViewer can figure out how to create objects of
+    With this, the VSGViewer can figure out how to create objects of
     type "my-graphic-object".
 */
 template<typename Xbase, typename Derived>
@@ -84,7 +84,7 @@ public:
   SubContractor(const char* key, const char* description = NULL) :
     key(key)
   {
-    OSGObjectFactory::instance().addSubcontractor
+    VSGObjectFactory::instance().addSubcontractor
       (this->key, boost::shared_ptr<SubcontractorBase<Xbase > >(this));
   }
 
@@ -96,7 +96,7 @@ public:
   }
 };
 
-/** The base subcontractor pointer in OSG */
-typedef boost::shared_ptr<SubcontractorBase<OSGObjectTypeKey> > SubconPtr;
+/** The base subcontractor pointer in VSG */
+typedef boost::shared_ptr<SubcontractorBase<VSGObjectTypeKey> > SubconPtr;
 
 #endif
