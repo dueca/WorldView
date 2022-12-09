@@ -14,7 +14,7 @@ project(WorldView)
 set(CMAKE_CXX_STANDARD 11)
 
 # script language used
-set(SCRIPTLANG  scheme)
+set(SCRIPTLANG python)
 
 # selection of dueca components common to all machines in this project
 set(DUECA_COMPONENTS ${SCRIPTLANG} extra dusime udp hdf5)

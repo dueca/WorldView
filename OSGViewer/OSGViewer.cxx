@@ -44,7 +44,6 @@ OSGViewer::ViewSet::ViewSet() :
 void OSGViewer::ViewSet::init(const ViewSpec& spec,
                               WindowSet& ws,
                               osg::ref_ptr<osgViewer::CompositeViewer> cviewer,
-                              osg::ref_ptr<osgViewer::Viewer> viewer,
                               osg::ref_ptr<osg::Group> root,
                               int zorder,
                               const std::vector<double>& bg_color,
@@ -88,25 +87,25 @@ void OSGViewer::ViewSet::init(const ViewSpec& spec,
        spec.frustum_data[0], spec.frustum_data[1]);
   }
 
-  // camera->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
-
-  // draw in the back buffer
-  //camera->setDrawBuffer(GL_BACK);
-  //camera->setReadBuffer(GL_BACK);
-
   // add any callback
   if (cb) camera->setPostDrawCallback(cb);
 
+  // create this view
+  sview = new osgViewer::Viewer;
+
+  // if applicable, add to the composite viewer
   if (cviewer) {
-    sview = viewer = new osgViewer::Viewer;
-    cviewer->addView(viewer);
-    viewer->setSceneData(root);
-    viewer->setCameraManipulator(NULL);
+    cviewer->addView(sview);
   }
 
-  // connect to the viewer as slave
-  viewer->addSlave(camera);
+  sview->setSceneData(root);
+  sview->setCameraManipulator(NULL);
 
+  // connect to the viewer as slave
+  sview->addSlave(camera);
+
+  // set the view offset (position, angle) initial, and also for
+  // composite view slaving
   if (spec.eye_pos.size() == 3) {
     view_offset.makeTranslate(AxisTransform::osgPos(spec.eye_pos));
   }
@@ -114,8 +113,13 @@ void OSGViewer::ViewSet::init(const ViewSpec& spec,
     osg::Matrixd trans;
     trans.makeTranslate(AxisTransform::osgPos(spec.eye_pos));
     osg::Matrixd rot = AxisTransform::osgRotation
-       (spec.eye_pos[3], spec.eye_pos[4], spec.eye_pos[5]);
+      (deg2rad(spec.eye_pos[3]),
+       deg2rad(spec.eye_pos[4]),
+       deg2rad(spec.eye_pos[5]));
     view_offset = trans * rot;
+  }
+  else {
+    view_offset.makeIdentity();
   }
   osg::Matrixd viewinv = view_offset.inverse(view_offset);
   camera->setViewMatrix(viewinv);
@@ -131,8 +135,6 @@ OSGViewer::OSGViewer() :
   winspec(),
   root(NULL),
   base_gc(NULL),
-  oviewer(NULL),
-  cviewer(NULL),
   config_dynamic_created(0),
   use_compositeviewer(false),
   allow_unknown(false),
@@ -170,7 +172,8 @@ struct DuecaOSGConfigError: public std::exception
 
 // to simplify programming
 inline OSGViewer::WindowSet
-OSGViewer::myCreateWindow(const WinSpec &ws, osg::ref_ptr<osg::Group> root)
+OSGViewer::myCreateWindow(const WinSpec &ws, osg::ref_ptr<osg::Group> root,
+                          osg::ArgumentParser& arguments)
 {
   // result, to be returned
   WindowSet res;
@@ -198,10 +201,8 @@ OSGViewer::myCreateWindow(const WinSpec &ws, osg::ref_ptr<osg::Group> root)
   // get screen size
   osg::GraphicsContext::ScreenSettings sdata;
   wsi->getScreenSettings(*(res.traits), sdata);
-  //  unsigned int width, height;
-  // wsi->getScreenResolution(osg::GraphicsContext::ScreenIdentifier(0),
-  //                       width, height);
 
+  // set the window
   res.traits->windowName = ws.name;
   res.traits->doubleBuffer = true;
   res.traits->vsync = true;
@@ -241,6 +242,13 @@ OSGViewer::myCreateWindow(const WinSpec &ws, osg::ref_ptr<osg::Group> root)
     throw (DuecaOSGConfigError());
   }
 
+  if (use_compositeviewer) {
+    res.cviewer = new osgViewer::CompositeViewer(arguments);
+    res.cviewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
+    res.cviewer->setReleaseContextAtEndOfFrameHint(true);
+    res.cviewer->realize();
+  }
+
   return res;
 }
 
@@ -262,15 +270,8 @@ void OSGViewer::init(bool waitswap)
                   osgDB::getDataFilePathList().end());
   osgDB::setDataFilePathList(filepath);
 
-  // create viewer
-  if (use_compositeviewer) {
-    osg::ArgumentParser arguments(p_argc, *p_argv);
-    cviewer = new osgViewer::CompositeViewer(arguments);
-  }
-  else {
-    oviewer = new osgViewer::Viewer;
-    oviewer->setCameraManipulator(NULL);
-  }
+  // parse arguments, for later
+  osg::ArgumentParser arguments(p_argc, *p_argv);
 
   // create windows
   if (winspec.empty()) {
@@ -289,7 +290,8 @@ void OSGViewer::init(bool waitswap)
       cerr << "Already specified a window " << winspec.front().name
            << " ignoring second one" << endl;
     }
-    windows[winspec.front().name] = myCreateWindow(winspec.front(), root);
+    windows[winspec.front().name] = myCreateWindow(winspec.front(), root,
+                                                   arguments);
     winspec.pop_front();
   }
 
@@ -319,7 +321,7 @@ void OSGViewer::init(bool waitswap)
 
       // init view
       ii->second.viewset[viewspec.front().name].init
-        (viewspec.front(), ii->second, cviewer, oviewer,
+        (viewspec.front(), ii->second, ii->second.cviewer,
          root, zorder++, bg_color, cb);
     }
     viewspec.pop_front();
@@ -351,24 +353,11 @@ void OSGViewer::init(bool waitswap)
     osg::StateSet* rootstate = root->getOrCreateStateSet();
     rootstate->setAttribute(fog, osg::StateAttribute::ON);
     rootstate->setMode(GL_FOG, osg::StateAttribute::ON);
-    //root->setStateSet(rootstate);
   }
 
-  // add it all to the viewer
+  // optimize the root tree
   osgUtil::Optimizer optimizer;
   optimizer.optimize(root);
-
-  if (use_compositeviewer) {
-    cviewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
-    cviewer->setReleaseContextAtEndOfFrameHint(true);
-    cviewer->realize();
-  }
-  else {
-    oviewer->setSceneData(root);
-    oviewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
-    oviewer->setReleaseContextAtEndOfFrameHint(true);
-    oviewer->realize();
-  }
 }
 
 void OSGViewer::addViewport(const ViewSpec& vp)
@@ -379,10 +368,16 @@ void OSGViewer::addViewport(const ViewSpec& vp)
 void OSGViewer::redraw(bool wait, bool reset_context)
 {
   if (use_compositeviewer) {
-    cviewer->frame();
+    for (auto &ws: windows) {
+      ws.second.cviewer->frame();
+    }
   }
   else {
-    oviewer->frame();
+    for (auto &ws: windows) {
+      for (auto &vs: ws.second.viewset) {
+        vs.second.sview->frame();
+      }
+    }
   }
 }
 
@@ -507,17 +502,27 @@ void OSGViewer::setBase(TimeTickType tick, const BaseObjectMotion& ownm,
   static osg::Matrixd projectorrot =
     osg::Matrixd::rotate(M_PI*0.5, osg::Vec3(1,0,0));
 
+  // RvP, add the eye rotation to this
   osg::Matrixd total = projectorrot * camrot * base;
   osg::Matrixd inverse = total.inverse(total);
 
   // set the master camera only; slave cameras will follow suit
   if (use_compositeviewer) {
-    osgViewer::ViewerBase::Cameras cams;
-    cviewer->getCameras(cams);
-    for (auto &cam: cams) { cam->setViewMatrix(inverse); }
+    for (auto &ws: windows) {
+      total = projectorrot * camrot * base;
+      osgViewer::ViewerBase::Cameras cams;
+      ws.second.cviewer->getCameras(cams);
+      for (auto &cam: cams) { cam->setViewMatrix(inverse); }
+    }
   }
   else {
-    oviewer->getCamera()->setViewMatrix(inverse);
+    for (auto &ws: windows) {
+      for (auto &vs: ws.second.viewset) {
+        total = projectorrot * vs.second.view_offset * camrot * base;
+        inverse = total.inverse(total);
+        vs.second.sview->getCamera()->setViewMatrix(inverse);
+      }
+    }
   }
 
   for (auto &obj : active_objects) {
