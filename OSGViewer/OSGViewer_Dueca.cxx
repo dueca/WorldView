@@ -69,8 +69,9 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
     { "add-window",
       new MemberCall<_ThisObject_,string>
       (&_ThisObject_::addWindow),
-      "Add a window to this Scene drawer. Do not forget to specify\n"
-      "window size and (optionally) position" },
+      "Add a window to this Scene drawer. Specify the window name. Do not\n"
+      "forget to specify window size and (optionally) position"
+    },
 
     { "window-size+pos",
       new MemberCall<_ThisObject_,vector<int> >
@@ -85,7 +86,7 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
     { "add-viewport",
        new MemberCall<_ThisObject_,string>
       (&_ThisObject_::addViewport),
-      "Add a viewport to this Scene drawer" },
+      "Add a viewport to this Scene drawer, specify a name" },
 
     { "viewport-window",
       new MemberCall<_ThisObject_,string>
@@ -145,10 +146,12 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
       "   \"BaseObjectMotion:Cessna 550\". If after that, no match is found\n"
       "   matching continues with parent classes of the given entry data type\n"
       "   then matching is done on the data class only.\n"
+      "   When creating static objects, the match is on the first argument of\n"
+      "   the create-static\n"
       " - <object name>: The object name will be used as name in OSG.\n"
       "   if the last character is a '#', the name will be suffixed with the\n"
       "   channel entry creation number. The name can also be split into a\n"
-      "   matching and naming section, separated by a ; e.g., \"B737:PHANH\"\n"
+      "   matching and naming section, separated by a :, e.g., \"B737:PHANH\"\n"
       "   then the matching will be done on the first part, and the objects'\n"
       "   name is determined by the latter part\n"
       " - <factory class>: The type of an added object, currently the\n"
