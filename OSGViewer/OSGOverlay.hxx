@@ -14,6 +14,8 @@
 #include "OSGObject.hxx"
 #include "comm-objects.h"
 
+// https://github.com/openscenegraph/OpenSceneGraph/blob/master/examples/osghud/osghud.cpp
+
 class OSGViewer;
 
 
