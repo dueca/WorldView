@@ -2,9 +2,9 @@
 /*      item            : OSGOverlay.cxx
         made by         : Rene' van Paassen
         date            : 100127
-	category        : body file 
-        description     : 
-	changes         : 100127 first version
+        category        : body file
+        description     :
+        changes         : 100127 first version
         language        : C++
 */
 
@@ -41,17 +41,26 @@ OSGOverlay::~OSGOverlay()
 }
 
 void OSGOverlay::init(const osg::ref_ptr<osg::Group>& root,
-		      OSGViewer* master)
+                      OSGViewer* master)
 {
   /* Specific camera, render last, no lighting */
   orthocam = new osg::Camera;
-  orthocam->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-  orthocam->setRenderOrder(osg::Camera::POST_RENDER);
-  orthocam->setClearMask(GL_DEPTH_BUFFER_BIT);
-  orthocam->setViewMatrix(osg::Matrix());
+
+  // ortho projection matrix
   orthocam->setProjectionMatrix(osg::Matrix::ortho2D(0, 1, 0, 1));
-  orthocam->getOrCreateStateSet()->setMode
-    (GL_LIGHTING, osg::StateAttribute::OFF);
+
+  orthocam->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+  orthocam->setViewMatrix(osg::Matrix::identity());
+
+  orthocam->setClearMask(GL_DEPTH_BUFFER_BIT);
+
+  // after main camera view
+  orthocam->setRenderOrder(osg::Camera::POST_RENDER);
+  orthocam->setAllowEventFocus(false);
+
+  osg::Geode* geode = new osg::Geode();
+  osg::StateSet* stateset1 = geode->getOrCreateStateSet();
+  stateset1->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 
   // Load an image, and convert to a texture
   osg::ref_ptr<osg::Image> image = osgDB::readImageFile(modelfile);
@@ -61,7 +70,7 @@ void OSGOverlay::init(const osg::ref_ptr<osg::Group>& root,
   }
   osg::ref_ptr<osg::Texture2D> ovltexture = new osg::Texture2D;
   ovltexture->setImage(image);
-  
+
   /* create a textured quad, add to geode */
   osg::Geometry *geom = osg::createTexturedQuadGeometry
     (osg::Vec3(0.0f, 0.0f, 0.0f),   // corner
@@ -74,17 +83,20 @@ void OSGOverlay::init(const osg::ref_ptr<osg::Group>& root,
   stateset->setTextureAttributeAndModes(0, ovltexture);
   stateset->setMode(GL_BLEND, osg::StateAttribute::ON);
   stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+  geode->addDrawable(geom);
 
   /* master camera? */
   osg::ref_ptr<osg::Camera> mastercam = master->getMainCamera
     (window_name, view_name);
-  
+
   /* set gc and vieport, and add as slave to the relevant viewer */
   orthocam->setGraphicsContext(mastercam->getGraphicsContext());
-  mastercam->getView()->addSlave(orthocam);
-    
+
   /* connect to the camera */
-  orthocam->addChild(geom);
+  orthocam->addChild(geode);
+  orthocam->setGraphicsContext(mastercam->getGraphicsContext());
+  orthocam->setViewport(mastercam->getViewport());
+  mastercam->getView()->addSlave(orthocam, false);
 }
 
 void OSGOverlay::connect(const GlobalId& master_id, const NameSet& cname,
@@ -106,8 +118,8 @@ void OSGOverlay::iterate(TimeTickType ts,
 #define OPT(A)
 #endif
 
-static SubContractor<OSGObjectTypeKey, OSGOverlay> 
-*OSGOverlay_maker = 
+static SubContractor<OSGObjectTypeKey, OSGOverlay>
+*OSGOverlay_maker =
   new SubContractor<OSGObjectTypeKey, OSGOverlay>
   ("overlay" OPT("Overlay over viewport (masks etc.)"));
 
@@ -131,7 +143,7 @@ static SubContractor<OSGObjectTypeKey, OSGOverlay>
 
 
    http://forum.openscenegraph.org/viewtopic.php?t=6831&view=previous
-   
+
 
    https://github.com/ThermalPixel/osgdemos/tree/master
 */

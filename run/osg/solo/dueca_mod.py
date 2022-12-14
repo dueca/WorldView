@@ -5,7 +5,7 @@
 
 ## in general, it is a good idea to clearly document your set up
 ## this is an excellent place.
-claim_graphics_thread = False
+claim_graphics_thread = True
 
 ## node set-up
 ecs_node = 0   # dutmms1, send order 3
@@ -56,7 +56,7 @@ else:
 
 # scale factor, for testing (integer!)
 f = 4
-    
+
 ## ---------------------------------------------------------------------
 ### the modules needed for dueca itself
 if this_node_id == ecs_node:
@@ -100,6 +100,7 @@ if this_node_id == ecs_node:
     mymods.append(dueca.Module(
         "world-view", "", graphics_priority).param(
             set_timing = display_timing,
+            claim_thread = claim_graphics_thread,
             check_timing = (10000, 20000),
             set_viewer =
             dueca.OSGViewer().param(
@@ -111,12 +112,12 @@ if this_node_id == ecs_node:
                     ('add-object-class-data',
                      ("static:sunlight", "sunlight", "static-light")),
                     ('add-object-class-coordinates',
-		     (0.8, 0.8, 0.8, 1,           # ambient
-		      0.8, 0.8, 0.8, 1,           # diffuse
-		      0.0, 0.0, 0.0, 1,           # specular
-		      0.4, 0.0, 1.0, 0,           # south??
-		      0, 0, 0,                    # direction not used
-		      0.2, 0, 0)),                  # no attenuation for sun
+                     (0.8, 0.8, 0.8, 1,           # ambient
+                      0.8, 0.8, 0.8, 1,           # diffuse
+                      0.0, 0.0, 0.0, 1,           # specular
+                      0.4, 0.0, 1.0, 0,           # south??
+                      0, 0, 0,                    # direction not used
+                      0.2, 0, 0)),                  # no attenuation for sun
                     ('static-object', ("static:sunlight",)),
                     ('add-window', 'main'),
                     ('window-size+pos', (1920//f, 1080//f, 0, 0)),
@@ -125,7 +126,7 @@ if this_node_id == ecs_node:
                     ('viewport-pos+size', (62 // f, 0, 1796 // f, 1080 // f)),
                     ('eye-offset', (0, 0, 0, 0, 0, 0)),
                     ('set-frustum',
-                     ( 1.0, 10000.0, 
+                     ( 1.0, 10000.0,
                        -1.17137785454, 0.724227595471,
                        -0.479274611399, 0.660621761658)),
                     ('add-window', 'left'),
@@ -170,13 +171,13 @@ if this_node_id == ecs_node:
     mymods.append(dueca.Module(
         "visual-test-drive", "", admin_priority).param(
             ('set-timing', sim_timing),
-	    ('check-timing', (10000, 20000)),
-	    ('add-motion', "myself"),
-	    ('position', (-20, 0, -3)),
-	    ('orientation', (0, 0, 0)),
-	    ('speed', (1.0, 0, 0)),
-	    ('dt', 0.1),
-	    ('rotation', (0, 0, 0.4))
+            ('check-timing', (10000, 20000)),
+            ('add-motion', "myself"),
+            ('position', (-20, 0, -3)),
+            ('orientation', (0, 0, 0)),
+            ('speed', (1.0, 0, 0)),
+            ('dt', 0.1),
+            ('rotation', (0, 0, 0.4))
             ))
 
     # add a filer in this node for replay support
