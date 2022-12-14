@@ -15,6 +15,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <dueca/DataClassRegistry.hxx>
+#define I_MOD
 #include <debug.h>
 
 SpecificationBase::SpecificationBase()
@@ -29,12 +30,12 @@ SpecificationBase::~SpecificationBase()
 }
 
 void SpecificationBase::addFactorySpec(const std::string& match,
-                                     const WorldDataSpec& spec)
+				       const WorldDataSpec& spec)
 {
   latest_classdata = match;
   auto fs = factoryspecs.find(match);
   if (fs != factoryspecs.end()) {
-    W_MOD("Replacing spec for " << match);
+    W_MOD("Replacing specification for " << match);
   }
   I_MOD("Adding specification for \"" << match << "\"");
   factoryspecs[match] = spec;

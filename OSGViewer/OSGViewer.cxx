@@ -22,6 +22,8 @@
 #define W_MOD
 #define E_MOD
 #include <debug.h>
+#define DEBPRINTLEVEL 2
+#include <debprint.h>
 
 template<class T>
 inline T deg2rad(const T d)
@@ -51,15 +53,25 @@ void OSGViewer::ViewSet::init(const ViewSpec& spec,
 {
   cout << "Creating camera " << spec.name << endl;
   name = spec.name;
+  frustum_data = spec.frustum_data;
+  
+  // create this view
+  sview = new osgViewer::Viewer;
+  sview->setThreadingModel(osgViewer::Viewer::SingleThreaded);
+  sview->setReleaseContextAtEndOfFrameHint(true);
+  sview->setSceneData(root);
+  sview->setCameraManipulator(NULL);
+  
+  // create a camera for the view
+  camera = sview->getCamera(); // new osg::Camera;
 
-  camera = new osg::Camera;
   camera->setGraphicsContext(ws.gc);
   camera->setClearColor
     (osg::Vec4f(bg_color[0],bg_color[1],bg_color[2],
                 bg_color.size() == 4 ? bg_color[3] : 1.0f));
-  double aspect;
 
   // set up view. If no data given, take full window size
+  aspect = 1.0f;
   if (spec.portcoords.size() == 4) {
     camera->setViewport
       (new osg::Viewport
@@ -74,35 +86,16 @@ void OSGViewer::ViewSet::init(const ViewSpec& spec,
     aspect = double(ws.traits->height)/double(ws.traits->width);
   }
 
-  // set up the projection
-  if (spec.frustum_data.size() == 3) {
-    camera->setProjectionMatrixAsPerspective
-      (spec.frustum_data[2], aspect,
-       spec.frustum_data[0], spec.frustum_data[1]);
-  }
-  else if (spec.frustum_data.size() == 6) {
-    camera->setProjectionMatrixAsFrustum
-      (spec.frustum_data[2], spec.frustum_data[3],
-       spec.frustum_data[4], spec.frustum_data[5],
-       spec.frustum_data[0], spec.frustum_data[1]);
-  }
-
+  setProjection();
+  
   // add any callback
   if (cb) camera->setPostDrawCallback(cb);
-
-  // create this view
-  sview = new osgViewer::Viewer;
 
   // if applicable, add to the composite viewer
   if (cviewer) {
     cviewer->addView(sview);
   }
 
-  sview->setSceneData(root);
-  sview->setCameraManipulator(NULL);
-
-  // connect to the viewer as slave
-  sview->addSlave(camera);
 
   // set the view offset (position, angle) initial, and also for
   // composite view slaving
@@ -128,7 +121,44 @@ void OSGViewer::ViewSet::init(const ViewSpec& spec,
     cout << "Looking for overlay " << spec.overlay << endl;
     // not implemented
   }
+  //sview->addSlave(camera);
+  sview->realize();
+}
 
+std::ostream& operator << (std::ostream& os, const osg::Matrixd& m)
+{
+  os <<   '[' << m(0,0) << "," << m(0,1) << "," << m(0,2) << "," << m(0,3)
+     << "\n " << m(1,0) << "," << m(1,1) << "," << m(1,2) << "," << m(1,3)
+     << "\n " << m(2,0) << "," << m(2,1) << "," << m(2,2) << "," << m(2,3)
+     << "\n " << m(3,0) << "," << m(3,1) << "," << m(3,2) << "," << m(3,3)
+     << "]";
+  return os;
+}
+
+void OSGViewer::ViewSet::setProjection()
+{
+  DEB("default projection " << camera->getProjectionMatrix());
+  
+  // set up the projection
+  if (frustum_data.size() == 3) {
+    camera->setProjectionMatrixAsPerspective
+      (frustum_data[2], aspect,
+       frustum_data[0], frustum_data[1]);
+  }
+  else if (frustum_data.size() == 6) {
+    osg::Matrixd f;
+    f.makeFrustum(frustum_data[2], frustum_data[3],
+		  frustum_data[4], frustum_data[5],
+		  frustum_data[0], frustum_data[1]);
+    camera->setProjectionMatrix(f);
+    
+    // left, right, bottom, top, near, far
+    //camera->setProjectionMatrixAsFrustum
+    //  (frustum_data[2], frustum_data[3],
+    //   frustum_data[4], frustum_data[5],
+    //   frustum_data[0], frustum_data[1]);
+  }
+  DEB("new projection " << camera->getProjectionMatrix());
 }
 
 OSGViewer::OSGViewer() :
@@ -520,7 +550,10 @@ void OSGViewer::setBase(TimeTickType tick, const BaseObjectMotion& ownm,
       for (auto &vs: ws.second.viewset) {
         total = projectorrot * vs.second.view_offset * camrot * base;
         inverse = total.inverse(total);
+	// vs.second.setProjection();
         vs.second.sview->getCamera()->setViewMatrix(inverse);
+	//DEB("new projection " <<
+	//    vs.second.sview->getCamera()->getProjectionMatrix());
       }
     }
   }
@@ -635,7 +668,8 @@ OSGViewer::getMainCamera(const std::string& wname,
   return view->second.camera;
 }
 
-void OSGViewer::setDrawCallback(const string& view_spec_name, osg::Camera::Camera::DrawCallback *cb)
+void OSGViewer::setDrawCallback(const string& view_spec_name,
+				osg::Camera::Camera::DrawCallback *cb)
 {
   draw_callbacks[view_spec_name] = cb;
 }

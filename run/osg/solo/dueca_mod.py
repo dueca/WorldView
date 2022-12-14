@@ -54,6 +54,9 @@ if claim_graphics_thread:
 else:
     graphics_priority = admin_priority
 
+# scale factor, for testing (integer!)
+f = 4
+    
 ## ---------------------------------------------------------------------
 ### the modules needed for dueca itself
 if this_node_id == ecs_node:
@@ -108,23 +111,60 @@ if this_node_id == ecs_node:
                     ('add-object-class-data',
                      ("static:sunlight", "sunlight", "static-light")),
                     ('add-object-class-coordinates',
-		     (0.8, 0.8, 0.8, 1,        # ambient
-		      0.8, 0.8, 0.8, 1,        # diffuse
+		     (0.8, 0.8, 0.8, 1,           # ambient
+		      0.8, 0.8, 0.8, 1,           # diffuse
 		      0.0, 0.0, 0.0, 1,           # specular
 		      0.4, 0.0, 1.0, 0,           # south??
 		      0, 0, 0,                    # direction not used
 		      0.2, 0, 0)),                  # no attenuation for sun
                     ('static-object', ("static:sunlight",)),
                     ('add-window', 'main'),
-                    ('window-size+pos', (600, 200)),
-                    ('add-viewport', 'port1'),
+                    ('window-size+pos', (1920//f, 1080//f, 0, 0)),
+                    ('add-viewport', 'portfront'),
                     ('viewport-window', 'main'),
-                    ('viewport-pos+size', (0, 0, 300, 200)),
-                    ('eye-offset', (0, 0, 0, -10, 0, -40)),
-                    ('add-viewport', 'port2'),
-                    ('viewport-window', 'main'),
-                    ('viewport-pos+size', (300, 0, 300, 200)),
-                    ('eye-offset', (0, 0, 0, 0, 0, 0))).complete()
+                    ('viewport-pos+size', (62 // f, 0, 1796 // f, 1080 // f)),
+                    ('eye-offset', (0, 0, 0, 0, 0, 0)),
+                    ('set-frustum',
+                     ( 1.0, 10000.0, 
+                       -1.17137785454, 0.724227595471,
+                       -0.479274611399, 0.660621761658)),
+                    ('add-window', 'left'),
+                    ('window-size+pos', (1920//f, 1080//f, 0, 0)),
+                    ('add-viewport', 'portleft'),
+                    ('viewport-window', 'left'),
+                    ('viewport-pos+size', (121//f, 0, 1719//f, 1080//f)),
+                    ('eye-offset', (0, 0, 0, 0, 0, -82.362)),
+                    ('set-frustum', (
+                        1.0, 10000.0,
+                        -0.75011761385, 0.675155946186,
+                        -0.376500155079, 0.51895967321)),
+                    ('add-window', 'right'),
+                    ('window-size+pos', (1920//f, 1080//f, 0, 0)),
+                    ('add-viewport', 'portright'),
+                    ('viewport-window', 'right'),
+                    ('viewport-pos+size', (255//f, 0, 1345//f, 1080//f)),
+                    ('eye-offset', ( 0, 0, 0, 0, 0, 85.113)),
+                    ('set-frustum', (
+                        1.0, 10000,
+                        -1.21819795407, 0.588489166461,
+                        -0.60996297175, 0.840759771872)),
+
+                    # mask, first as class
+                    ('add-object-class-data',
+                     ('mask:left', 'mask-left', 'overlay',
+                      'hmilabmasklefttest.png', 'left', 'portleft')),
+                    ('add-object-class-data',
+                     ('mask:front', 'mask-front', 'overlay',
+                      'hmilabmaskfronttest.png', 'main', 'portfront')),
+                    ('add-object-class-data',
+                     ('mask:right', 'mask-right', 'overlay',
+                      'hmilabmaskrighttest.png', 'right', 'portright')),
+
+                    # now instantiate
+                    ('static-object', ("mask:left",)),
+                    ('static-object', ("mask:front",)),
+                    ('static-object', ("mask:right",)),
+                ).complete()
         ))
 
     mymods.append(dueca.Module(

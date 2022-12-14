@@ -29,6 +29,9 @@
 #include <osgViewer/Viewer>
 #include <osg/PositionAttitudeTransform>
 
+// useful
+// http://olmozavala.com/Custom/OpenGL/Tutorials/ProyectoHuracanOpenSceneGraph/Documentos/Documentos_Curso/OSGQSG_Martz.pdf
+//
 // Used the osgwindows example as inspiration
 
 /** This is a wrapper that can load and display OSG scenes,
@@ -70,6 +73,12 @@ private:
     /** Name, for debugging purposes. */
     std::string name;
 
+    /** Aspect ratio */
+    float aspect;
+
+    /** View spec */
+    std::vector<float> frustum_data;
+    
     /** The render window */
     osg::ref_ptr<osg::Camera> camera;
 
@@ -98,8 +107,8 @@ private:
               int zorder, const std::vector<double>& bg_color,
               osg::Camera::Camera::DrawCallback *cb = NULL);
 
-    /** create the camera and window. */
-    void complete();
+    /** reset projection data */
+    void setProjection();
   };
 
   /** Each render window needs a specification and possibly a set of

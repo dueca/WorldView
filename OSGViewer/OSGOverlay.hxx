@@ -57,7 +57,8 @@ public:
   void iterate(TimeTickType ts, const BaseObjectMotion& base, double late); 
 
   /** Initialise position */
-  virtual void init(osg::ref_ptr<osg::Group>& root, OSGViewer* master);
+  virtual void init(const osg::ref_ptr<osg::Group>& root,
+		    OSGViewer* master) override;
 };
 
 #endif

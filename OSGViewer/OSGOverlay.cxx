@@ -32,7 +32,7 @@ OSGOverlay::OSGOverlay(const WorldDataSpec &specification) :
   window_name = specification.filename.size() > 1 ?
     specification.filename[1] : std::string();
   view_name = specification.filename.size() > 2 ?
-    specification.filename[3] : std::string();
+    specification.filename[2] : std::string();
 }
 
 OSGOverlay::~OSGOverlay()
@@ -40,9 +40,9 @@ OSGOverlay::~OSGOverlay()
 
 }
 
-void OSGOverlay::init(osg::ref_ptr<osg::Group>& root, OSGViewer* master)
+void OSGOverlay::init(const osg::ref_ptr<osg::Group>& root,
+		      OSGViewer* master)
 {
-#if 1
   /* Specific camera, render last, no lighting */
   orthocam = new osg::Camera;
   orthocam->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
@@ -53,26 +53,26 @@ void OSGOverlay::init(osg::ref_ptr<osg::Group>& root, OSGViewer* master)
   orthocam->getOrCreateStateSet()->setMode
     (GL_LIGHTING, osg::StateAttribute::OFF);
 
-  /* create a textured quad, add to geode */
-  osg::Geometry *geom = osg::createTexturedQuadGeometry
-    (osg::Vec3(), osg::Vec3(1.0f, 0.0f, 0.0f), osg::Vec3(0.0f, 1.0f, 0.0f),
-     0.0f, 0.0f, 1.0f, 1.0f);
-  osg::Geode * quad = new osg::Geode;
-  quad->addDrawable(geom);
-
-  /* create and load a texture */
-  osg::Texture2D* ovltexture = new osg::Texture2D();
-  osg::Image* image = osgDB::readImageFile(modelfile);
+  // Load an image, and convert to a texture
+  osg::ref_ptr<osg::Image> image = osgDB::readImageFile(modelfile);
   if (!image) {
     E_MOD("Could not load image from " << modelfile);
     return;
   }
+  osg::ref_ptr<osg::Texture2D> ovltexture = new osg::Texture2D;
   ovltexture->setImage(image);
+  
+  /* create a textured quad, add to geode */
+  osg::Geometry *geom = osg::createTexturedQuadGeometry
+    (osg::Vec3(0.0f, 0.0f, 0.0f),   // corner
+     osg::Vec3(1.0f, 0.0f, 0.0f),   // width
+     osg::Vec3(0.0f, 1.0f, 0.0f),   // height
+     0.0f, 0.0f, 1.0f, 1.0f);       // tex coords
 
   /* attach the texture to the quad */
-  osg::StateSet *stateset = quad->getOrCreateStateSet();
-  stateset->setTextureAttributeAndModes
-    (0, ovltexture, osg::StateAttribute::ON);
+  osg::StateSet *stateset = geom->getOrCreateStateSet();
+  stateset->setTextureAttributeAndModes(0, ovltexture);
+  stateset->setMode(GL_BLEND, osg::StateAttribute::ON);
   stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
   /* master camera? */
@@ -84,9 +84,7 @@ void OSGOverlay::init(osg::ref_ptr<osg::Group>& root, OSGViewer* master)
   mastercam->getView()->addSlave(orthocam);
     
   /* connect to the camera */
-  orthocam->addChild(quad);
-
-#endif
+  orthocam->addChild(geom);
 }
 
 void OSGOverlay::connect(const GlobalId& master_id, const NameSet& cname,
