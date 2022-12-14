@@ -33,6 +33,8 @@
 // http://olmozavala.com/Custom/OpenGL/Tutorials/ProyectoHuracanOpenSceneGraph/Documentos/Documentos_Curso/OSGQSG_Martz.pdf
 //
 // Used the osgwindows example as inspiration
+struct MySwapCb;
+
 
 /** This is a wrapper that can load and display OSG scenes,
     optionally in multiple windows and viewports. It is inteded for
@@ -43,11 +45,11 @@ class OSGViewer: public WorldViewerBase
   // Advance definition, collection of data for a window.
   struct WindowSet;
 
-  // Advance definition, collection of data for a viewport
-  struct Private;
-
   /** Specification for the render windows. */
   std::list<WinSpec> winspec;
+
+  /** Swap callback, if applicable */
+  osg::ref_ptr<MySwapCb> swapcb;
 
   /** scene manager */
   osg::ref_ptr<osg::Group>  root;
@@ -78,7 +80,7 @@ private:
 
     /** View spec */
     std::vector<float> frustum_data;
-    
+
     /** The render window */
     osg::ref_ptr<osg::Camera> camera;
 

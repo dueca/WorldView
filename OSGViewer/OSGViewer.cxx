@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <cmath>
 #include <deque>
+#include <dueca/Condition.hxx>
 #define W_MOD
 #define E_MOD
 #include <debug.h>
@@ -54,14 +55,14 @@ void OSGViewer::ViewSet::init(const ViewSpec& spec,
   cout << "Creating camera " << spec.name << endl;
   name = spec.name;
   frustum_data = spec.frustum_data;
-  
+
   // create this view
   sview = new osgViewer::Viewer;
   sview->setThreadingModel(osgViewer::Viewer::SingleThreaded);
   sview->setReleaseContextAtEndOfFrameHint(true);
   sview->setSceneData(root);
   sview->setCameraManipulator(NULL);
-  
+
   // create a camera for the view
   camera = sview->getCamera(); // new osg::Camera;
 
@@ -87,7 +88,7 @@ void OSGViewer::ViewSet::init(const ViewSpec& spec,
   }
 
   setProjection();
-  
+
   // add any callback
   if (cb) camera->setPostDrawCallback(cb);
 
@@ -138,7 +139,7 @@ std::ostream& operator << (std::ostream& os, const osg::Matrixd& m)
 void OSGViewer::ViewSet::setProjection()
 {
   DEB("default projection " << camera->getProjectionMatrix());
-  
+
   // set up the projection
   if (frustum_data.size() == 3) {
     camera->setProjectionMatrixAsPerspective
@@ -151,7 +152,7 @@ void OSGViewer::ViewSet::setProjection()
 		  frustum_data[4], frustum_data[5],
 		  frustum_data[0], frustum_data[1]);
     camera->setProjectionMatrix(f);
-    
+
     // left, right, bottom, top, near, far
     //camera->setProjectionMatrixAsFrustum
     //  (frustum_data[2], frustum_data[3],
@@ -286,6 +287,44 @@ namespace dueca {
   extern int* p_argc;
   extern char*** p_argv;
 }
+struct MySwapCb: public osg::GraphicsContext::SwapCallback
+{
+  /** Block and resume */
+  Condition condition;
+
+  /** flag to know that there is someone waiting */
+  bool waiting;
+
+  MySwapCb() :
+    osg::GraphicsContext::SwapCallback(),
+    condition("osg swap"),
+    waiting(false)
+  {
+    //
+  }
+
+  /** Callback from the swap */
+  void swapBuffersImplementation(GraphicsContext* gc)
+  {
+    DEB("Swap callback");
+    //osg::GraphicsContext::SwapCallback::swapBuffersImplementation(gc);
+    condition.enterTest();
+    if (waiting) {
+      condition.signal();
+    }
+    condition.leaveTest();
+  }
+
+  void waitForSwap()
+  {
+    DEB("Swap wait");
+    condition.enterTest();
+    waiting = true;
+    condition.wait();
+    waiting = false;
+    condition.leaveTest();
+  }
+};
 
 void OSGViewer::init(bool waitswap)
 {
@@ -357,6 +396,12 @@ void OSGViewer::init(bool waitswap)
     viewspec.pop_front();
   }
 
+  // imperfect, but set swap cb on first window gc
+  if (waitswap) {
+    swapcb = new MySwapCb;
+    windows.begin()->second.gc->setSwapCallback(swapcb);
+  }
+
   // if applicable, initialize static objects and dynamic objects
   for (auto &ao: active_objects) { ao.second->init(root, this); }
   for (auto &so: static_objects) { so->init(root, this); }
@@ -388,6 +433,8 @@ void OSGViewer::init(bool waitswap)
   // optimize the root tree
   osgUtil::Optimizer optimizer;
   optimizer.optimize(root);
+
+  
 }
 
 void OSGViewer::addViewport(const ViewSpec& vp)
@@ -411,31 +458,9 @@ void OSGViewer::redraw(bool wait, bool reset_context)
   }
 }
 
-struct MySwapCb: public osg::GraphicsContext::SwapCallback
-{
-  void swapBuffersImplementation(GraphicsContext* gc)
-  {
-    gc->swapBuffersImplementation();
-  }
-};
-
 void OSGViewer::waitSwap()
 {
-#if 0
-  WindowsMap::const_iterator ii = windows.begin();
-  if (ii == windows.end()) {
-    // strange, no windows to swap
-    return;
-  }
-
-  // wait for vsync and swap the first buffer
-  ii->second.window->swapBuffers(true); ii++;
-
-  // now quickly do the others, let's hope we are real-time enough
-  for ( ; ii != windows.end(); ii++) {
-    ii->second.window->swapBuffers(false);
-  }
-#endif
+  //if (swapcb) swapcb->waitForSwap();
 }
 
 template <typename T>
