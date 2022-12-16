@@ -207,11 +207,6 @@ void OSGCenteredLight::iterate(TimeTickType ts,
   }
 }
 
-void OSGCenteredLight::init(osg::ref_ptr<osg::Group>& root)
-{
-  //
-}
-
 OSGStaticLight::OSGStaticLight(const WorldDataSpec& sp) :
   OSGLight(sp)
 {

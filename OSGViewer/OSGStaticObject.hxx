@@ -35,7 +35,8 @@ public:
   ~OSGStaticObject();
 
   /** Initialise position */
-  virtual void init(const osg::ref_ptr<osg::Group>& root, OSGViewer* master);
+  virtual void init(const osg::ref_ptr<osg::Group>& root,
+		    OSGViewer* master) override;
   
   /** Connect to a channel entry 
 
@@ -43,11 +44,12 @@ public:
       @param cname     Channel with object data
       @param entry_id  Entry in the channel */
   void connect(const GlobalId& master_id, const NameSet& cname,
-                       entryid_type entry_id,
-                       Channel::EntryTimeAspect time_aspect);
+	       entryid_type entry_id,
+	       Channel::EntryTimeAspect time_aspect) override;
 
   /** Play, update, recalculate, etc. */
-  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late); 
+  void iterate(TimeTickType ts, const BaseObjectMotion& base,
+	       double late) override; 
 };
 
 #endif

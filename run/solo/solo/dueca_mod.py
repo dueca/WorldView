@@ -72,26 +72,13 @@ if this_node_id == ecs_node:
     if no_of_nodes > 1 and not classic_ip:
         DUECA_mods.append(dueca.Module("net-view", "", admin_priority))
 
-    # remove the quotes to enable DUSIME initial condition recording and
-    # setting, and simulation recording and replay
-    '''
-    for e in ("PHLAB",):
-        DUECA_mods.append(
-            dueca.Module("initials-inventory", e, admin_priority).param(
-                reference_file=f"initials-{e}.toml",
-                store_file=f"initials-{e}-%Y%m%d_%H%M.toml"))
-        DUECA_mods.append(
-            dueca.Module("replay-master", e, admin_priority).param(
-                reference_files=f"recordings-{e}.ddff",
-                store_files=f"recordings-{e}-%Y%m%d_%H%M%S.ddff"))
-    '''
-
     # create the DUECA entity with that list
     DUECA_entity = dueca.Entity("dueca", DUECA_mods)
 
 ## ---------------------------------------------------------------------
 # modules for your project (example)
 mymods = []
+drivemods = []
 
 if this_node_id == ecs_node:
     mymods.append(dueca.Module(
@@ -111,56 +98,56 @@ if this_node_id == ecs_node:
                 ## one viewport for the front window
                 ('add-viewport', "front"),
                 ('viewport-window', "front"),
-                ('viewport-pos+size', (int(62/f), 0, int(1796/f), int(1080/f)),
+                ('viewport-pos+size', (int(62/f), 0, int(1796/f), int(1080/f))),
                 ('set-frustum',
                  ( 1.0, 10000, 
                    -1.17137785454, 0.724227595471,
                    -0.479274611399, 0.660621761658)),
                 ('eye-offset', ( 0, 0, 0, 0, 0, 0)),
-                 ('viewport-overlay', "HMILabOverlays/MaskFrontSharp"),
+                ('viewport-overlay', "HMILabOverlays/MaskFrontSharp"),
 
                  ## window with side views
-                 ('add-window', "sides"),
-                 ('window-size+pos', (
-                     int(3840/f), int(1080/f), 0, 0)),
-                 
-                 ('add-viewport', "left side"),
-                 ('viewport-window', "sides"),
-                 ('viewport-pos+size', (
-                     int(121/f), 0, int(1719/f), int(1080/f))),
-                 ('eye-offset', ( 0, 0, 0, 0, 0, -82.362)),
-                 ('set-frustum', (
-                     1.0, 10000,
-                     -0.75011761385, 0.675155946186,
-                     -0.376500155079, 0.51895967321)),
-                 ('viewport-overlay', "HMILabOverlays/MaskLeftSideSharp"),
-                 
-                 ('add-viewport', "right side"),
-                 ('viewport-window', "sides"),
-                 ('viewport-pos+size', (
-                     int(2175/f), 0, int(1345/f), int(1080/f))),
-                 ('eye-offset', ( 0, 0, 0, 0, 0, 85.113)),
-                 ('set-frustum', (
-                     1.0, 10000,
-                     -1.21819795407, 0.588489166461,
-                     -0.60996297175, 0.840759771872)),
-                 ('viewport-overlay', "HMILabOverlays/MaskRightSideSharp"),
-	
-                 ('add-resource-location', ( ".", "FileSystem", "General")),
-                 ('load-scene', ( "./sample2.scene", "General")),
-
-                 ('add-object-class-data',
-                  ( "ObjectMotion", "compatible #", "OgreObjectCompatible")),
-                 ('add-object-class', ( "houseX", "Barrel.mesh")),
-                 ('add-object-class', ( "head", "ogrehead.mesh")),
-                 ('add-object-class-data',
-                  ( "manualcreate", "happy", "OgreObjectCarried",
-                    "General/Barrel.mesh")),
-                 ('add-object-class-coordinates', (
-                     10.0, 0.0, 0.0, 0.0, 0.0, 0.0)),
-                 ('create-static', ( "manualcreate", "happy")),
-                 #('initial-camera', ( 0, 0, -30, 0, 0, 0))
-            ))
+                ('add-window', "sides"),
+                ('window-size+pos', (
+                    int(3840/f), int(1080/f), 0, 0)),
+                
+                ('add-viewport', "left side"),
+                ('viewport-window', "sides"),
+                ('viewport-pos+size', (
+                    int(121/f), 0, int(1719/f), int(1080/f))),
+                ('eye-offset', ( 0, 0, 0, 0, 0, -82.362)),
+                ('set-frustum', (
+                    1.0, 10000,
+                    -0.75011761385, 0.675155946186,
+                    -0.376500155079, 0.51895967321)),
+                ('viewport-overlay', "HMILabOverlays/MaskLeftSideSharp"),
+                
+                ('add-viewport', "right side"),
+                ('viewport-window', "sides"),
+                ('viewport-pos+size', (
+                    int(2175/f), 0, int(1345/f), int(1080/f))),
+                ('eye-offset', ( 0, 0, 0, 0, 0, 85.113)),
+                ('set-frustum', (
+                    1.0, 10000,
+                    -1.21819795407, 0.588489166461,
+                    -0.60996297175, 0.840759771872)),
+                ('viewport-overlay', "HMILabOverlays/MaskRightSideSharp"),
+	        
+                ('add-resource-location', ( ".", "FileSystem", "General")),
+                ('load-scene', ( "./sample2.scene", "General")),
+                
+                ('add-object-class-data',
+                 ( "ObjectMotion", "compatible #", "OgreObjectCompatible")),
+                ('add-object-class', ( "houseX", "Barrel.mesh")),
+                ('add-object-class', ( "head", "ogrehead.mesh")),
+                ('add-object-class-data',
+                 ( "manualcreate", "happy", "OgreObjectCarried",
+                   "General/Barrel.mesh")),
+                ('add-object-class-coordinates', (
+                    10.0, 0.0, 0.0, 0.0, 0.0, 0.0)),
+                ('create-static', ( "manualcreate", "happy")),
+            ).complete(),
+            initial_camera = ( 0, 0, -30, 0, 0, 0)
         ))
 
     mymods.append(dueca.Module(
@@ -168,7 +155,7 @@ if this_node_id == ecs_node:
             ('set-timing', sim_timing),
 	    ('check-timing', (10000, 20000)),
 	    ('add-motion', "myself"),
-	    ('position', (-20, 0, -3)),
+	    ('position', (-80, 0, -3)),
 	    ('orientation', (0, 0, 0)),
 	    ('speed', (1.0, 0, 0)),
 	    ('dt', 0.1),
@@ -188,5 +175,8 @@ if this_node_id == ecs_node:
     # filer = dueca.ReplayFiler("PLHLAB")
 
 # then combine in an entity (one "copy" per node)
+if drivemods:
+    driveentity = dueca.Entity("drive", drivemods)
+    
 if mymods:
-    myentity = dueca.Entity("PHLAB", mymods)
+    myentity = dueca.Entity("ogre", mymods)

@@ -100,7 +100,7 @@ public:
       @param entry_id  Entry in the channel */
   virtual void connect(const GlobalId& master_id, const NameSet& cname,
                        entryid_type entry_id,
-                       Channel::EntryTimeAspect time_aspect);
+                       Channel::EntryTimeAspect time_aspect) override;
 
   /** Play, update, recalculate, etc.
 
@@ -112,7 +112,8 @@ public:
                        const BaseObjectMotion& base, double late);
 
   /** Initialise the light */
-  virtual void init(const osg::ref_ptr<osg::Group>& root, OSGViewer* master);
+  virtual void init(const osg::ref_ptr<osg::Group>& root,
+		    OSGViewer* master) override;
 };
 
 
@@ -139,7 +140,7 @@ public:
       @param entry_id  Entry in the channel */
   void connect(const GlobalId& master_id, const NameSet& cname,
                        entryid_type entry_id,
-                       Channel::EntryTimeAspect time_aspect);
+                       Channel::EntryTimeAspect time_aspect) final;
 
   /** Play, update, recalculate, etc.
 
@@ -148,10 +149,7 @@ public:
       @param late      Time elapsed since ts start tick
    */
    void iterate(TimeTickType ts,
-                const BaseObjectMotion& base, double late);
-
-  /** Initialise the light */
-  void init(osg::ref_ptr<osg::Group>& root);
+                const BaseObjectMotion& base, double late) final;
 };
 
 
