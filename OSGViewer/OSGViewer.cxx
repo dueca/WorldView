@@ -287,42 +287,27 @@ namespace dueca {
   extern int* p_argc;
   extern char*** p_argv;
 }
+
 struct MySwapCb: public osg::GraphicsContext::SwapCallback
 {
-  /** Block and resume */
-  Condition condition;
-
-  /** flag to know that there is someone waiting */
-  bool waiting;
-
-  MySwapCb() :
-    osg::GraphicsContext::SwapCallback(),
-    condition("osg swap"),
-    waiting(false)
+  MySwapCb() : osg::GraphicsContext::SwapCallback()
   {
     //
   }
 
   /** Callback from the swap */
-  void swapBuffersImplementation(GraphicsContext* gc)
+  void swapBuffersImplementation(osg::GraphicsContext* gc) final
   {
-    DEB("Swap callback");
-    //osg::GraphicsContext::SwapCallback::swapBuffersImplementation(gc);
-    condition.enterTest();
-    if (waiting) {
-      condition.signal();
-    }
-    condition.leaveTest();
-  }
+    // DEB("Swap callback");
 
-  void waitForSwap()
-  {
-    DEB("Swap wait");
-    condition.enterTest();
-    waiting = true;
-    condition.wait();
-    waiting = false;
-    condition.leaveTest();
+    gc->swapBuffersImplementation();
+#if 0
+    unsigned int counter;
+    glXGetVideoSyncSGI(&counter);
+    glXWaitVideoSyncSGI(1, 0, &counter);
+#else
+    //glFinish();
+#endif
   }
 };
 
@@ -397,11 +382,14 @@ void OSGViewer::init(bool waitswap)
   }
 
   // imperfect, but set swap cb on first window gc
+  //#define OSG_DOES_NOT_WAIT_ON_X11_SWAP 
+#ifdef OSG_DOES_NOT_WAIT_ON_X11_SWAP
   if (waitswap) {
     swapcb = new MySwapCb;
     windows.begin()->second.gc->setSwapCallback(swapcb);
   }
-
+#endif
+ 
   // if applicable, initialize static objects and dynamic objects
   for (auto &ao: active_objects) { ao.second->init(root, this); }
   for (auto &so: static_objects) { so->init(root, this); }
