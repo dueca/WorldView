@@ -52,12 +52,6 @@ class OSGViewer: public WorldViewerBase
   /** Base context/window */
   osg::ref_ptr<osg::GraphicsContext> base_gc;
 
-  /** A single viewer, matching a single scene */
-  osg::ref_ptr<osgViewer::Viewer> oviewer;
-
-  /** A composite viewer, flexibility multiple scenes */
-  osg::ref_ptr<osgViewer::CompositeViewer> cviewer;
-
   /** counter dynamical creation */
   unsigned config_dynamic_created;
 
@@ -68,8 +62,6 @@ protected:
   /** Accept unknown/unconfigured objects */
   bool allow_unknown;
 private:
-
-
 
   /** This class can generate multiple views on the same world. A
       ViewSet encapsulates the stuff needed for a single view. */
@@ -90,10 +82,18 @@ private:
     /** Constructor */
     ViewSet();
 
-    /** Initialise */
+    /** Initialise a view
+
+        @param vs      Specification on viewport, frustum, eye etc.
+        @param window  Window in which the view goes.
+        @param cviewer If valid, composite viewer to attach to.
+        @param root    Root of the scene graph.
+        @param zorder  Draw order.
+        @param bg_color Background color.
+        @param cb      Optional callback.
+     */
     void init(const ViewSpec& vs, WindowSet& window,
               osg::ref_ptr<osgViewer::CompositeViewer> cviewer,
-              osg::ref_ptr<osgViewer::Viewer> viewer,
               osg::ref_ptr<osg::Group> root,
               int zorder, const std::vector<double>& bg_color,
               osg::Camera::Camera::DrawCallback *cb = NULL);
@@ -122,7 +122,7 @@ private:
     std::map<std::string,ViewSet> viewset;
 
     /** Constructor */
-    WindowSet() { }
+    WindowSet( ) {}
   };
 
   /** Map of windows */
@@ -150,7 +150,8 @@ private:
   ObjectListType post_draw;
 
   /** Helper */
-  WindowSet myCreateWindow(const WinSpec &ws, osg::ref_ptr<osg::Group> root);
+  WindowSet myCreateWindow(const WinSpec &ws, osg::ref_ptr<osg::Group> root,
+                           osg::ArgumentParser& arguments);
 
   /** List of specifications for the wiews, will be applied later */
   std::list<ViewSpec> viewspec;
@@ -163,10 +164,12 @@ private:
 
 public:
   /** Setting of global draw callback. */
-  void setDrawCallback(osg::Camera::Camera::DrawCallback *cb) {global_draw_callback=cb;}
+  void setDrawCallback(osg::Camera::Camera::DrawCallback *cb)
+  { global_draw_callback=cb; }
 
   /** Setting of viewspec-specific draw callback. */
-  void setDrawCallback(const string& view_spec_name, osg::Camera::Camera::DrawCallback *cb);
+  void setDrawCallback(const string& view_spec_name,
+                       osg::Camera::Camera::DrawCallback *cb);
 
   /** Set a view-specific draw callback. If the view is not specified,
       set the callback for all views. */

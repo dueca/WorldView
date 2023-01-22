@@ -15,9 +15,9 @@
 -->
 <machine xmlns="https://dueca.tudelft.nl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://dueca.tudelft.nl modules.xsd">
   <project>
-    <url>remote:///WorldView.git</url>
-    <module>WorldView</module>
+    <url>origin:///WorldView.git</url>
     <module>VisualTestDrive</module>
+    <module>WorldView</module>
     <module>ViewpointHack</module>
     <module>SpecificationBase</module>
     <module>PlibViewer</module>
