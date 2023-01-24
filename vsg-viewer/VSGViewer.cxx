@@ -12,6 +12,9 @@
 #include "VSGViewer.hxx"
 #include "WorldObjectBase.hxx"
 #include "AxisTransform.hxx"
+#include <vsgDB/FileUtils>
+#include <vsg/Fog>
+#include <vsgUtil/Optimizer>
 #include <boost/lexical_cast.hpp>
 #include <unistd.h>
 #include <cmath>
@@ -40,39 +43,50 @@ VSGViewer::ViewSet::ViewSet() :
 
 void VSGViewer::ViewSet::init(const ViewSpec& spec,
                               WindowSet& ws,
-                              vsg::ref_ptr<vsg::Viewer> viewer,
+                              vsg::ref_ptr<vsgViewer::CompositeViewer> cviewer,
+                              vsg::ref_ptr<vsgViewer::Viewer> viewer,
                               vsg::ref_ptr<vsg::Group> root,
                               int zorder,
-                              const std::vector<double>& bg_color)
+                              const std::vector<double>& bg_color,
+                              vsg::Camera::Camera::DrawCallback *cb)
 {
   cout << "Creating camera " << spec.name << endl;
-  name = spec.name;  
+  name = spec.name;
 
-  // aspect ratio
-  double aspect = double(spec.portcoords[3])/double(spec.portcoords[2]);
-  
-  vsg::ref_ptr<vsg::Perspective> perspective;
+  camera = new vsg::Camera;
+  camera->setGraphicsContext(ws.gc);
+  camera->setClearColor
+    (vsg::Vec4f(bg_color[0],bg_color[1],bg_color[2],
+                bg_color.size() == 4 ? bg_color[3] : 1.0f));
+  double aspect;
+
+  // set up view. If no data given, take full window size
+  if (spec.portcoords.size() == 4) {
+    camera->setViewport
+      (new vsg::Viewport
+       (spec.portcoords[0],spec.portcoords[1],
+        spec.portcoords[2],spec.portcoords[3]));
+    aspect = double(spec.portcoords[3]) / double(spec.portcoords[2]);
+  }
+  else {
+    camera->setViewport
+      (new vsg::Viewport
+       (0, 0, ws.traits->width, ws.traits->height));
+    aspect = double(ws.traits->height)/double(ws.traits->width);
+  }
+
+  // set up the projection
   if (spec.frustum_data.size() == 3) {
-    // from fov, aspect, near dist, far dist
-    perspective = vsg::Perspective::create
+    camera->setProjectionMatrixAsPerspective
       (spec.frustum_data[2], aspect,
        spec.frustum_data[0], spec.frustum_data[1]);
   }
   else if (spec.frustum_data.size() == 6) {
-    perspective = vsg::RelativeProjection::create
-      (vsg::perspective
-       (spec.frustum_data[2], spec.frustum_data[3],
-	spec.frustum_data[4], spec.frustum_data[5],
-	spec.frustum_data[0], spec.frustum_data[1]));
+    camera->setProjectionMatrixAsFrustum
+      (spec.frustum_data[2], spec.frustum_data[3],
+       spec.frustum_data[4], spec.frustum_data[5],
+       spec.frustum_data[0], spec.frustum_data[1]);
   }
-  
-  auto viewportstate = vsg::ViewportState::create
-    (spec.portcoords[0],spec.portcoords[1],
-     spec.portcoords[2],spec.portcoords[3]);
-  
-  camera = vsg::Camera::create(perspective, view_offset, viewportstate);
-
-  // set up the projection
 
   // camera->setComputeNearFarMode(vsg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
 
@@ -80,8 +94,18 @@ void VSGViewer::ViewSet::init(const ViewSpec& spec,
   //camera->setDrawBuffer(GL_BACK);
   //camera->setReadBuffer(GL_BACK);
 
-  auto commandgraph = vsg::createCommandGraphForView(window, camera, root);
-  
+  // add any callback
+  if (cb) camera->setPostDrawCallback(cb);
+
+  if (cviewer) {
+    sview = viewer = new vsgViewer::Viewer;
+    cviewer->addView(viewer);
+    viewer->setSceneData(root);
+    viewer->setCameraManipulator(NULL);
+  }
+
+  // connect to the viewer as slave
+  viewer->addSlave(camera);
 
   if (spec.eye_pos.size() == 3) {
     view_offset.makeTranslate(AxisTransform::vsgPos(spec.eye_pos));
@@ -110,12 +134,15 @@ VSGViewer::VSGViewer() :
   oviewer(NULL),
   cviewer(NULL),
   config_dynamic_created(0),
+  use_compositeviewer(false),
   allow_unknown(false),
   windows(),
   active_objects(),
   static_objects(),
   post_draw(),
   viewspec(),
+  global_draw_callback(NULL),
+  draw_callbacks(),
   resourcepath(),
   keep_pointer(false),
   bg_color(3, 0.0),
@@ -148,6 +175,7 @@ VSGViewer::myCreateWindow(const WinSpec &ws, vsg::ref_ptr<vsg::Group> root)
   // result, to be returned
   WindowSet res;
   res.name = ws.name;
+  res.traits = new vsg::GraphicsContext::Traits;
 
   // check windowing system
   vsg::GraphicsContext::WindowingSystemInterface* wsi =
@@ -224,15 +252,25 @@ namespace dueca {
 void VSGViewer::init(bool waitswap)
 {
   // create root
-  root = vsg::Group::create();
-  options = vsg::Options::create();
-  options->fileCache = vsg::getEnv("VSG_FILE_CACHE");
-  options->paths = vsg::getEnvPaths("VSG_FILE_PATH");
-  options->add(vsgXchange::all::create());
+  root = new vsg::Group();
+
+  // set/extend resource path
+  vsgDB::FilePathList filepath;
+  vsgDB::convertStringPathIntoFilePathList(resourcepath, filepath);
+  vsgDB::appendPlatformSpecificResourceFilePaths(filepath);
+  filepath.insert(filepath.begin(), vsgDB::getDataFilePathList().begin(),
+                  vsgDB::getDataFilePathList().end());
+  vsgDB::setDataFilePathList(filepath);
 
   // create viewer
-  oviewer = vsg::Viewer::create();
-  oviewer->setCameraManipulator(NULL);
+  if (use_compositeviewer) {
+    vsg::ArgumentParser arguments(p_argc, *p_argv);
+    cviewer = new vsgViewer::CompositeViewer(arguments);
+  }
+  else {
+    oviewer = new vsgViewer::Viewer;
+    oviewer->setCameraManipulator(NULL);
+  }
 
   // create windows
   if (winspec.empty()) {
@@ -270,6 +308,14 @@ void VSGViewer::init(bool waitswap)
     }
     else {
       ii->second.viewset[viewspec.front().name] = ViewSet();
+
+      // find specific callback or fall back on global callback (if any)
+      vsg::Camera::Camera::DrawCallback *cb = NULL;
+      map<string, vsg::Camera::Camera::DrawCallback *>::iterator cb_iter =
+        draw_callbacks.find(viewspec.front().name);
+      if(cb_iter != draw_callbacks.end()) {
+        cb = cb_iter->second;
+      } else { cb = global_draw_callback; }
 
       // init view
       ii->second.viewset[viewspec.front().name].init
@@ -312,10 +358,17 @@ void VSGViewer::init(bool waitswap)
   vsgUtil::Optimizer optimizer;
   optimizer.optimize(root);
 
-  oviewer->setSceneData(root);
-  oviewer->setThreadingModel(vsg::Viewer::SingleThreaded);
-  oviewer->setReleaseContextAtEndOfFrameHint(true);
-  oviewer->realize();
+  if (use_compositeviewer) {
+    cviewer->setThreadingModel(vsgViewer::Viewer::SingleThreaded);
+    cviewer->setReleaseContextAtEndOfFrameHint(true);
+    cviewer->realize();
+  }
+  else {
+    oviewer->setSceneData(root);
+    oviewer->setThreadingModel(vsgViewer::Viewer::SingleThreaded);
+    oviewer->setReleaseContextAtEndOfFrameHint(true);
+    oviewer->realize();
+  }
 }
 
 void VSGViewer::addViewport(const ViewSpec& vp)
@@ -325,8 +378,21 @@ void VSGViewer::addViewport(const ViewSpec& vp)
 
 void VSGViewer::redraw(bool wait, bool reset_context)
 {
-  oviewer->frame();
+  if (use_compositeviewer) {
+    cviewer->frame();
+  }
+  else {
+    oviewer->frame();
+  }
 }
+
+struct MySwapCb: public vsg::GraphicsContext::SwapCallback
+{
+  void swapBuffersImplementation(GraphicsContext* gc)
+  {
+    gc->swapBuffersImplementation();
+  }
+};
 
 void VSGViewer::waitSwap()
 {
@@ -445,7 +511,14 @@ void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion& ownm,
   vsg::Matrixd inverse = total.inverse(total);
 
   // set the master camera only; slave cameras will follow suit
-  oviewer->getCamera()->setViewMatrix(inverse);
+  if (use_compositeviewer) {
+    vsgViewer::ViewerBase::Cameras cams;
+    cviewer->getCameras(cams);
+    for (auto &cam: cams) { cam->setViewMatrix(inverse); }
+  }
+  else {
+    oviewer->getCamera()->setViewMatrix(inverse);
+  }
 
   for (auto &obj : active_objects) {
     obj.second->iterate(tick, ownm, late);
@@ -555,4 +628,53 @@ VSGViewer::getMainCamera(const std::string& wname,
     return NULL;
   }
   return view->second.camera;
+}
+
+void VSGViewer::setDrawCallback(const string& view_spec_name, vsg::Camera::Camera::DrawCallback *cb)
+{
+  draw_callbacks[view_spec_name] = cb;
+}
+
+void VSGViewer::installPostDrawCallback(vsg::Camera::Camera::DrawCallback *cb,
+                                        const std::string& viewname)
+{
+  if (viewname.size()) {
+    // when windows and views have already been created ...
+    if (windows.size()) {
+      for (auto w: windows) {
+        for (auto v: w.second.viewset) {
+          if (v.first == viewname) {
+            if (v.second.camera->getPostDrawCallback()) {
+              W_MOD("Window " << w.second.name << " view " << v.second.name <<
+                    " already has a post-draw callback, ignoring new one");
+            }
+            else {
+              v.second.camera->setPostDrawCallback(cb);
+            }
+          }
+        }
+      }
+    }
+    else {
+      draw_callbacks[viewname] = cb;
+    }
+  }
+  else {
+    if (windows.size()) {
+      for (auto w: windows) {
+        for (auto v: w.second.viewset) {
+          if (v.second.camera->getPostDrawCallback()) {
+              W_MOD("Window " << w.second.name << " view " << v.second.name <<
+                    " already has a post-draw callback, ignoring new one");
+          }
+          else {
+            v.second.camera->setPostDrawCallback(cb);
+          }
+        }
+      }
+    }
+    else {
+      global_draw_callback = cb;
+    }
+  }
 }
