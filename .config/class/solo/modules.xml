@@ -18,7 +18,6 @@
     <url>origin:///WorldView.git</url>
     <module>WorldView</module>
     <module>VisualTestDrive</module>
-    <module>WorldView</module>
     <module>ViewpointHack</module>
     <module>SpecificationBase</module>
     <module>PlibViewer</module>
