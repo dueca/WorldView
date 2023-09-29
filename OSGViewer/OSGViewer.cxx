@@ -26,11 +26,16 @@
 #define DEBPRINTLEVEL 2
 #include <debprint.h>
 
-template<class T>
-inline T deg2rad(const T d)
-{
-  return M_PI/180.0*d;
-}
+
+namespace {
+  template<class T>
+  inline T rad2deg(const T a)
+  { return 180.0/M_PI*a; }
+
+  template<class T>
+  inline T deg2rad(const T d)
+  { return M_PI/180.0*d; }
+};
 
 using namespace osg;
 using namespace std;
@@ -136,6 +141,7 @@ std::ostream& operator << (std::ostream& os, const osg::Matrixd& m)
   return os;
 }
 
+
 void OSGViewer::ViewSet::setProjection()
 {
   DEB("default projection " << camera->getProjectionMatrix());
@@ -143,7 +149,7 @@ void OSGViewer::ViewSet::setProjection()
   // set up the projection
   if (frustum_data.size() == 3) {
     camera->setProjectionMatrixAsPerspective
-      (frustum_data[2], aspect,
+      (rad2deg(frustum_data[2]), aspect,
        frustum_data[0], frustum_data[1]);
   }
   else if (frustum_data.size() == 6) {

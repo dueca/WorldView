@@ -119,6 +119,11 @@ if this_node_id == ecs_node:
                       0, 0, 0,                    # direction not used
                       0.2, 0, 0)),                  # no attenuation for sun
                     ('static-object', ("static:sunlight",)),
+                    ('add-object-class-data',
+                     ("centered:skydome", "skydome", "centered", "skydome.obj")),
+                    ('add-object-class-coordinates',
+                     (0.0, 0.0, 50.0)),
+                    ('static-object', ('centered:skydome', 'skydome')),
                     ('add-window', 'main'),
                     ('window-size+pos', (1920//f, 1080//f, 0, 0)),
                     ('add-viewport', 'portfront'),
