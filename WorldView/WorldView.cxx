@@ -1,15 +1,15 @@
 /* ------------------------------------------------------------------   */
 /*      item            : WorldView.cxx
         made by         : rvanpaassen
-	from template   : DuecaModuleTemplate.cxx
+        from template   : DuecaModuleTemplate.cxx
         template made by: Rene van Paassen
         date            : Fri May 15 15:33:50 2009
-	category        : body file
+        category        : body file
         description     :
-	changes         : Fri May 15 15:33:50 2009 first version
-	                  180902 RvP modernize to DUECA 2
-	template changes: 030401 RvP Added template creation comment
-	060512 RvP Modified token checking code
+        changes         : Fri May 15 15:33:50 2009 first version
+                          180902 RvP modernize to DUECA 2
+        template changes: 030401 RvP Added template creation comment
+        060512 RvP Modified token checking code
         language        : C++
 */
 
@@ -46,15 +46,15 @@ const ParameterTable* WorldView::getMyParameterTable()
     { "set-timing",
       new MemberCall<_ThisModule_,TimeSpec>
       ( &_ThisModule_::setTimeSpec ), set_timing_description },
-    
+
     { "check-timing",
       new MemberCall<_ThisModule_,vector<int> >
       ( &_ThisModule_::checkTiming ), check_timing_description },
-    
+
     /* You can extend this table with labels and MemberCall or
        VarProbe pointers to perform calls or insert values into your
        class objects. Please also add a description (c-style string).
-       
+
        Note that for efficiency, set_timing_description and
        check_timing_description are pointers to pre-defined strings,
        you can simply enter the descriptive strings in the table. */
@@ -65,25 +65,25 @@ const ParameterTable* WorldView::getMyParameterTable()
     { "restore-context",
       new VarProbe<_ThisModule_,bool>(&_ThisModule_::restore_context),
       "force a restore of the graphics context before drawing" },
-    
+
     { "predict-dt",
       new VarProbe<_ThisModule_,double> ( &_ThisModule_::t_predict ),
       "prediction time span for the data extrapolation" },
-    
+
     { "predict-dt-max",
       new VarProbe<_ThisModule_,double> ( &_ThisModule_::max_predict ),
       "maximum prediction to be attempted on old data" },
-    
+
     { "initial-camera" ,
       new MemberCall<_ThisModule_,vector<float> >
       ( &_ThisModule_::initialCamera ),
       "Set initial camera position and orientation" },
-    
+
     { "set-viewer",
       new MemberCall2Way<_ThisModule_,ScriptCreatable>
       ( &_ThisModule_::setViewer ),
       "add the toolkit-specific viewer to this module" },
-    
+
     { "set-window-events-writing",
       new MemberCall<_ThisModule_, vector<string> >
       ( &_ThisModule_::setWindowEventWriting ),
@@ -94,7 +94,7 @@ const ParameterTable* WorldView::getMyParameterTable()
       "\"keypress\", \"keyrelease\", \"buttonpress\", \"buttonrelease\",\n"
       " or \"motion\". If no event type argument is given, all events are\n"
       "generated" },
-    
+
     { "config-per-cycle",
       new VarProbe<_ThisModule_,int> ( &_ThisModule_::num_config_per_round ),
       "For online configuration, number of configuration commands per\n"
@@ -111,7 +111,7 @@ const ParameterTable* WorldView::getMyParameterTable()
       "Add one or more world info channels. If not used, only the default\n"
       "ObjectMotion://world channel is monitored, if used, and you need this\n"
       "channel, explicitly add it" },
-    
+
     /* The table is closed off with NULL pointers for the variable
        name and MemberCall/VarProbe object. The description is used to
        give an overall description of the module. */
@@ -119,7 +119,7 @@ const ParameterTable* WorldView::getMyParameterTable()
       "Out-of-the-window view presentation, possibly with multiple windows\n"
       "and views"}
   };
-  
+
   return parameter_table;
 }
 
@@ -152,8 +152,8 @@ WorldView::WorldView ( Entity* e, const char* part, const
   m_others(),
   no_explicit_entity_watch(true),
   r_config(getId(), NameSet(getEntity(), "WorldViewConfig", ""),
-	   "WorldViewConfig", entry_any, Channel::Events,
-	   Channel::ZeroOrMoreEntries, Channel::ReadAllData),
+           "WorldViewConfig", entry_any, Channel::Events,
+           Channel::ZeroOrMoreEntries, Channel::ReadAllData),
 
   // activity initialization
   cb1(this, &_ThisModule_::doCalculation ),
@@ -195,7 +195,7 @@ bool WorldView::complete()
     r_own.reset(new ChannelReadToken
                 (getId(), NameSet(getEntity(), "ObjectMotion", ""),
                  "BaseObjectMotion", 0, Channel::Continuous,
-                 Channel::OnlyOneEntry,	Channel::JumpToMatchTime, 0.2));
+                 Channel::OnlyOneEntry,         Channel::JumpToMatchTime, 0.2));
   }
 
   // default case
@@ -204,7 +204,7 @@ bool WorldView::complete()
       (boost::shared_ptr<ChannelWatcher>
        (new ChannelWatcher(NameSet("ObjectMotion://world"), true)));
   }
-  
+
   return true;
 }
 
@@ -249,13 +249,13 @@ bool WorldView::initialCamera ( const vector<float>& i )
     E_CNF ( "Need 3 or 6 parameters for initial cam pos" );
     return false;
   }
-  if (i.size() >= 3) 
+  if (i.size() >= 3)
     copy(i.begin(), i.begin() + 3, current_view.xyz.begin());
-  if (i.size() >= 6) 
+  if (i.size() >= 6)
     current_view.setquat(i[3], i[4], i[5]);
-  if (i.size() >= 9) 
+  if (i.size() >= 9)
     copy (i.begin() + 6, i.begin() + 9, current_view.uvw.begin());
-  if (i.size() == 12) 
+  if (i.size() == 12)
     copy (i.begin() + 9, i.begin() + 12, current_view.omega.begin());
   return true;
 }
@@ -281,7 +281,7 @@ bool WorldView::setViewer ( ScriptCreatable& obj, bool in )
   // under our noses:
   getMyEntity()->scheme_id.addReferred ( obj.scheme_id.getSCM() );
 #endif
-  
+
   rendersurface = viewer;
   return true;
 }
@@ -320,26 +320,26 @@ bool WorldView::setWindowEventWriting ( const vector<std::string>& s )
   else {
     efb.w_event.reset(new ChannelWriteToken
       ( getId(), NameSet(s[1].c_str(), s[2].c_str(), s[3].c_str()),
-	"WorldViewerEvent", s[0], Channel::Events));
+        "WorldViewerEvent", s[0], Channel::Events));
   }
 
   if ( s.size() > 4 ) {
     evmask = 0;
     for ( unsigned ii = 4; ii < s.size(); ii++ )
       {
-	static EventMapper evmap[7] =  {
-	  { KeyPressMask, "keypress" },
-	  { KeyReleaseMask, "keyrelease" },
-	  { ButtonPressMask, "buttonpress" },
-	  { ButtonReleaseMask, "buttonrelease" },
-	  { PointerMotionMask, "move" },
-	  { ButtonMotionMask, "drag" },
-	  { 0, "" }
-	};
-	EventMapper test = { 0, s[ii].c_str() };
-	EventMapper* found = find ( &evmap[0], &evmap[6], test );
-	if ( !found->event ) W_CNF ( "Cannot find event type " << s[ii] );
-	evmask |= found->event;
+        static EventMapper evmap[7] =  {
+          { KeyPressMask, "keypress" },
+          { KeyReleaseMask, "keyrelease" },
+          { ButtonPressMask, "buttonpress" },
+          { ButtonReleaseMask, "buttonrelease" },
+          { PointerMotionMask, "move" },
+          { ButtonMotionMask, "drag" },
+          { 0, "" }
+        };
+        EventMapper test = { 0, s[ii].c_str() };
+        EventMapper* found = find ( &evmap[0], &evmap[6], test );
+        if ( !found->event ) W_CNF ( "Cannot find event type " << s[ii] );
+        evmask |= found->event;
       }
     rendersurface->setEventMask ( s[0], evmask );
   }
@@ -379,7 +379,7 @@ void WorldView::startModule ( const TimeSpec &time )
   }
   else {
     do_calc.switchOn ( time );
-  } 
+  }
 }
 
 // stop the module
@@ -405,19 +405,19 @@ void WorldView::doCalculation(const TimeSpec& ts)
     rendersurface->init(claim_thread);
     do_init = false;
   }
-  
+
   do {
 
     // if other GL windows use this thread, the context might be clobbered
     if (!restore_context) {
       rendersurface->makeContextCurrent();
     }
-    
+
     // any configuration events?
     for ( int cc = num_config_per_round;
-	  cc-- && r_config.isValid() && r_config.getNumVisibleSets(); ) {
+          cc-- && r_config.isValid() && r_config.getNumVisibleSets(); ) {
       DataReader<WorldViewConfig,VirtualJoin> c(r_config);
-      
+
       // let the viewer process this
       rendersurface->adaptSceneGraph ( c.data() );
     }
@@ -440,9 +440,9 @@ void WorldView::doCalculation(const TimeSpec& ts)
         }
       }
     }
-    
+
     // if we claim a thread, wait for the swap
-    if ( claim_thread )	{
+    if ( claim_thread )         {
       do_calc.logBlockingWait();
       rendersurface->waitSwap();
       do_calc.logBlockingWaitOver();
@@ -452,19 +452,19 @@ void WorldView::doCalculation(const TimeSpec& ts)
     current_tick = SimTime::getTimeTick();
     int64_t frac = Ticker::single()->getUsecsSinceTick ( current_tick );
     double late = 0.0;
-    
+
     // read the viewpoint motion
-    try	{
+    try         {
       DataReader<BaseObjectMotion,MatchIntervalStartOrEarlier> r(*r_own);
       DataTimeSpec span(r.timeSpec().getValidityStart(), current_tick);
       late = span.getDtInSeconds() + frac * 1e-6 + t_predict;
       current_view = r.data();
       if ( late > 0.0 && max_predict > 0.0 ) {
-	current_view.extrapolate(min(late, max_predict));
+        current_view.extrapolate(min(late, max_predict));
       }
 
-      D_MOD( classname<< "tick=" << current_tick << " frac=" << frac 
-	     << " late:" << late);
+      D_MOD( classname<< "tick=" << current_tick << " frac=" << frac
+             << " late:" << late);
     }
     catch ( const NoDataAvailable& e ) {
       // expected, no data yet
@@ -472,7 +472,7 @@ void WorldView::doCalculation(const TimeSpec& ts)
     catch ( const exception& e ) {
       W_MOD ( classname<< ": caught exception " << e.what() );
     }
-    
+
     // put current viewpoint in place
     rendersurface->setBase(current_tick, current_view, late);
 
@@ -480,26 +480,26 @@ void WorldView::doCalculation(const TimeSpec& ts)
 
       // early return, don't redraw
       if (do_calc.getCheck() != NULL) {
-	do_calc.getCheck()->userReportsAnomaly();
+        do_calc.getCheck()->userReportsAnomaly();
       }
       return;
     }
-    
+
     // redraw the scene
     rendersurface->redraw(claim_thread);
 
     // now check if there are events on the surface, and send these
     for ( list<EventFeedback>::iterator ii = w_events.begin();
-	  ii != w_events.end(); ii++ ) {
+          ii != w_events.end(); ii++ ) {
       WorldViewerEvent ev;
       ev = rendersurface->getNextEvent ( ii->winname );
       while ( ev.type != WorldViewerEvent::WVNone &&
-	      ii->w_event->isValid() )
-	{
-	  DataWriter<WorldViewerEvent> w(*(ii->w_event), ts);
-	  w.data() = ev;
-	  ev = rendersurface->getNextEvent(ii->winname);
-	}
+              ii->w_event->isValid() )
+        {
+          DataWriter<WorldViewerEvent> w(*(ii->w_event), ts);
+          w.data() = ev;
+          ev = rendersurface->getNextEvent(ii->winname);
+        }
     }
   }
   while ( run_until >= SimTime::getTimeTick() );
@@ -521,4 +521,3 @@ bool WorldView::addWorldInformationChannel(const std::vector<std::string>& ch)
 // will check in with the scheme-interpreting code, and enable the
 // creation of modules of this type
 static TypeCreator<WorldView> a ( WorldView::getMyParameterTable() );
-

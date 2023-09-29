@@ -1,4 +1,4 @@
-# -*-bash-*-
+# -*-sh-*-
 # this file creates all links to files in the data directory needed for
 # running the application on a specific machine.
 
@@ -20,7 +20,10 @@ else
    ln -sf ../../../dueca_run.x .
 fi
 
+# some OSG models for testing
 MDLDIR=../../../../WorldView/icy-world
 ln -sf ${MDLDIR}/*.mtl .
 ln -sf ${MDLDIR}/*.obj .
 
+# run the link script in the hmi lab data dir; the -t is for test files
+../../../../WorldView/HMILabViewFiles/generate -t

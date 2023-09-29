@@ -49,13 +49,14 @@ public:
       @param entry_id  Entry in the channel */
   void connect(const GlobalId& master_id, const NameSet& cname,
                entryid_type entry_id,
-               Channel::EntryTimeAspect time_aspect);
+               Channel::EntryTimeAspect time_aspect) final;
   
   /** Overridden, to store a pointer to the root for later init. */
-  void init(const osg::ref_ptr<osg::Group>& root, OSGViewer* master);
+  void init(const osg::ref_ptr<osg::Group>& root, OSGViewer* master) final;
 
   /** Play, update, recalculate, etc. */
-  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late);
+  void iterate(TimeTickType ts, const BaseObjectMotion& base,
+	       double late) final;
 };
 
 #endif
