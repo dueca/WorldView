@@ -20,6 +20,6 @@ fi
 # run the link script in the hmi lab data dir; the -t is for test files
 ../../../../WorldView/HMILabViewFiles/generate -t
 
-# link .obj and .mtl files for the visual
-ln -sf ../../../../WorldView/icy-world/*.obj .
-ln -sf ../../../../WorldView/icy-world/*.mtl .
+# link the example stuff for ogre
+../../../../WorldView/OgreViewer/generate
+
