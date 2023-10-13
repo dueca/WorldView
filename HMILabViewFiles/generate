@@ -32,7 +32,7 @@ FILES=$(cd $BASEDIR && ls *.svg)
 for f in $FILES; do
     # real file
     of=$(basename $f .svg).png
-    inkscape --export-png=$of \
+    inkscape --export-type="png" \
 	     $MASKOPTS  $BASEDIR/$f
 done
 
@@ -54,10 +54,13 @@ done
 # right resp left part of left resp right blur file
 $CONVERT hmilabmaskfront-blur.png -crop 100x1080+0x0 \
         +repage png32:hmilabmaskfront-blurl.png
+
 $CONVERT hmilabmaskfront-blur.png -crop 100x1080+1696x0 \
         +repage png32:hmilabmaskfront-blurr.png
+
 $CONVERT hmilabmaskleft-blur.png -crop 100x1080+1619x0 \
         +repage png32:hmilabmaskleft-blurr.png
+
 $CONVERT hmilabmaskright-blur.png -crop 100x1080+0x0 \
         +repage png32:hmilabmaskright-blurl.png
 
@@ -67,11 +70,12 @@ $CONVERT -size 1858x1080 canvas:black -alpha off png32:hmilabmaskblack.png
 $CONVERT -size 1858x1080 canvas:black -alpha transparent png32:hmilabmaskempty.png
 
 # create test screens, with blue/red left and right sides?
-$CONVERT hmilabmaskleft2.png -channel rgba \
+$CONVERT hmilabmaskleft.png -channel rgba \
         -fill 'rgba(255,0,0,0.5)' -opaque black hmilabmasklefttest.png
-$CONVERT hmilabmaskright2.png -channel rgba \
+$CONVERT hmilabmaskright.png -channel rgba \
         -fill 'rgba(0,0,255,0.5)' -opaque black hmilabmaskrighttest.png
-$CONVERT hmilabmaskfront2.png -channel rgba \
+
+$CONVERT hmilabmaskfront.png -channel rgba \
         -region 100x1080+0+0 -fill 'rgba(0,0,255,0.5)' -opaque black \
         +region -fill 'rgba(255,0,0,0.5)' -opaque black \
         hmilabmaskfronttest.png

@@ -2,33 +2,34 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1345"
+   width="1262"
    height="1080"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.91 r13725"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    version="1.0"
    sodipodi:docname="hmilabmaskright.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="/data/repa/dapps/ae4-361/RepaTest/RepaTest/OgreScene/hmilabmaskleftside.png"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   viewBox="0 0 1262 1080"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 384 : 1"
-       inkscape:vp_y="0 : 1000 : 0"
-       inkscape:vp_z="1024 : 384 : 1"
-       inkscape:persp3d-origin="512 : 256 : 1"
+       inkscape:vp_x="0 : 414.4 : 1"
+       inkscape:vp_y="0 : 1066.6667 : 0"
+       inkscape:vp_z="1092.2666 : 414.4 : 1"
+       inkscape:persp3d-origin="546.13333 : 277.86667 : 1"
        id="perspective12" />
   </defs>
   <sodipodi:namedview
@@ -41,19 +42,20 @@
      objecttolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="9.6666664"
-     inkscape:cx="61.543034"
-     inkscape:cy="452.61084"
+     inkscape:zoom="0.51806864"
+     inkscape:cx="38.604923"
+     inkscape:cy="14.476846"
      inkscape:document-units="px"
      inkscape:current-layer="layer4"
      width="1024px"
      height="768px"
-     inkscape:window-width="1589"
+     inkscape:window-width="1858"
      inkscape:window-height="1016"
-     inkscape:window-x="0"
+     inkscape:window-x="62"
      inkscape:window-y="27"
      showgrid="true"
-     inkscape:window-maximized="0">
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="0">
     <inkscape:grid
        type="xygrid"
        id="grid3007"
@@ -62,8 +64,10 @@
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true"
-       spacingx="1px"
-       spacingy="1px" />
+       spacingx="1"
+       spacingy="1"
+       originx="0"
+       originy="0" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -73,27 +77,46 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      inkscape:groupmode="layer"
      id="layer4"
-     inkscape:label="mask">
+     inkscape:label="mask"
+     style="display:inline">
     <path
-       style="fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
-       d="M -5,1080 L 45,1080 L 46,615 L 42,-5 L -10,-5 L -5,1080 z"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.922284px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m -30.290782,1079.5723 42.728146,0.8013 L 15.488922,617.58313 20,0 -29.437271,-0.38963906 Z"
        id="themask"
        sodipodi:nodetypes="cccccc"
        inkscape:label="#path3744" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="top"
+     style="display:none">
+    <rect
+       style="fill:#00ff00;stroke-width:1.03474"
+       id="rect249"
+       width="1242"
+       height="50"
+       x="20"
+       y="0" />
+    <rect
+       style="fill:#00ff00;stroke-width:1.03474"
+       id="rect249-3"
+       width="1242"
+       height="50"
+       x="20"
+       y="1030" />
   </g>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,312)"
-     sodipodi:insensitive="true"
      style="display:none">
     <g
        inkscape:tile-y0="0"
@@ -103,7 +126,7 @@
        inkscape:tile-cy="30"
        inkscape:tile-cx="1773.5"
        id="g3282"
-       transform="matrix(1,0,0,-1,-1751,-564)">
+       transform="matrix(0.44444444,0,0,-1,-778.22222,-564)">
       <rect
          style="fill:#0000ff;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          id="rect3284"
