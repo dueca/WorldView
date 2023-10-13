@@ -2,33 +2,34 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1796"
-   height="1080"
+   width="1915.7333"
+   height="1152"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.91 r13725"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    version="1.0"
    sodipodi:docname="hmilabmaskfront2.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="/data/repa/dapps/ae4-361/RepaTest/RepaTest/OgreScene/hmilabmaskleftside.png"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   viewBox="0 0 1796 1080"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 384 : 1"
+       inkscape:vp_x="0 : 456 : 1"
        inkscape:vp_y="0 : 1000 : 0"
-       inkscape:vp_z="1024 : 384 : 1"
-       inkscape:persp3d-origin="512 : 256 : 1"
+       inkscape:vp_z="1024 : 456 : 1"
+       inkscape:persp3d-origin="512.00001 : 328 : 1"
        id="perspective12" />
   </defs>
   <sodipodi:namedview
@@ -42,20 +43,21 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.7088413"
-     inkscape:cx="1695.5716"
-     inkscape:cy="644.47989"
+     inkscape:cx="1695.3008"
+     inkscape:cy="644.58882"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
      width="1024px"
      height="768px"
-     inkscape:window-width="1589"
-     inkscape:window-height="1013"
-     inkscape:window-x="37"
-     inkscape:window-y="30"
+     inkscape:window-width="1858"
+     inkscape:window-height="1016"
+     inkscape:window-x="62"
+     inkscape:window-y="27"
      showgrid="true"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      showguides="true"
-     inkscape:guide-bbox="true">
+     inkscape:guide-bbox="true"
+     inkscape:pagecheckerboard="0">
     <inkscape:grid
        type="xygrid"
        id="grid3007"
@@ -64,10 +66,12 @@
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true"
-       spacingx="1px"
-       spacingy="1px" />
+       spacingx="1"
+       spacingy="1"
+       originx="0"
+       originy="0" />
     <sodipodi:guide
-       position="20,900"
+       position="20,900.00001"
        orientation="1,0"
        id="guide4181" />
     <sodipodi:guide
@@ -83,7 +87,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -93,13 +97,13 @@
      inkscape:label="mask">
     <path
        style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 1774.4077,1100 0,-470 3,-640 76,0 0,1120 -79,-10 z"
+       d="M 1774.4077,1100 V 630 l 3,-640 h 76 v 1120 z"
        id="path3177"
        sodipodi:nodetypes="cccccc"
        inkscape:connector-curvature="0" />
     <path
        style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m -95.80018,1080 125,40 0,-360 -15,-760 -70,0 -40,1080 z"
+       d="m -95.80018,1080 125,40 V 760 l -15,-760 h -70 z"
        id="themask"
        sodipodi:nodetypes="cccccc"
        inkscape:label="#path3179"
@@ -111,7 +115,7 @@
      id="layer1"
      transform="translate(0,312)"
      sodipodi:insensitive="true"
-     style="display:none">
+     style="display:inline">
     <g
        id="g3156"
        inkscape:tile-cx="1773.5"
