@@ -34,7 +34,7 @@ public:
   OSGObjectMoving(const WorldDataSpec& spec);
 
   /** Destructor */
-  ~OSGObjectMoving();
+  virtual ~OSGObjectMoving();
 
   /** Connect to a channel entry 
       @param master_id ID for opening a channel reader

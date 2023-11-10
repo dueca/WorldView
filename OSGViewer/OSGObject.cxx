@@ -30,7 +30,7 @@ OSGObject::OSGObject() :
 
 OSGObject::~OSGObject()
 {
-  
+
 }
 
 void OSGObject::init(const osg::ref_ptr<osg::Group>& root, OSGViewer* master)
