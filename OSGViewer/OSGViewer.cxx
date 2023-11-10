@@ -666,7 +666,7 @@ bool OSGViewer::createStatic(const std::vector<std::string>& name)
 
 void OSGViewer::removeControllable(const NameSet& cname, uint32_t creation_id)
 {
-  active_objects[std::make_pair(cname.name, creation_id)].reset();
+  active_objects.erase(std::make_pair(cname.name, creation_id));
 }
 
 
