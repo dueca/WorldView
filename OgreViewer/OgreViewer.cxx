@@ -777,7 +777,7 @@ bool OgreViewer::createStatic(const std::vector<std::string>& name)
 
 void OgreViewer::removeControllable(const NameSet& cname, uint32_t creation_id)
 {
-  active_objects[std::make_pair(cname.name, creation_id)].reset();
+  active_objects.erase(std::make_pair(cname.name, creation_id));
 }
 
 bool OgreViewer::adaptSceneGraph (const WorldViewConfig& adapt)
