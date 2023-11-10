@@ -41,7 +41,7 @@ public:
   OSGObjectCompatible(const WorldDataSpec& spec);
 
   /** Destructor */
-  ~OSGObjectCompatible();
+  ~OSGObjectCompatible() final;
 
   /** Connect to a channel entry 
       @param master_id ID for opening a channel reader
