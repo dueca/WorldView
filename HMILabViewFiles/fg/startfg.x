@@ -3,29 +3,59 @@
 # This nifty command gets the dir name we are running in
 DIRECTORY=${PWD##*/}
 
-if [ "$DIRECTORY" == "dutmms3_0" ]; then
-    CAMERA_CONFIG=hmi_front_cameras.xml
-    UDP_PORT=5501
-    RUN_DUECA=0
+# Default for all non-configured platforms
+CAMERA_CONFIG=test_camera.xml
+LOGLEVEL=bulk
+LOGCLASS=flight
+
+# check that the protocol is installed in flightgear
+if [ -n "${FG_ROOT}" ]; then
+    if [ ! -f ${FG_ROOT}/Protocol/duecavis.xml ]; then
+	echo "Please install duecavis.xml in your FG_ROOT ${FG_ROOT}/Protocol"
+	exit 1
+    fi
+elif [ -d /usr/share/flightgear ]; then
+    if [ ! -f /usr/share/flightgear/Protocol/duecavis.xml ]; then
+	echo "Please install duecavis.xml in /usr/share/flightgear/Protocol"
+	exit 1
+    fi
+elif  [ -d /usr/share/games/flightgear ]; then
+    if [ ! -f /usr/share/games/flightgear/Protocol/duecavis.xml ]; then
+	echo "Please install duecavis.xml in /usr/share/games/flightgear/Protocol"
+	exit 1
+    fi
+else
+    echo "Cannot find your flightgear root, please set FG_ROOT"
+    exit 1
 fi
 
-if [ "$DIRECTORY" == "dutmms3_1" ]; then
-    CAMERA_CONFIG=hmi_side_cameras.xml
-    UDP_PORT=5502
-    RUN_DUECA=1
+# On the lab, cameras/projectors all have different FOV/frustum and offset
+if [ "$DIRECTORY" == "dutmms14" ]; then
+    CAMERA_CONFIG=hmilab-camera-front.xml
+    LOGLEVEL=alert
 fi
+
+if [ "$DIRECTORY" == "dutmms15" ]; then
+    CAMERA_CONFIG=hmilab-camera-left.xml
+    LOGLEVEL=alert
+fi
+
+if [ "$DIRECTORY" == "dutmms16" ]; then
+    CAMERA_CONFIG=hmilab-camera-right.xml
+    LOGLEVEL=alert
+fi
+
+UDP_PORT=5501
 
 fgfs \
-    --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavisbinary \
+    --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavis \
     --config=${CAMERA_CONFIG} \
     --airport=EHAM \
     --fdm=external \
-    --httpd=8080 \
-    --telnet=5401 \
     --aircraft=ufo \
     --disable-real-weather-fetch \
     --enable-clouds3d \
-    --start-date-lat=2016:08:23:14:00:00 \
+    --start-date-lat=2024:08:23:14:00:00 \
     --prop:bool:/sim/menubar/visibility=false \
     --enable-splash-screen \
     --enable-terrasync \
@@ -36,7 +66,6 @@ fgfs \
     --enable-clock-freeze \
     --disable-sound \
     --disable-rembrandt \
-    --enable-enhanced-lighting \
     --disable-distance-attenuation \
     --fog-nicest \
     --enable-specular-highlight \
@@ -45,9 +74,11 @@ fgfs \
     --disable-mouse-pointer \
     --disable-save-on-exit \
     --disable-splash-screen  \
-    1>fgfs.normal 2>fgfs.error &
+    --log-level=$LOGLEVEL \
+    --log-class=$LOGCLASS \
+    --log-dir="." &
 
-../../../dueca_run.x
+./dueca_run.x
 
 killall fgfs
 

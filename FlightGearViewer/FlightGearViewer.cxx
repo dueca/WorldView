@@ -2,9 +2,9 @@
 /*      item            : FlightGearViewer.cxx
         made by         : Rene' van Paassen
         date            : 090616
-	category        : body file 
-        description     : 
-	changes         : 090616 first version
+	      category        : body file
+        description     :
+	      changes         : 090616 first version
         language        : C++
 */
 
@@ -13,12 +13,13 @@
 #include "FlightGearViewer.hxx"
 #include <unistd.h>
 #include <cstdio>
-#include <debug.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cstring>
+#include <algorithm>
 
+#define DUECA
 #ifdef DUECA
 #include <debug.h>
 #else
@@ -33,7 +34,7 @@ using namespace std;
 
 FlightGearViewer::FlightGearViewer() :
   sockfd(-1),
-  receiver("127.0.0.1"),    
+  receiver("127.0.0.1"),
   own_interface("0.0.0.0"),
   port(7100),
   dest_address(),
@@ -71,13 +72,13 @@ bool FlightGearViewer::complete()
   src_address.sin_family = AF_INET;
 
   // if an interface was selected, try to set this one
-  if (own_interface.size() && 
+  if (own_interface.size() &&
       inet_aton(own_interface.c_str(), &src_address.sin_addr) == 0) {
     E_MOD(classname << " source address invalid");
     return false;
 
     // and bind to the source address
-    if (bind(sockfd, reinterpret_cast<sockaddr*>(&src_address), 
+    if (bind(sockfd, reinterpret_cast<sockaddr*>(&src_address),
 	     sizeof(src_address) != 0)) {
       perror("Cannot bind to source");
       return false;
@@ -89,12 +90,12 @@ bool FlightGearViewer::complete()
   dest_address.sin_family = AF_INET;
 
   // destination must have been filled in
-  if (!receiver.size() || 
+  if (!receiver.size() ||
       inet_aton(receiver.c_str(), &dest_address.sin_addr) == 0) {
     E_MOD(classname << " invalid receiver address!");
     return false;
   }
-  
+
   // and port too
   if (port <= 0 || port > 0xffff) {
     E_MOD(classname << " invalid port");
@@ -132,11 +133,11 @@ bool FlightGearViewer::complete()
 
     // source address should be OK, can now safely bind
     if (own_interface.size()) {
-      assert(bind(mp_socket, reinterpret_cast<sockaddr*>(&src_address), 
+      assert(bind(mp_socket, reinterpret_cast<sockaddr*>(&src_address),
 		  sizeof(src_address)) == 0);
     }
   }
- 
+
   return true;
 }
 
@@ -149,31 +150,34 @@ bool FlightGearViewer::setLatLonPsi0(const vector<double>& vec)
   const double deg2rad = M_PI / 180.0;
   double psi_zero = vec.size() >= 3 ? vec[2] : 0.0;
   double h_zero = vec.size() == 4 ? vec[3] : 0.0;
-  axis = boost::shared_ptr<FGAxis>(new FGLocalAxis(vec[0]*deg2rad, 
-						   vec[1]*deg2rad, 
+  axis = boost::shared_ptr<FGAxis>(new FGLocalAxis(vec[0]*deg2rad,
+						   vec[1]*deg2rad,
 						   h_zero,
 						   psi_zero*deg2rad));
   return true;
 }
-  
+
 void FlightGearViewer::redraw(bool wait, bool save_context)
 {
   if (binary_packets) {
+
+    // send buffer
     char buffer[6*8+4];
     AmorphStore st(buffer, sizeof(buffer));
-    int magic = 0x44544543;
+
+    uint32_t magic = 0x44544543;
     packData(st, fg_command);
     packData(st, magic);
-    if (sendto(sockfd, buffer, sizeof(buffer), 0, 
-	       reinterpret_cast<sockaddr*>(&dest_address), 
+    if (sendto(sockfd, buffer, sizeof(buffer), 0,
+	       reinterpret_cast<sockaddr*>(&dest_address),
 	       sizeof(dest_address)) == -1) {
       perror("Sending to flightgear");
     }
   }
   else {
     char buffer[1000];
-    int nchar = snprintf(buffer, sizeof(buffer), 
-			 "%.9f,%.9f,%.9f,%.7f,%.7f,%.7f,%.1f,%.1f\n", 
+    int nchar = snprintf(buffer, sizeof(buffer),
+			 "%.9f,%.9f,%.9f,%.7f,%.7f,%.7f,%.1f,%.1f\n",
 			 fg_command.latlonalt_phithtpsi[0],
 			 fg_command.latlonalt_phithtpsi[1],
 			 fg_command.latlonalt_phithtpsi[2],
@@ -181,8 +185,8 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
 			 fg_command.latlonalt_phithtpsi[4],
 			 fg_command.latlonalt_phithtpsi[5],
 			 vis_boundary, vis_aloft);
-    if (sendto(sockfd, buffer, nchar, 0, 
-	       reinterpret_cast<sockaddr*>(&dest_address), 
+    if (sendto(sockfd, buffer, nchar, 0,
+	       reinterpret_cast<sockaddr*>(&dest_address),
 	       sizeof(dest_address)) == -1) {
       perror("Sending to flightgear");
     }
@@ -193,9 +197,9 @@ void FlightGearViewer::sendPositionReport()
 {
   // nothing if multiplayer not configured
   if (mp_socket == -1) return;
-  
-  if (sendto(mp_socket, encoder->getBuffer(), encoder->getBufferSize(), 0, 
-	     reinterpret_cast<sockaddr*>(&mp_address), 
+
+  if (sendto(mp_socket, encoder->getBuffer(), encoder->getBufferSize(), 0,
+	     reinterpret_cast<sockaddr*>(&mp_address),
 	     sizeof(mp_address)) == -1) {
     perror("Sending to multiplayer server");
   }
@@ -203,7 +207,7 @@ void FlightGearViewer::sendPositionReport()
 
 void FlightGearViewer::waitSwap()
 {
-  
+
 }
 
 void FlightGearViewer::setBase(TimeTickType tick, const BaseObjectMotion& base,
@@ -222,7 +226,7 @@ bool FlightGearViewer::createControllable
  const std::string& entry_label, Channel::EntryTimeAspect time_aspect)
 {
   creation_key_t keypair(cname.name, creation_id);
-  
+
   // check
   assert(active_objects.count(keypair) == 0);
 
@@ -231,14 +235,14 @@ bool FlightGearViewer::createControllable
   auto ii = flightgear_classes.find(key);
 
   FlightGearObject *op = NULL;
-  
+
   // if not found, now on data_class alone
   if (ii == flightgear_classes.end()) {
     ii = flightgear_classes.find(data_class);
   }
 
   if (ii != flightgear_classes.end()) {
-    
+
     op = new FlightGearObject(entry_label, ii->second.fgclass,
                               ii->second.livery, this);
     op->connect(master_id, cname, entry_id, time_aspect);
@@ -246,7 +250,7 @@ bool FlightGearViewer::createControllable
     active_objects[keypair] = bop;
     return true;
   }
-  
+
   return false;
 }
 
@@ -256,7 +260,7 @@ void FlightGearViewer::removeControllable(const NameSet& cname,
   active_objects.erase(std::make_pair(cname.name, creation_id));
 }
 
-FlightGearViewer::FGSpecs::FGSpecs(const std::string& fgclass, 
+FlightGearViewer::FGSpecs::FGSpecs(const std::string& fgclass,
 				   const std::string& livery) :
   fgclass(fgclass),
   livery(livery)
@@ -282,7 +286,7 @@ bool FlightGearViewer::modelTableEntry(const std::vector<std::string>& s)
     cerr << "Already have a translation for " << s[0] << endl;
     return false;
   }
-  
+
   // insert new mapping
   flightgear_classes[s[0]] = FGSpecs(s[1], s[2]);
 

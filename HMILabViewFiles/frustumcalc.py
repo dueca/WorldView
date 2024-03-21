@@ -5,15 +5,14 @@ Created on Wed Aug 10 17:12:41 2016
 @author: repa
 
 Calculates the frustum parameters for the HMI lab, based on a 2.2 m
-projection height, and approx 20 pixel overlap in the projections for 
+projection height, and approx 20 pixel overlap in the projections for
 gradual masking
 
-Parameters are significantly different from the old openoffice calc 
+Parameters are significantly different from the old openoffice calc
 calculator!
 
 with suggestions from http://geomalgorithms.com/
 """
-from __future__ import division
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -42,12 +41,12 @@ class Point(np.matrix):
             return super(Point, cls).__new__(cls, args)
         else:
             return super(Point, cls).__new__(cls, args[0])
-            
+
     def distance(self, other):
         if isinstance(other, Point):
             return np.linalg.norm(other - self)
         return other.distance(self)
-            
+
     def project(self):
         return Point(self)
 
@@ -58,7 +57,7 @@ class Line(object):
 
             Call by specifying either point0 and point1, or by
             specifying point0 and direction.
-        
+
             Parameters
             ----------
             point0: 3-element vector/iterable
@@ -78,15 +77,15 @@ class Line(object):
         if isinstance(other, Point):
             p_dist = np.linalg.norm(self.direction, other - self.orig)
             return Point(self.orig + self.direction*p_dist)
-        raise TypeError()            
+        raise TypeError()
 
     def parallel(self, other):
         global __eps
         if isinstance(other, Line):
-            return np.linalg.norm(np.cross(self.direction, 
+            return np.linalg.norm(np.cross(self.direction,
                                            other.direction)) < __eps
         raise TypeError()
-        
+
     def crossing(self, other):
         if isinstance(other, Line):
             # http://geomalgorithms.com/a07-_distance.html
@@ -98,7 +97,7 @@ class Line(object):
             return Segment(point0=self.orig+self.direction*s_self,
                            point1=other.orig+other.direction*s_other)
         raise TypeError()
-        
+
     def distance(self, other):
         if isinstance(other, Point):
             return np.linalg.norm(other - self.project(other))
@@ -111,27 +110,27 @@ class Line(object):
 class Segment(Line):
     def __init__(self, **kwargs):
         """ Create a limited-length line
-        
+
         Call by specifying the line's begin and end point"""
         super(Segment, self).__init__(**kwargs)
         self.length = np.linalg.norm(kwargs['point1']-kwargs['point0'])
-        
+
     def project(self, other):
         if isinstance(other, Point):
             p_dist = np.linalg.norm(self.direction, other - self.orig)
             if p_dist < 0.0 or p_dist > self.length:
                 return ValueError()
             return Point(self.orig + self.direction*p_dist)
-        raise TypeError()            
-                
+        raise TypeError()
+
     def distance(self, other):
-        if isinstance(other, Point):        
+        if isinstance(other, Point):
             try:
                 return np.linalg.norm(self.project(other) - other)
             except ValueError:
                 return min(
                     (np.linalg.norm(self.orig - other),
-                     np.linalg.norm(self.orig+self.length*self.direction 
+                     np.linalg.norm(self.orig+self.length*self.direction
                                     - other)))
 
 
@@ -144,7 +143,7 @@ class Cylinder(Line):
         pnt = super(Cylinder, self).project(other)
         u_vect = UnitVector(other-pnt)
         return Point(pnt + self.radius*u_vect)
-        
+
     def distance(self, other):
         return super(Cylinder, self).distance(other) - self.radius
 
@@ -159,8 +158,8 @@ class Cylinder(Line):
                 np.linalg.norm(np.cross(self.direction, other.direction))
             return (crossing.orig - other.direction*d_points,
                     crossing.orig + other.direction*d_points)
-            
-        
+
+
 class LimitedCylinder(Cylinder):
     def __init__(self, line, radius):
         super(LimitedCylinder, self).__init__(line, radius)
@@ -174,38 +173,38 @@ class Plane(np.matrix):
         try:
             # from point and normal vector
             normal = UnitVector(kwargs['normal'])
-            dist = np.inner(normal, kwargs['point0'])
+            dist = float(np.inner(normal, kwargs['point0']))
         except KeyError:
             # from three points, positive clockwise?
             normal = UnitVector(np.cross(
                 kwargs['point1'] - kwargs['point0'],
                 kwargs['point2'] - kwargs['point1']))
-            dist = np.inner(normal, kwargs['point0'])
-                                  
+            dist = float(np.inner(normal, kwargs['point0']))
+#        print([float(normal[0, 0]), float(normal[0, 1]), float(normal[0, 2]), -dist])
         return super(Plane, cls).__new__(
-            cls, [normal[0, 0], normal[0, 1], normal[0, 2], -dist])
+            cls, [float(normal[0, 0]), float(normal[0, 1]), float(normal[0, 2]), -dist])
 
     def distance(self, other):
         if isinstance(other, Point):
-            return np.inner(self, np.append(other, 
+            return np.inner(self, np.append(other,
                                             np.matrix(1.0), axis=1))[0, 0]
 
     def normal(self):
         return np.asarray(self[:, :3])
-        
+
     def intersect(self, other):
         if isinstance(other, Line):
             s = np.inner(self, np.append(other.orig,
                                          np.matrix(1.0), axis=1)) / \
-                np.inner(other.direction, self.normal())             
+                np.inner(other.direction, self.normal())
             return Point(other.orig - s*other.direction)
         elif isinstance(other, Plane):
             direction = np.cross(self.normal(), other.normal())
             line = Line(point0=self.project(Point(0, 0, 0)),
                         point1=self.project(Point(other.normal())))
-            return Line(point0=other.intersect(line), 
+            return Line(point0=other.intersect(line),
                         direction=direction)
-                        
+
     def project(self, other):
         if isinstance(other, Point):
             return Point(other - self.normal()*self.distance(other))
@@ -214,9 +213,9 @@ class Plane(np.matrix):
 
 
 def frustum_calc(p0, p1, p2, pv, f_dist):
-    """Calculate frustum parameters, from 3 point plane 
+    """Calculate frustum parameters, from 3 point plane
         (left btm, right btm, right top), view point and frustum distance"""
-        
+
     # create a plane for the projection and a left/bottom plane
     plane_p = Plane(point0=p0, point1=p1, point2=p2)
     plane_l = Plane(point0=p0, normal=p1-p0)
@@ -227,14 +226,20 @@ def frustum_calc(p0, p1, p2, pv, f_dist):
 
     # calculate position of viewpoint in frustum
     dist = plane_p.distance(pv)
+    frustum = (-plane_l.distance(pv)/dist*f_dist,
+                plane_r.distance(pv)/dist*f_dist,
+               -plane_b.distance(pv)/dist*f_dist,
+                plane_t.distance(pv)/dist*f_dist)
+    offset = -np.arctan2(plane_p.normal()[0, 0], -plane_p.normal()[0, 1]) * 180/np.pi
+
     print(-plane_l.distance(pv)/dist*f_dist,
           plane_r.distance(pv)/dist*f_dist,
           -plane_b.distance(pv)/dist*f_dist,
           plane_t.distance(pv)/dist*f_dist)
 
     print(-np.arctan2(plane_p.normal()[0, 0], -plane_p.normal()[0, 1]) * 180/np.pi)
+    return frustum, offset
 
-    
 # lab dimensions,  origin, left rear, left front, right front (meter)
 lab_width = 4.687
 lab_depth = 4.25
@@ -259,7 +264,7 @@ eye_right = Point((1.73+1.05, lab_depth-2.85, 1.85))
 # front screen, physical size
 # measure from concrete wall to intersection both canvas
 screen_fl = Point((0.59, lab_depth-0.11, proj_bottom))
-screen_fr = Point((lab_width-0.59, lab_depth-0.10, proj_bottom))
+screen_fr = Point((lab_width-0.59, lab_depth-0.11, proj_bottom))
 p_height = Point((0, 0, proj_height))
 
 # left screen, connects to front (screen_fl)

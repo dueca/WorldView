@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<PropertyList>
+	<sim>
+		<rendering>
+			<camera-group>
+				<window>
+					<name type="string">wide</name>
+					<host-name type="string"></host-name>
+					<display>0</display>
+					<screen>0</screen>
+					<width>640</width>
+					<height>480</height>
+					<fullscreen type="bool">false</fullscreen>
+				</window>
+
+				<camera>
+					<window>
+						<name>wide</name>
+					</window>
+					<viewport>
+						<x>10</x>
+						<y>0</y>
+						<width>620</width>
+						<height>400</height>
+					</viewport>
+					<frustum>
+						<left>-1.1713778</left>
+						<right>0.724227</right>
+						<bottom>-0.47927</bottom>
+						<top>0.6606</top>
+						<near>1.0</near>
+						<far>60000.0</far>
+					</frustum>
+					<view>
+						<heading-deg type="double">0</heading-deg>
+					</view>
+				</camera>
+
+				<gui>
+					<window>
+						<name type="string">wide</name>
+					</window>
+				</gui>
+
+			</camera-group>
+		</rendering>
+	</sim>
+</PropertyList>
