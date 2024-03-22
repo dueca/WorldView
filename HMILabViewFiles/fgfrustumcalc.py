@@ -71,7 +71,7 @@ def writexml(winname, vpx, vpw, fl, fr, fb, ft, vh):
     l.text = "60000"
 
     view = etree.SubElement(camera, 'view')
-    l = etree.SubElement(frustum, 'heading-deg')
+    l = etree.SubElement(view, 'heading-deg')
     l.set('type', "double")
     l.text = str(vh)
 
@@ -88,11 +88,11 @@ def writexml(winname, vpx, vpw, fl, fr, fb, ft, vh):
 width_l = Segment(point0=screen_ll, point1=screen_fl)
 pixels_l = int(round(width_l.length / proj_width * res_width))
 fr, offs = frustum_calc(screen_ll, screen_fl, screen_fl + p_height, eye_right, 1.0)
-writexml("left", 260, pixels_l, *fr, offs)
+writexml("left", 130, pixels_l, *fr, offs)
 
-width_f = Segment(point0=screen_ll, point1=screen_fl)
-pixels_f = int(round(width_l.length / proj_width * res_width))
-fr, offs = frustum_calc(screen_ll, screen_fl, screen_fl + p_height, eye_right, 1.0)
+width_f = Segment(point0=screen_fl, point1=screen_fr)
+pixels_f = int(round(width_f.length / proj_width * res_width))
+fr, offs = frustum_calc(screen_fl, screen_fr, screen_fr + p_height, eye_right, 1.0)
 writexml("front", 120, pixels_f, *fr, offs)
 
 width_r = Segment(point0=screen_fr, point1=screen_rr)
