@@ -88,12 +88,16 @@ if this_node_id == ecs_node:
             claim_thread = False,
             set_viewer =
             dueca.FlightGearViewer().param(
+                ('model-table',
+                 ('ObjectMotion:c172', 'Aircraft/c172p/Models/c172p.xml', '4X-CHV_HD_livery')),
+                ('model-table',
+                 ('ObjectMotion:ufo', 'Aircraft/ufo/Models/ufo.xml', '')),
                 receiver='127.0.0.1',
                 own_interface='127.0.0.1',
                 port=5501,
                 lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 240.0),
-                binary_packets=True
-            ).complete(),
+                binary_packets=True,
+                mp_host="127.0.0.1").complete(),
             initial_camera = ( 0, 0, -30, 0, 0, 0)
         ))
 
@@ -105,17 +109,18 @@ if this_node_id == ecs_node:
 	    ('position', (-80, 0, -3)),
 	    ('orientation', (0, 0, 0)),
 	    ('speed', (1.0, 0, 0)),
+        ('rotation', (0.0, 0.0, 0.2)),
 	    ('dt', 0.1),
-	    ('rotation', (0, 0, 0.4)),
-	    ('add-motion', "houseX"),
-	    ('position', (0, 0, -30)),
-	    ('rotation', (1, 0, 0)),
-	    ('dt', 0.1),
-	    ('add-motion', "head"),
-	    ('position', (160, 40, -40)),
+	    ('add-motion', "c172|head"),
+	    ('position', (160, 40, -4)),
 	    ('orientation', (0, 0, 0)),
 	    ('rotation', (1, 1, 10)),
-	    ('dt', 0.1)
+	    ('dt', 0.1),
+	    ('rotation', (0, 0, 0.4)),
+	    ('add-motion', "c172|houseX"),
+	    ('position', (-50, 0, -5)),
+	    ('rotation', (1, 0, 0)),
+	    ('dt', 0.1),
         ))
 
     # add a filer in this node for replay support
@@ -126,4 +131,4 @@ if drivemods:
     driveentity = dueca.Entity("drive", drivemods)
 
 if mymods:
-    myentity = dueca.Entity("ogre", mymods)
+    myentity = dueca.Entity("fg", mymods)

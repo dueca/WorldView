@@ -2,20 +2,20 @@
 /*      item            : MultiplayerEncode.hxx
         made by         : Rene van Paassen
         date            : 100623
-	category        : header file 
-        description     : 
-	changes         : 100623 first version
+        category        : header file
+        description     :
+        changes         : 100623 first version
         language        : C++
 */
 
 #ifndef MultiplayerEncode_hxx
 #define MultiplayerEncode_hxx
 
+#include "AxisTransform.hxx"
+#include "comm-objects.h"
+#include <TimeSpec.hxx>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
-#include "comm-objects.h"
-#include "AxisTransform.hxx"
-#include <TimeSpec.hxx>
 
 class MultiplayerEncode
 {
@@ -36,28 +36,29 @@ protected:
   unsigned replyport;
 
   /** Axis for conversion */
-  const FGAxis& axis;
+  const FGAxis &axis;
+
+  /** Radar range */
+  float radarrange;
 
 public:
   /** Constructor */
-  MultiplayerEncode(const std::string& receiver, unsigned short replyport, 
-		    const FGAxis &ax);
+  MultiplayerEncode(const std::string &receiver, unsigned short replyport,
+                    const FGAxis &ax, float radarrange = 100000.0f);
 
   /** Destructor */
   virtual ~MultiplayerEncode();
 
   /** return the current buffer */
-  virtual const char* getBuffer() const {return buffer;}
+  virtual const char *getBuffer() const { return buffer; }
 
   /** get the current buffer fill level */
   virtual unsigned getBufferSize();
 
   /** Encode an aircraft into this */
-  virtual void encode(const BaseObjectMotion& motion,
-		      const std::string& fgclass,
-		      const std::string& livery,
-                      const std::string& name,
-		      double time, double lag);
+  virtual void encode(const BaseObjectMotion &motion,
+                      const std::string &fgclass, const std::string &livery,
+                      const std::string &name, double time, double lag);
 };
 
 #endif

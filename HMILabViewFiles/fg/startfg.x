@@ -7,6 +7,7 @@ DIRECTORY=${PWD##*/}
 CAMERA_CONFIG=test_camera.xml
 LOGLEVEL=bulk
 LOGCLASS=flight
+CS=test
 
 # check that the protocol is installed in flightgear
 if [ -n "${FG_ROOT}" ]; then
@@ -33,23 +34,38 @@ fi
 if [ "$DIRECTORY" == "dutmms14" ]; then
     CAMERA_CONFIG=hmilab-camera-front.xml
     LOGLEVEL=alert
+    CS=mms14
 fi
 
 if [ "$DIRECTORY" == "dutmms15" ]; then
     CAMERA_CONFIG=hmilab-camera-left.xml
     LOGLEVEL=alert
+    CS=mms15
 fi
 
 if [ "$DIRECTORY" == "dutmms16" ]; then
     CAMERA_CONFIG=hmilab-camera-right.xml
     LOGLEVEL=alert
+    CS=mms16
 fi
 
 UDP_PORT=5501
 
+if [ "$1" = 'multi' ]; then
+    
+    fgms -p 5000 -a 5001 -t 10 -o 20 -l fgms.log
+
+    echo "starting multiplayer?"
+    MPHOST=${2:-127.0.0.1}
+fi
+
+
+
 fgfs \
     --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavis \
     --config=${CAMERA_CONFIG} \
+    --callsign=${CS} \
+    --multiplay=in,100,,5005 \
     --airport=EHAM \
     --fdm=external \
     --aircraft=ufo \
@@ -78,8 +94,13 @@ fgfs \
     --log-class=$LOGCLASS \
     --log-dir="." &
 
-./dueca_run.x
+if [ "$3" = 'nodueca' ]; then
+    echo "not starting dueca"
+else
+    ./dueca_run.x
 
-killall fgfs
+    killall fgfs
+    killall fgms
+fi
 
 # --metar="XXXX 012345Z 15001KT 0800 BKN02 OVC005 OVC020 08/06 Q0990" \
