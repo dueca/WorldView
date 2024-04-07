@@ -12,6 +12,8 @@
 #ifndef FlightGearViewer_hxx
 #define FlightGearViewer_hxx
 
+#include "SimTime.hxx"
+#include <netinet/in.h>
 #undef OTHER_TRAFFIC
 
 #include "AxisTransform.hxx"
@@ -81,9 +83,30 @@ protected:
   /** Radar range for multiplayer objects */
   float mp_radarrange;
 
+  /** interface for UDP receive. */
+  std::string mp_interface;
+
+
+
 private:
   /** Destination for the packets. */
   struct sockaddr_in mp_address;
+
+  /** Server reception socket. */
+  int mp_server_socket;
+
+  /** Client data, age of latest reception, and reception address. */
+  struct MultiplayerClient {
+
+    /** Latest tick with data */
+    TimeTickType latest;
+
+    /** Address to send reply */
+    struct sockaddr_in reply_address;
+  };
+
+  /** Clients are indexed by id. */
+  typedef std::map<std::string, MultiplayerClient> client_map_t;
 
   /** Time offset */
   double mp_time0;

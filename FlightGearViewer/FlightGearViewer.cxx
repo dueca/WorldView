@@ -124,7 +124,7 @@ bool FlightGearViewer::complete()
     I_MOD(classname << " no valid multiplayer address, no multiplay");
   }
   else {
-
+#if 0
     // check multiplayer port
     if (mp_port <= 0 || mp_port > 0xffff) {
       E_MOD(classname << " invalid multiplayer port");
@@ -144,6 +144,8 @@ bool FlightGearViewer::complete()
       assert(bind(mp_socket, reinterpret_cast<sockaddr *>(&src_address),
                   sizeof(src_address)) == 0);
     }
+#endif
+
   }
 
   return true;
