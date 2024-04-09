@@ -74,6 +74,7 @@ private:
   int mp_socket;
 
 protected:
+
   /** IP address of the multiplayer host */
   std::string mp_hostip;
 
@@ -86,7 +87,8 @@ protected:
   /** interface for UDP receive. */
   std::string mp_interface;
 
-
+  /** multiplayer socket. */
+  int mp_sockfd;
 
 private:
   /** Destination for the packets. */

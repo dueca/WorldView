@@ -119,33 +119,36 @@ bool FlightGearViewer::complete()
   memset(&mp_address, 0, sizeof(mp_address));
   mp_address.sin_family = AF_INET;
 
-  // IP address of the server, if applicable
-  if (inet_aton(mp_hostip.c_str(), &mp_address.sin_addr) == 0) {
-    I_MOD(classname << " no valid multiplayer address, no multiplay");
+  // multiplayer settings, if applicable, receive socket
+  mp_sockfd = socket(PF_INET, SOCK_DGRAM, 0);
+  if (mp_sockfd == -1) {
+    E_MOD("Error creating multiplayer socket " << strerror(errno));
+    return false;
   }
-  else {
-#if 0
-    // check multiplayer port
-    if (mp_port <= 0 || mp_port > 0xffff) {
-      E_MOD(classname << " invalid multiplayer port");
+
+  // accept from any host, but bind to given port
+  union {
+    struct sockaddr_in recept_address;
+    struct sockaddr use_address;
+  } addru;
+  memset(&addru, 0, sizeof(addru));
+
+  // if interface specified, listen only there
+  if (mp_interface.size()) {
+    in_addr host_address;
+    if (inet_aton(mp_interface.c_str(), &host_address)) {
+      addru.recept_address.sin_addr = host_address;
+    }
+    else {
+      E_MOD("Cannot convert own interface " << mp_interface);
       return false;
     }
-    mp_address.sin_port = htons(mp_port);
-
-    // create socket
-    mp_socket = socket(PF_INET, SOCK_DGRAM, 0);
-    if (mp_socket == -1) {
-      perror("Creating multiplayer socket");
-      return false;
-    }
-
-    // source address should be OK, can now safely bind
-    if (own_interface.size()) {
-      assert(bind(mp_socket, reinterpret_cast<sockaddr *>(&src_address),
-                  sizeof(src_address)) == 0);
-    }
-#endif
-
+  }
+  addru.recept_address.sin_port = htons(mp_port);
+  addru.recept_address.sin_family = AF_INET;
+  if (::bind(mp_sockfd, &addru.use_address, sizeof(addru))) {
+    E_MOD("Unable to bind to multiplay server port, error " << strerror(errno));
+    return false;
   }
 
   return true;
@@ -194,6 +197,39 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
                reinterpret_cast<sockaddr *>(&dest_address),
                sizeof(dest_address)) == -1) {
       perror("Sending to flightgear");
+    }
+  }
+
+  if (mp_sockfd != -1) {
+    // check whether messages came in on the multiplayer port
+    // set-up for select
+    fd_set socks;
+    FD_ZERO(&socks);
+    FD_SET(mp_sockfd, &socks);
+    struct timeval timeout = { 0 };
+    char buffer[2000];
+
+    // need the peer address
+    union {
+      struct sockaddr_in in;
+      struct sockaddr    gen;
+    } peer_ip;
+    socklen_t peer_ip_len = sizeof(peer_ip.in);
+
+    while (select(mp_sockfd + 1, &socks, NULL, NULL, &timeout) == 0) {
+      ssize_t nbytes = recvfrom(
+        mp_sockfd, buffer, sizeof(buffer), 0, &peer_ip.gen, &peer_ip_len);
+      if (nbytes && validMessage(buffer)) {
+        auto peer = mp_clients.find(buffer.name);
+
+        if (peer != mp_clients.end()) {
+          // known peer, update receive time
+          peer.second.newdata = true;
+        }
+        else {
+          mp_clients[buffer.name] = MultiplayerClient(peer_ip.in);
+        }
+      }
     }
   }
 }
