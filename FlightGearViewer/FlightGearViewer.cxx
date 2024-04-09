@@ -8,6 +8,7 @@
         language        : C++
 */
 
+#include "Dstring.hxx"
 #include "FlightGearObject.hxx"
 #include "WorldDataSpec.hxx"
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -168,6 +169,34 @@ bool FlightGearViewer::setLatLonPsi0(const vector<double> &vec)
   return true;
 }
 
+union MessageHead
+{
+  const uint64_t ptr[4];
+  const struct {
+    uint32_t magic;
+    uint32_t version;
+    uint32_t msgid;
+    uint32_t msglen;
+    uint32_t radarrange;
+    uint32_t unused;
+    dueca::Dstring<8> name;
+  } dec;
+
+  MessageHead(const char* b):
+    ptr{reinterpret_cast<const uint64_t*>(b)[0],
+    reinterpret_cast<const uint64_t*>(b)[1],
+    reinterpret_cast<const uint64_t*>(b)[2],
+    reinterpret_cast<const uint64_t*>(b)[3]}
+  { }
+
+  bool valid() const
+  { return ntohl(dec.magic) == 0x46474653 &&
+    ntohl(dec.msgid) == 7; }
+
+  const dueca::Dstring<8>& getName() const
+  { return dec.name; }
+};
+
 void FlightGearViewer::redraw(bool wait, bool save_context)
 {
   if (binary_packets) {
@@ -215,19 +244,21 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
       struct sockaddr    gen;
     } peer_ip;
     socklen_t peer_ip_len = sizeof(peer_ip.in);
-
     while (select(mp_sockfd + 1, &socks, NULL, NULL, &timeout) == 0) {
       ssize_t nbytes = recvfrom(
         mp_sockfd, buffer, sizeof(buffer), 0, &peer_ip.gen, &peer_ip_len);
-      if (nbytes && validMessage(buffer)) {
-        auto peer = mp_clients.find(buffer.name);
+
+      if (nbytes > 32) {
+        MessageHead msgh(buffer);
+        if (msgh.valid()) {
+          auto peer = mp_clients.find(msgh.getName());
 
         if (peer != mp_clients.end()) {
           // known peer, update receive time
-          peer.second.newdata = true;
+          peer->second.newdata = true;
         }
         else {
-          mp_clients[buffer.name] = MultiplayerClient(peer_ip.in);
+          mp_clients.emplace(msgh.getName(), peer_ip.in);
         }
       }
     }

@@ -12,6 +12,7 @@
 #ifndef FlightGearViewer_hxx
 #define FlightGearViewer_hxx
 
+#include "Dstring.hxx"
 #include "SimTime.hxx"
 #include <netinet/in.h>
 #undef OTHER_TRAFFIC
@@ -70,8 +71,25 @@ private:
   boost::shared_ptr<MultiplayerEncode> encoder;
 
 private:
+
+  struct MultiplayerClient {
+
+    int sockfd;
+
+    /** Received update, so resend data. */
+    bool newdata;
+
+    MultiplayerClient(const sockaddr_in& in);
+
+    bool send(client_map_t& clients);
+  };
+
   /** socket for multiplayer communication */
   int mp_socket;
+
+  typedef std::map<dueca::Dstring<8>, MultiplayerClient> client_map_t;
+
+  client_map_t mp_clients;
 
 protected:
 
