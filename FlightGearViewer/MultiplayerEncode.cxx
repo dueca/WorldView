@@ -203,7 +203,7 @@ struct PropBase
   PropBase(const std::string& name) : name(name) {}
 
   virtual void dump(XDR& xdr_data) = 0;
-  virtual void dump(short int value) {
+  virtual void dump(short int value, XDR& xdr_data) {
     std::cerr << "Wrong dump " << name << std::endl;
   }
 };
@@ -222,10 +222,10 @@ struct PropShort: public PropBase {
 
   void dump(XDR& xdr_data) {
     short int val; xdr_short(&xdr_data, &val);
-    dump(val);
+    dump(val, xdr_data);
   }
 
-  void dump(short int val) final {
+  void dump(short int val, XDR& xdr_data) final {
     std::cout << name << "=" << val << std::endl;
   }
 
@@ -234,13 +234,26 @@ struct PropShort: public PropBase {
 struct PropBool: public PropBase {
   PropBool(const std::string& name) : PropBase(name) {}
 
-  void dump(XDR& xdr_data) {
+  void dump(XDR& xdr_data) final {
     int val; xdr_bool(&xdr_data, &val);
-    dump(val);
+    dump(val, xdr_data);
   }
 
-  void dump(short int val) final {
+  void dump(short int val, XDR& xdr_data) final {
     std::cout << name << "=" << val << std::endl;
+  }
+};
+
+struct PropBoolArray: public PropBase {
+  PropBoolArray(const std::string& name) : PropBase(name) {}
+
+  void dump(XDR& xdr_data) final {
+    uint32_t val; xdr_u_int(&xdr_data, &val);
+    std::cout << name << "=";
+    for (unsigned bidx = 0; bidx < 30; bidx++) {
+      std::cout << ((val & (1 << bidx)) != 0);
+    }
+    std::cout << std::endl;
   }
 };
 
@@ -259,10 +272,10 @@ struct PropShortFloat: public PropBase {
 
   void dump(XDR& xdr_data) final {
     int16_t val; xdr_short(&xdr_data, &val);
-    dump(val);
+    dump(val, xdr_data);
   }
 
-  void dump(short int val) final {
+  void dump(short int val, XDR& xdr_data) final {
     std::cout << name << "=" << val/float(scale) << std::endl;
   }
 };
@@ -272,12 +285,30 @@ struct PropString: public PropBase {
   PropString(const std::string& name) : PropBase(name) {}
 
   void dump(XDR& xdr_data) {
-    char val[64]; xdr_string(&xdr_data, reinterpret_cast<char**>(&val), 64);
+    unsigned int len; xdr_u_int32_t(&xdr_data, &len);
+    char val[64] = {};
+    xdr_opaque(&xdr_data, val, len);
+
+    //char val[64]; xdr_string(&xdr_data, reinterpret_cast<char**>(&val), 64);
     std::cout << name << "=" << val << std::endl;
   }
+  void dump(short int len, XDR& xdr_data) final {
+    char val[64] = {};
+    xdr_opaque(&xdr_data, reinterpret_cast<char*>(val), unsigned(len));
+    std::cout << name << "=s=" << val << std::endl;
+  }
+
+
 };
 
 typedef std::map<uint32_t,PropBase*> propmap_t;
+const int BOOLARRAY_BLOCKSIZE = 40;
+
+const int BOOLARRAY_BASE_1 = 11000;
+const int BOOLARRAY_BASE_2 = BOOLARRAY_BASE_1 + BOOLARRAY_BLOCKSIZE;
+const int BOOLARRAY_BASE_3 = BOOLARRAY_BASE_2 + BOOLARRAY_BLOCKSIZE;
+const int V2018_1_BASE = 11990;
+const int V2018_3_BASE = 13000;
 
 void MultiplayerEncode::dump(const char* buffer, size_t bufsize)
 {
@@ -568,6 +599,111 @@ void MultiplayerEncode::dump(const char* buffer, size_t bufsize)
     std::make_pair(10577, new PropShort("sim/multiplay/generic/short[77]")),  //::INT, TT_SHORTINT,  V1_1_2_PROP_ID, NULL, NULL },
     std::make_pair(10578, new PropShort("sim/multiplay/generic/short[78]")),  //::INT, TT_SHORTINT,  V1_1_2_PROP_ID, NULL, NULL },
     std::make_pair(10579, new PropShort("sim/multiplay/generic/short[79]")),  //::INT, TT_SHORTINT,  V1_1_2_PROP_ID, NULL, NULL },
+
+   std::make_pair(BOOLARRAY_BASE_1 +  0, new PropBoolArray("sim/multiplay/generic/bool[0]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  1, new PropBoolArray("sim/multiplay/generic/bool[1]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  2, new PropBoolArray("sim/multiplay/generic/bool[2]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  3, new PropBoolArray("sim/multiplay/generic/bool[3]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  4, new PropBoolArray("sim/multiplay/generic/bool[4]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  5, new PropBoolArray("sim/multiplay/generic/bool[5]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  6, new PropBoolArray("sim/multiplay/generic/bool[6]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  7, new PropBoolArray("sim/multiplay/generic/bool[7]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  8, new PropBoolArray("sim/multiplay/generic/bool[8]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 +  9, new PropBoolArray("sim/multiplay/generic/bool[9]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 10, new PropBoolArray("sim/multiplay/generic/bool[10]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 11, new PropBoolArray("sim/multiplay/generic/bool[11]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 12, new PropBoolArray("sim/multiplay/generic/bool[12]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 13, new PropBoolArray("sim/multiplay/generic/bool[13]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 14, new PropBoolArray("sim/multiplay/generic/bool[14]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 15, new PropBoolArray("sim/multiplay/generic/bool[15]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 16, new PropBoolArray("sim/multiplay/generic/bool[16]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 17, new PropBoolArray("sim/multiplay/generic/bool[17]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 18, new PropBoolArray("sim/multiplay/generic/bool[18]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 19, new PropBoolArray("sim/multiplay/generic/bool[19]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 20, new PropBoolArray("sim/multiplay/generic/bool[20]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 21, new PropBoolArray("sim/multiplay/generic/bool[21]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 22, new PropBoolArray("sim/multiplay/generic/bool[22]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 23, new PropBoolArray("sim/multiplay/generic/bool[23]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 24, new PropBoolArray("sim/multiplay/generic/bool[24]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 25, new PropBoolArray("sim/multiplay/generic/bool[25]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 26, new PropBoolArray("sim/multiplay/generic/bool[26]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 27, new PropBoolArray("sim/multiplay/generic/bool[27]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 28, new PropBoolArray("sim/multiplay/generic/bool[28]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 29, new PropBoolArray("sim/multiplay/generic/bool[29]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_1 + 30, new PropBoolArray("sim/multiplay/generic/bool[30]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+
+    std::make_pair(BOOLARRAY_BASE_2 + 0, new PropBoolArray("sim/multiplay/generic/bool[31]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 1, new PropBoolArray("sim/multiplay/generic/bool[32]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 2, new PropBoolArray("sim/multiplay/generic/bool[33]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 3, new PropBoolArray("sim/multiplay/generic/bool[34]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 4, new PropBoolArray("sim/multiplay/generic/bool[35]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 5, new PropBoolArray("sim/multiplay/generic/bool[36]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 6, new PropBoolArray("sim/multiplay/generic/bool[37]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 7, new PropBoolArray("sim/multiplay/generic/bool[38]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 8, new PropBoolArray("sim/multiplay/generic/bool[39]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 9, new PropBoolArray("sim/multiplay/generic/bool[40]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 10, new PropBoolArray("sim/multiplay/generic/bool[41]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+        // out of sequence between the block and the buffer becuase of a typo. repurpose the first as that way [72] will work
+        // correctly on older versions.
+    std::make_pair(BOOLARRAY_BASE_2 + 11, new PropBoolArray("sim/multiplay/generic/bool[91]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 12, new PropBoolArray("sim/multiplay/generic/bool[42]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 13, new PropBoolArray("sim/multiplay/generic/bool[43]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 14, new PropBoolArray("sim/multiplay/generic/bool[44]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 15, new PropBoolArray("sim/multiplay/generic/bool[45]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 16, new PropBoolArray("sim/multiplay/generic/bool[46]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 17, new PropBoolArray("sim/multiplay/generic/bool[47]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 18, new PropBoolArray("sim/multiplay/generic/bool[48]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 19, new PropBoolArray("sim/multiplay/generic/bool[49]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 20, new PropBoolArray("sim/multiplay/generic/bool[50]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 21, new PropBoolArray("sim/multiplay/generic/bool[51]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 22, new PropBoolArray("sim/multiplay/generic/bool[52]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 23, new PropBoolArray("sim/multiplay/generic/bool[53]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 24, new PropBoolArray("sim/multiplay/generic/bool[54]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 25, new PropBoolArray("sim/multiplay/generic/bool[55]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 26, new PropBoolArray("sim/multiplay/generic/bool[56]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 27, new PropBoolArray("sim/multiplay/generic/bool[57]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 28, new PropBoolArray("sim/multiplay/generic/bool[58]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 29, new PropBoolArray("sim/multiplay/generic/bool[59]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_2 + 30, new PropBoolArray("sim/multiplay/generic/bool[60]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+
+    std::make_pair(BOOLARRAY_BASE_3 + 0, new PropBoolArray("sim/multiplay/generic/bool[61]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 1, new PropBoolArray("sim/multiplay/generic/bool[62]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 2, new PropBoolArray("sim/multiplay/generic/bool[63]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 3, new PropBoolArray("sim/multiplay/generic/bool[64]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 4, new PropBoolArray("sim/multiplay/generic/bool[65]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 5, new PropBoolArray("sim/multiplay/generic/bool[66]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 6, new PropBoolArray("sim/multiplay/generic/bool[67]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 7, new PropBoolArray("sim/multiplay/generic/bool[68]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 8, new PropBoolArray("sim/multiplay/generic/bool[69]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 9, new PropBoolArray("sim/multiplay/generic/bool[70]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 10, new PropBoolArray("sim/multiplay/generic/bool[71]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+        // out of sequence between the block and the buffer becuase of a typo. repurpose the first as that way [72] will work
+        // correctly on older versions.
+    std::make_pair(BOOLARRAY_BASE_3 + 11, new PropBoolArray("sim/multiplay/generic/bool[92]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 12, new PropBoolArray("sim/multiplay/generic/bool[72]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 13, new PropBoolArray("sim/multiplay/generic/bool[73]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 14, new PropBoolArray("sim/multiplay/generic/bool[74]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 15, new PropBoolArray("sim/multiplay/generic/bool[75]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 16, new PropBoolArray("sim/multiplay/generic/bool[76]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 17, new PropBoolArray("sim/multiplay/generic/bool[77]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 18, new PropBoolArray("sim/multiplay/generic/bool[78]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 19, new PropBoolArray("sim/multiplay/generic/bool[79]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 20, new PropBoolArray("sim/multiplay/generic/bool[80]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 21, new PropBoolArray("sim/multiplay/generic/bool[81]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 22, new PropBoolArray("sim/multiplay/generic/bool[82]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 23, new PropBoolArray("sim/multiplay/generic/bool[83]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 24, new PropBoolArray("sim/multiplay/generic/bool[84]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 25, new PropBoolArray("sim/multiplay/generic/bool[85]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 26, new PropBoolArray("sim/multiplay/generic/bool[86]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 27, new PropBoolArray("sim/multiplay/generic/bool[87]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 28, new PropBoolArray("sim/multiplay/generic/bool[88]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 29, new PropBoolArray("sim/multiplay/generic/bool[89]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+    std::make_pair(BOOLARRAY_BASE_3 + 30, new PropBoolArray("sim/multiplay/generic/bool[90]")),  //::BOOL, TT_BOOLARRAY,  V1_1_2_PROP_ID, NULL, NULL },
+
+
+    std::make_pair(V2018_1_BASE + 0,  new PropShort("sim/multiplay/mp-clock-mode")),  //::INT, TT_SHORTINT,  V1_1_2_PROP_ID, NULL, NULL },
+
+
   };
 
   PHEX(magic);
@@ -619,7 +755,7 @@ void MultiplayerEncode::dump(const char* buffer, size_t bufsize)
     else {
       std::cout << "0x" << std::setw(4) << std::hex << prop->first << std::dec << std::setw(0) << " :";
       if (shortencode) {
-        prop->second->dump(value);
+        prop->second->dump(value, xdr_data);
       }
       else {
         prop->second->dump(xdr_data);
