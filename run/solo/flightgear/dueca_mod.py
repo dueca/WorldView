@@ -44,7 +44,7 @@ sim_priority = dueca.PrioritySpec(2, 0)
 sim_timing = dueca.TimeSpec(0, 100)
 
 ## for now, display on 50 Hz
-display_timing = dueca.TimeSpec(0, 200)
+display_timing = dueca.TimeSpec(0, 1000)
 
 ## log a bit more economical, 25 Hz
 log_timing = dueca.TimeSpec(0, 400)
@@ -89,7 +89,7 @@ if this_node_id == ecs_node:
             set_viewer =
             dueca.FlightGearViewer().param(
                 ('model-table',
-                 ('ObjectMotion:c172', 'Aircraft/c172p/Models/c172p.xml', '4X-CHV_HD_livery')),
+                 ('ObjectMotion:c172', 'Aircraft/c172p/Models/c172p.xml', '')),
                 ('model-table',
                  ('ObjectMotion:ufo', 'Aircraft/ufo/Models/ufo.xml', '')),
                 receiver='127.0.0.1',
@@ -97,13 +97,14 @@ if this_node_id == ecs_node:
                 port=5501,
                 lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 240.0),
                 binary_packets=True,
-                mp_host="127.0.0.1").complete(),
+                mp_interface="127.0.0.1",
+                mp_port=5000).complete(),
             initial_camera = ( 0, 0, -30, 0, 0, 0)
         ))
 
     mymods.append(dueca.Module(
         "visual-test-drive", "", admin_priority).param(
-            ('set-timing', sim_timing),
+        ('set-timing', display_timing),
 	    ('check-timing', (10000, 20000)),
 	    ('add-motion', "myself"),
 	    ('position', (-80, 0, -3)),
@@ -112,13 +113,13 @@ if this_node_id == ecs_node:
         ('rotation', (0.0, 0.0, 0.2)),
 	    ('dt', 0.1),
 	    ('add-motion', "c172|head"),
-	    ('position', (160, 40, -4)),
+	    ('position', (-80, 0, -3)),
 	    ('orientation', (0, 0, 0)),
 	    ('rotation', (1, 1, 10)),
 	    ('dt', 0.1),
 	    ('rotation', (0, 0, 0.4)),
 	    ('add-motion', "c172|houseX"),
-	    ('position', (-50, 0, -5)),
+	    ('position', (-70, 0, -3)),
 	    ('rotation', (1, 0, 0)),
 	    ('dt', 0.1),
         ))

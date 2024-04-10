@@ -6,7 +6,7 @@ DIRECTORY=${PWD##*/}
 # Default for all non-configured platforms
 CAMERA_CONFIG=test_camera.xml
 LOGLEVEL=bulk
-LOGCLASS=flight
+LOGCLASS=network
 CS=test
 
 # check that the protocol is installed in flightgear
@@ -51,21 +51,13 @@ fi
 
 UDP_PORT=5501
 
-if [ "$1" = 'multi' ]; then
-    
-    fgms -p 5000 -a 5001 -t 10 -o 20 -l fgms.log
-
-    echo "starting multiplayer?"
-    MPHOST=${2:-127.0.0.1}
-fi
-
-
-
 fgfs \
     --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavis \
     --config=${CAMERA_CONFIG} \
     --callsign=${CS} \
-    --multiplay=in,100,,5005 \
+    --multiplay=in,10,,5001 \
+    --multiplay=out,10,127.0.0.1,5000 \
+    --prop:int:/sim/multiplay/debug-level=24 \
     --airport=EHAM \
     --fdm=external \
     --aircraft=ufo \
@@ -94,13 +86,12 @@ fgfs \
     --log-class=$LOGCLASS \
     --log-dir="." &
 
-if [ "$3" = 'nodueca' ]; then
+if [ "$1" = 'nodueca' ]; then
     echo "not starting dueca"
 else
     ./dueca_run.x
 
     killall fgfs
-    killall fgms
 fi
 
 # --metar="XXXX 012345Z 15001KT 0800 BKN02 OVC005 OVC020 08/06 Q0990" \

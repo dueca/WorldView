@@ -71,30 +71,48 @@ private:
   boost::shared_ptr<MultiplayerEncode> encoder;
 
 private:
+  /** Latest tick according to update call */
+  TimeTickType current_tick;
 
-  struct MultiplayerClient {
+protected:
+  /** Age to keep multiplayer clients active */
+  TimeTickType retain_age;
 
+private:
+  /** Structure needed for one client, socket to send to, and
+      age to remember activity  */
+  struct MultiplayerClient
+  {
+
+    /** Sending socket */
     int sockfd;
 
-    /** Received update, so resend data. */
-    bool newdata;
+    /** Reception address */
+    union {
+      struct sockaddr_in ip;
+      struct sockaddr gen;
+    } dest;
 
-    MultiplayerClient(const sockaddr_in& in);
+    /** Latest received update tick, so resend data. */
+    mutable TimeTickType age;
 
-    bool send(client_map_t& clients);
+    /** Create new client */
+    MultiplayerClient(int sockfd, const sockaddr_in &in, TimeTickType now);
+
+    /** Take current encoded message, and copy to the client.
+
+        @returns false if the current age too old
+      */
+    bool update(const MultiplayerEncode &encoder, TimeTickType now) const;
   };
 
-  /** socket for multiplayer communication */
-  int mp_socket;
-
+  /** Map to keep info on clients. */
   typedef std::map<dueca::Dstring<8>, MultiplayerClient> client_map_t;
 
+  /** Map with clients */
   client_map_t mp_clients;
 
 protected:
-
-  /** IP address of the multiplayer host */
-  std::string mp_hostip;
 
   /** Port number for multiplay messages */
   int mp_port;
@@ -109,24 +127,6 @@ protected:
   int mp_sockfd;
 
 private:
-  /** Destination for the packets. */
-  struct sockaddr_in mp_address;
-
-  /** Server reception socket. */
-  int mp_server_socket;
-
-  /** Client data, age of latest reception, and reception address. */
-  struct MultiplayerClient {
-
-    /** Latest tick with data */
-    TimeTickType latest;
-
-    /** Address to send reply */
-    struct sockaddr_in reply_address;
-  };
-
-  /** Clients are indexed by id. */
-  typedef std::map<std::string, MultiplayerClient> client_map_t;
 
   /** Time offset */
   double mp_time0;
@@ -151,8 +151,10 @@ public:
   void init(bool waitswap){};
 
   /** Do a re-draw
-      \param wait   If true, do now swap the buffers. The application
-                    must later wait and swap with the waitSwap function. */
+
+      For FlightGear, this is simply sending the latest position to the
+      fgfs process.
+      \param wait   Not used here. */
   void redraw(bool wait = false, bool save_context = false);
 
   /** Wait for the swap. */
@@ -172,8 +174,8 @@ public:
 
 private:
     /** Map with created (due to presence in the world channel)
-    objects. They are indexed with channel entry index, and removed
-    from the map when the entry is removed from the channel. */
+  objects. They are indexed with channel entry index, and removed
+  from the map when the entry is removed from the channel. */
   typedef std::map<creation_key_t, boost::intrusive_ptr<FlightGearObject>>
     created_objects_t;
 

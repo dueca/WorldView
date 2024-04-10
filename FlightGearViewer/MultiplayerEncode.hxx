@@ -29,6 +29,9 @@ protected:
   /** Message buffer */
   char buffer[1200];
 
+  /** Current buffer size */
+  size_t bufsize;
+
   /** IPv4 receiver address */
   unsigned receiver;
 
@@ -53,12 +56,15 @@ public:
   virtual const char *getBuffer() const { return buffer; }
 
   /** get the current buffer fill level */
-  virtual unsigned getBufferSize();
+  virtual inline size_t getBufferSize() const {return bufsize; }
 
   /** Encode an aircraft into this */
   virtual void encode(const BaseObjectMotion &motion,
                       const std::string &fgclass, const std::string &livery,
                       const std::string &name, double time, double lag);
+
+
+  void dump(const char* buffer, size_t bufsize);
 };
 
 #endif

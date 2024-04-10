@@ -70,15 +70,15 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
         &FlightGearViewer_Dueca::binary_packets),
       "Use binary packets for sending and receiving" },
 
-    { "mp-host",
+    { "mp-interface",
       new VarProbe<FlightGearViewer_Dueca, string>(
-        &FlightGearViewer_Dueca::mp_hostip),
-      "IP address of the multiplayer server" },
+        &FlightGearViewer_Dueca::mp_interface),
+      "Interface address to listen on for the multiplayer server" },
 
     { "mp-port",
       new VarProbe<FlightGearViewer_Dueca, int>(
         &FlightGearViewer_Dueca::mp_port),
-      "Port number of the multiplayer server (default 5000)" },
+      "Port number of the multiplayer server, enables if set" },
 
     { "mp-radarrange",
       new VarProbe<FlightGearViewer_Dueca, float>(
@@ -94,10 +94,10 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
       " - matchstring: Normally a string matching data class name and entry\n"
       "   label. Examples:\n"
       "   * \"BaseObjectMotion:PH-ANH\",to match label PH-ANH as name\n"
-      "   * \"BaseObjectMotion:c172\", to match label c172|PH-ANH\n"
+      "   * \"BaseObjectMotion:c172\", would match label c172|PH-ANH\n"
       "   See also the documentation on SpecificationBase class.\n"
-      " - Flightgear model, e.g. \"/Aircraft/c172\", see flightgear data\n"
-      "   folder\n"
+      " - Flightgear model, e.g. \"/Aircraft/c172p/Models/c172p.xml\", see\n"
+      "   flightgear data folder\n"
       " - Livery, optional" },
 
     /* The table is closed off with NULL pointers for the variable

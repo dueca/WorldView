@@ -161,7 +161,7 @@ struct ECEF : public Carthesian
   /** Constructor, straightforward from x, y and z */
   ECEF(double x = 0.0, double y = 0.0, double z = 0.0);
 
-    /** Constructor from lat, lon, altitude */
+  /** Constructor from lat, lon, altitude */
   ECEF(const LatLonAlt &lla);
 
   /** Copy constructor */

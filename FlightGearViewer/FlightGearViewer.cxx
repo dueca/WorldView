@@ -9,15 +9,18 @@
 */
 
 #include "Dstring.hxx"
+#include "FlightGearCommand.hxx"
 #include "FlightGearObject.hxx"
 #include "WorldDataSpec.hxx"
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <chrono>
 #include <ctime>
 #include <limits>
+#include <tuple>
 #define FlightGearViewer_cxx
 
 #include "FlightGearViewer.hxx"
+#include "rpc/xdr.h"
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cstdio>
@@ -48,12 +51,16 @@ FlightGearViewer::FlightGearViewer() :
   binary_packets(false),
   vis_boundary(5000.0),
   vis_aloft(10000.0),
+  fg_command(),
   axis(new FGECEFAxis()),
-  mp_socket(-1),
-  mp_hostip(""),
-  mp_port(5000),
-  mp_address(),
+  encoder(),
+  current_tick(0),
+  retain_age(100000), // one second
+  mp_clients(),
+  mp_port(0),
   mp_radarrange(50.0), // nm
+  mp_interface(),
+  mp_sockfd(),
   mp_time0(std::numeric_limits<double>::quiet_NaN())
 {
   //
@@ -67,7 +74,7 @@ FlightGearViewer::~FlightGearViewer()
 
 bool FlightGearViewer::complete()
 {
-  const char *classname = "FligthGearViewer";
+  const char *classname = "FlightGearViewer";
 
   sockfd = socket(PF_INET, SOCK_DGRAM, 0);
   if (sockfd == -1) {
@@ -116,42 +123,40 @@ bool FlightGearViewer::complete()
   encoder = boost::shared_ptr<MultiplayerEncode>(
     new MultiplayerEncode(own_interface, port, *axis));
 
-  // prepare destination address
-  memset(&mp_address, 0, sizeof(mp_address));
-  mp_address.sin_family = AF_INET;
+  if (mp_port) {
+    // multiplayer settings, if applicable, receive socket
+    mp_sockfd = socket(PF_INET, SOCK_DGRAM, 0);
+    if (mp_sockfd == -1) {
+      E_MOD("Error creating multiplayer socket " << strerror(errno));
+      return false;
+    }
 
-  // multiplayer settings, if applicable, receive socket
-  mp_sockfd = socket(PF_INET, SOCK_DGRAM, 0);
-  if (mp_sockfd == -1) {
-    E_MOD("Error creating multiplayer socket " << strerror(errno));
-    return false;
-  }
-
-  // accept from any host, but bind to given port
-  union {
-    struct sockaddr_in recept_address;
-    struct sockaddr use_address;
-  } addru;
-  memset(&addru, 0, sizeof(addru));
+  // accept from any host, and bind to given port
+    union {
+      struct sockaddr_in recept_address;
+      struct sockaddr use_address;
+    } addru;
+    memset(&addru, 0, sizeof(addru));
 
   // if interface specified, listen only there
-  if (mp_interface.size()) {
-    in_addr host_address;
-    if (inet_aton(mp_interface.c_str(), &host_address)) {
-      addru.recept_address.sin_addr = host_address;
+    if (mp_interface.size()) {
+      in_addr host_address;
+      if (inet_aton(mp_interface.c_str(), &host_address)) {
+        addru.recept_address.sin_addr = host_address;
+      }
+      else {
+        E_MOD("Cannot convert own interface " << mp_interface);
+        return false;
+      }
     }
-    else {
-      E_MOD("Cannot convert own interface " << mp_interface);
+    addru.recept_address.sin_port = htons(mp_port);
+    addru.recept_address.sin_family = AF_INET;
+    if (::bind(mp_sockfd, &addru.use_address, sizeof(addru))) {
+      E_MOD("Unable to bind to multiplay server port, error "
+            << strerror(errno));
       return false;
     }
   }
-  addru.recept_address.sin_port = htons(mp_port);
-  addru.recept_address.sin_family = AF_INET;
-  if (::bind(mp_sockfd, &addru.use_address, sizeof(addru))) {
-    E_MOD("Unable to bind to multiplay server port, error " << strerror(errno));
-    return false;
-  }
-
   return true;
 }
 
@@ -169,32 +174,49 @@ bool FlightGearViewer::setLatLonPsi0(const vector<double> &vec)
   return true;
 }
 
-union MessageHead
+struct MessageHead
 {
-  const uint64_t ptr[4];
-  const struct {
-    uint32_t magic;
-    uint32_t version;
-    uint32_t msgid;
-    uint32_t msglen;
-    uint32_t radarrange;
-    uint32_t unused;
-    dueca::Dstring<8> name;
-  } dec;
+  XDR xdr_data;
+  uint32_t magic;
+  uint32_t version;
+  uint32_t msgid;
+  uint32_t msglen;
+  float radarrange;
+  uint32_t unused;
+  dueca::Dstring<8> name;
 
-  MessageHead(const char* b):
-    ptr{reinterpret_cast<const uint64_t*>(b)[0],
-    reinterpret_cast<const uint64_t*>(b)[1],
-    reinterpret_cast<const uint64_t*>(b)[2],
-    reinterpret_cast<const uint64_t*>(b)[3]}
-  { }
+  MessageHead(const char *b)
+  {
+    xdrmem_create(&xdr_data, const_cast<char *>(b), 24, XDR_DECODE);
+    xdr_u_int(&xdr_data, &magic);
+    xdr_u_int(&xdr_data, &version);
+    xdr_u_int(&xdr_data, &msgid);
+    xdr_u_int(&xdr_data, &msglen);
+    xdr_float(&xdr_data, &radarrange);
+    xdr_u_int(&xdr_data, &unused);
+    xdr_opaque(&xdr_data, name.data(), 8UL);
+  }
 
-  bool valid() const
-  { return ntohl(dec.magic) == 0x46474653 &&
-    ntohl(dec.msgid) == 7; }
+  bool valid() const { return magic == 0x46474653 && msgid == 7; }
 
-  const dueca::Dstring<8>& getName() const
-  { return dec.name; }
+  const dueca::Dstring<8> &getName() const { return name; }
+};
+
+struct MessageBody
+{
+  XDR xdr_data;
+  double time, lag, x, y, z;
+  MessageBody(const char *buffer)
+  {
+    xdrmem_create(&xdr_data, const_cast<char *>(&buffer[32 + 96]), 40,
+                  XDR_DECODE);
+
+    xdr_double(&xdr_data, &time);
+    xdr_double(&xdr_data, &lag);
+    xdr_double(&xdr_data, &x);
+    xdr_double(&xdr_data, &y);
+    xdr_double(&xdr_data, &z);
+  }
 };
 
 void FlightGearViewer::redraw(bool wait, bool save_context)
@@ -230,6 +252,7 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
   }
 
   if (mp_sockfd != -1) {
+
     // check whether messages came in on the multiplayer port
     // set-up for select
     fd_set socks;
@@ -238,43 +261,81 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
     struct timeval timeout = { 0 };
     char buffer[2000];
 
-    // need the peer address
+    // need the peer address, prepare a union for this
     union {
       struct sockaddr_in in;
-      struct sockaddr    gen;
+      struct sockaddr gen;
     } peer_ip;
     socklen_t peer_ip_len = sizeof(peer_ip.in);
-    while (select(mp_sockfd + 1, &socks, NULL, NULL, &timeout) == 0) {
-      ssize_t nbytes = recvfrom(
-        mp_sockfd, buffer, sizeof(buffer), 0, &peer_ip.gen, &peer_ip_len);
+
+    // check messages
+    while (select(mp_sockfd + 1, &socks, NULL, NULL, &timeout) > 0) {
+      ssize_t nbytes = recvfrom(mp_sockfd, buffer, sizeof(buffer), 0,
+                                &peer_ip.gen, &peer_ip_len);
 
       if (nbytes > 32) {
         MessageHead msgh(buffer);
         if (msgh.valid()) {
           auto peer = mp_clients.find(msgh.getName());
 
-        if (peer != mp_clients.end()) {
-          // known peer, update receive time
-          peer->second.newdata = true;
-        }
-        else {
-          mp_clients.emplace(msgh.getName(), peer_ip.in);
+          //MessageBody msgb(buffer);
+          //std::cerr << "UFO time=" << msgb.time << " x=" << msgb.x
+          //          << " y=" << msgb.y << " z=" << msgb.z << std::endl;
+          encoder->dump(buffer, nbytes);
+          if (peer != mp_clients.end()) {
+            // known peer, update receive time
+            peer->second.age = current_tick;
+          }
+          else {
+            mp_clients.emplace(
+              std::piecewise_construct, std::forward_as_tuple(msgh.getName()),
+              std::forward_as_tuple(mp_sockfd, peer_ip.in, current_tick));
+            W_MOD("Connected to " << msgh.getName() << " at "
+                                  << inet_ntoa(peer_ip.in.sin_addr) << ":"
+                                  << ntohs(peer_ip.in.sin_port));
+          }
         }
       }
     }
   }
 }
 
+FlightGearViewer::MultiplayerClient::MultiplayerClient(int sockfd,
+                                                       const sockaddr_in &in,
+                                                       TimeTickType now) :
+  sockfd(sockfd),
+  age(now)
+{
+  dest.ip = in;
+}
+
+bool FlightGearViewer::MultiplayerClient::update(
+  const MultiplayerEncode &encoder, TimeTickType cutoff) const
+{
+  if (age) {
+    if (age > cutoff) {
+      sendto(sockfd, encoder.getBuffer(), encoder.getBufferSize(), 0, &dest.gen,
+             sizeof(dest));
+    }
+    else {
+      age = 0;
+      return false;
+    }
+  }
+  return true;
+}
+
 void FlightGearViewer::sendPositionReport()
 {
-  // nothing if multiplayer not configured
-  if (mp_socket == -1)
-    return;
+  for (auto const &client : mp_clients) {
+    MessageBody msgb(encoder->getBuffer());
+    MessageHead msgh(encoder->getBuffer());
+    std::cerr << msgh.getName() << "time=" << msgb.time << " x=" << msgb.x
+              << " y=" << msgb.y << " z=" << msgb.z << std::endl;
 
-  if (sendto(mp_socket, encoder->getBuffer(), encoder->getBufferSize(), 0,
-             reinterpret_cast<sockaddr *>(&mp_address),
-             sizeof(mp_address)) == -1) {
-    perror("Sending to multiplayer server");
+    if (!client.second.update(*encoder, current_tick - retain_age)) {
+      W_MOD("Disabling client " << client.first);
+    }
   }
 }
 
@@ -283,6 +344,7 @@ void FlightGearViewer::waitSwap() {}
 void FlightGearViewer::setBase(TimeTickType tick, const BaseObjectMotion &base,
                                double late)
 {
+  current_tick = tick;
   axis->transform(fg_command.latlonalt_phithtpsi, base.xyz, base.attitude_q);
 
   for (auto &obj : active_objects) {
@@ -332,16 +394,21 @@ double FlightGearViewer::getFlightTime(double time)
 
     // gm time
     std::tm gt = *std::gmtime(&tt);
+    time_t gmnow = mktime(&gt);
+    time_t diff = gmnow - tt;
+    if (gt.tm_isdst > 0) {
+      diff = diff - 3600;
+    }
 
-    // set to start of day
+    // set to start of GMT
     gt.tm_hour = 0;
     gt.tm_min = 0;
     gt.tm_sec = 0;
 
-        // convert back to time
+    // convert back to time
     tt = std::mktime(&gt);
 
-    auto start_of_day = system_clock::from_time_t(tt);
+    auto start_of_day = system_clock::from_time_t(tt - diff);
     auto elapsed = now - start_of_day;
 
     double timeinday = 1e-3 * duration_cast<milliseconds>(elapsed).count();
@@ -357,31 +424,6 @@ double FlightGearViewer::getFlightTime(double time)
   }
   return res;
 }
-
-#if 0
-  // find from created classes, first on name+label
-std::string key = data_class + std::string(":") + entry_label;
-auto ii = flightgear_classes.find(key);
-
-FlightGearObject *op = NULL;
-
-  // if not found, now on data_class alone
-if (ii == flightgear_classes.end()) {
-  ii = flightgear_classes.find(data_class);
-}
-
-if (ii != flightgear_classes.end()) {
-
-  op = new FlightGearObject(entry_label, ii->second.fgclass, ii->second.livery,
-                            this);
-  op->connect(master_id, cname, entry_id, time_aspect);
-  boost::intrusive_ptr<FlightGearObject> bop(op);
-  active_objects[keypair] = bop;
-  return true;
-}
-
-return false;
-#endif
 
 void FlightGearViewer::removeControllable(const NameSet &cname,
                                           uint32_t creation_id)
@@ -414,16 +456,5 @@ bool FlightGearViewer::modelTableEntry(const std::vector<std::string> &s)
   obj.type = s[1];                 // flightgear aircraft model
   obj.filename.push_back(s[2]);  // livery
   addFactorySpec(s[0], obj);
-#if 0
-  // There should be no mapping yet
-  FGClassMap::const_iterator ii = flightgear_classes.find(s[0]);
-  if (ii != flightgear_classes.end()) {
-    cerr << "Already have a translation for " << s[0] << endl;
-    return false;
-  }
-
-  // insert new mapping
-  flightgear_classes[s[0]] = FGSpecs(s[1], s[2]);
-#endif
   return true;
 }
