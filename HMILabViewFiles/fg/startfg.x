@@ -57,7 +57,7 @@ fgfs \
     --callsign=${CS} \
     --multiplay=in,10,,5001 \
     --multiplay=out,10,127.0.0.1,5000 \
-    --prop:int:/sim/multiplay/debug-level=24 \
+    --prop:int:/sim/multiplay/debug-level=28 \
     --airport=EHAM \
     --fdm=external \
     --aircraft=ufo \

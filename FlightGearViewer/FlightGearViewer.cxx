@@ -327,6 +327,7 @@ bool FlightGearViewer::MultiplayerClient::update(
 
 void FlightGearViewer::sendPositionReport()
 {
+  encoder->dump(encoder->getBuffer(), encoder->getBufferSize());
   for (auto const &client : mp_clients) {
     MessageBody msgb(encoder->getBuffer());
     MessageHead msgh(encoder->getBuffer());

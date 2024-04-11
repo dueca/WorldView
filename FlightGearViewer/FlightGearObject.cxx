@@ -55,7 +55,7 @@ void FlightGearObject::iterate(TimeTickType ts, const BaseObjectMotion &base,
           }
         }
         double ftime = master->getFlightTime(DataTimeSpec(0, time).getDtInSeconds());
-        master->getEncoder().encode(o2, fgclass, livery, name, ftime, 0.0);
+        master->getEncoder().encode(o2, fgclass, livery, name, ftime, 0.1);
         master->sendPositionReport();
       }
     }

@@ -117,10 +117,10 @@ if this_node_id == ecs_node:
 	    ('orientation', (0, 0, 0)),
 	    ('rotation', (1, 1, 10)),
 	    ('dt', 0.1),
-	    ('rotation', (0, 0, 0.4)),
+	    #('rotation', (0, 0, 0.4)),
 	    ('add-motion', "c172|houseX"),
 	    ('position', (-70, 0, -3)),
-	    ('rotation', (1, 0, 0)),
+	    #('rotation', (1, 0, 0)),
 	    ('dt', 0.1),
         ))
 
