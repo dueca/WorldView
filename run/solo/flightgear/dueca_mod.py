@@ -89,7 +89,7 @@ if this_node_id == ecs_node:
             set_viewer =
             dueca.FlightGearViewer().param(
                 ('model-table',
-                 ('ObjectMotion:c172', 'Aircraft/c172p/Models/c172p.xml', '')),
+                 ('ObjectMotion:c172', 'AI/Aircraft/Cessna337/Models/Cessna337-N53472ai.xml', '')),
                 ('model-table',
                  ('ObjectMotion:ufo', 'Aircraft/ufo/Models/ufo.xml', '')),
                 receiver='127.0.0.1',
@@ -98,7 +98,7 @@ if this_node_id == ecs_node:
                 lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 240.0),
                 binary_packets=True,
                 mp_interface="127.0.0.1",
-                mp_port=5000).complete(),
+                mp_port=5001).complete(),
             initial_camera = ( 0, 0, -30, 0, 0, 0)
         ))
 

@@ -5,8 +5,8 @@ DIRECTORY=${PWD##*/}
 
 # Default for all non-configured platforms
 CAMERA_CONFIG=test_camera.xml
-LOGLEVEL=bulk
-LOGCLASS=network
+LOGLEVEL=info
+LOGCLASS=all
 CS=test
 
 # check that the protocol is installed in flightgear
@@ -55,9 +55,8 @@ fgfs \
     --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavis \
     --config=${CAMERA_CONFIG} \
     --callsign=${CS} \
-    --multiplay=in,10,,5001 \
-    --multiplay=out,10,127.0.0.1,5000 \
-    --prop:int:/sim/multiplay/debug-level=28 \
+    --multiplay=out,10,127.0.0.1,5001 \
+    --prop:int:/sim/multiplay/debug-level=0 \
     --airport=EHAM \
     --fdm=external \
     --aircraft=ufo \
@@ -70,7 +69,6 @@ fgfs \
     --disable-random-objects \
     --disable-random-buildings \
     --disable-random-vegetation \
-    --disable-ai-traffic \
     --enable-clock-freeze \
     --disable-sound \
     --disable-rembrandt \
@@ -84,7 +82,8 @@ fgfs \
     --disable-splash-screen  \
     --log-level=$LOGLEVEL \
     --log-class=$LOGCLASS \
-    --log-dir="." &
+    --log-dir="."
+    --disable-ai-traffic &
 
 if [ "$1" = 'nodueca' ]; then
     echo "not starting dueca"

@@ -1741,7 +1741,7 @@ void MultiplayerEncode::encode(const BaseObjectMotion &motion,
   // clockmode 1
   propmap[0x2ed6]->code(xdr_data, 0x2ed6, 1);
   // fallback model unspecified
-  propmap[0x32c8]->code(xdr_data, 0x32c8, 712);
+  propmap[13000]->code(xdr_data, 0x32c8, 1);
 
 
   //uint32_t chat_id = 10002;
@@ -1779,10 +1779,12 @@ void MultiplayerEncode::encode(const BaseObjectMotion &motion,
   xdr_u_int(&xdr_header, &totallength); // 16
 
   // radar range
-  xdr_float(&xdr_header, &radarrange);       // 20
+  int _rr = round(radarrange);
+  xdr_int(&xdr_header, &_rr);       // 20
 
   // receiver port, unused
-  xdr_u_int(&xdr_header, &replyport);   // 24
+  unsigned _z = 0;
+  xdr_u_int(&xdr_header, &_z);   // 24
 
   // callsign (8 bytes)
   assert(xdr_getpos(&xdr_header) == 24);
