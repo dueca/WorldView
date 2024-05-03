@@ -55,7 +55,8 @@ fgfs \
     --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavis \
     --config=${CAMERA_CONFIG} \
     --callsign=${CS} \
-    --multiplay=out,10,127.0.0.1,5001 \
+    --multiplay=in,100,127.0.0.1,5001 \
+    --multiplay=out,10,127.0.0.1,5002 \
     --prop:int:/sim/multiplay/debug-level=0 \
     --airport=EHAM \
     --fdm=external \
@@ -82,7 +83,7 @@ fgfs \
     --disable-splash-screen  \
     --log-level=$LOGLEVEL \
     --log-class=$LOGCLASS \
-    --log-dir="."
+    --log-dir="." \
     --disable-ai-traffic &
 
 if [ "$1" = 'nodueca' ]; then

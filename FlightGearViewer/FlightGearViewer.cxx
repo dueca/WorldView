@@ -16,17 +16,23 @@
 #include <chrono>
 #include <ctime>
 #include <limits>
-#include <tuple>
 #define FlightGearViewer_cxx
 
 #include "FlightGearViewer.hxx"
 #include "rpc/xdr.h"
-#include <algorithm>
 #include <arpa/inet.h>
+#include <boost/lexical_cast.hpp>
 #include <cstdio>
 #include <cstring>
+#include <errno.h>
+#include <fcntl.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <netdb.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #define DUECA
@@ -60,7 +66,7 @@ FlightGearViewer::FlightGearViewer() :
   mp_port(0),
   mp_radarrange(50.0), // nm
   mp_interface(),
-  mp_sockfd(),
+  mp_sockfd(-1),
   mp_time0(std::numeric_limits<double>::quiet_NaN())
 {
   //
@@ -123,40 +129,6 @@ bool FlightGearViewer::complete()
   encoder = boost::shared_ptr<MultiplayerEncode>(
     new MultiplayerEncode(own_interface, port, *axis));
 
-  if (mp_port) {
-    // multiplayer settings, if applicable, receive socket
-    mp_sockfd = socket(PF_INET, SOCK_DGRAM, 0);
-    if (mp_sockfd == -1) {
-      E_MOD("Error creating multiplayer socket " << strerror(errno));
-      return false;
-    }
-
-  // accept from any host, and bind to given port
-    union {
-      struct sockaddr_in recept_address;
-      struct sockaddr use_address;
-    } addru;
-    memset(&addru, 0, sizeof(addru));
-
-  // if interface specified, listen only there
-    if (mp_interface.size()) {
-      in_addr host_address;
-      if (inet_aton(mp_interface.c_str(), &host_address)) {
-        addru.recept_address.sin_addr = host_address;
-      }
-      else {
-        E_MOD("Cannot convert own interface " << mp_interface);
-        return false;
-      }
-    }
-    addru.recept_address.sin_port = htons(mp_port);
-    addru.recept_address.sin_family = AF_INET;
-    if (::bind(mp_sockfd, &addru.use_address, sizeof(addru))) {
-      E_MOD("Unable to bind to multiplay server port, error "
-            << strerror(errno));
-      return false;
-    }
-  }
   return true;
 }
 
@@ -251,13 +223,13 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
     }
   }
 
-  if (mp_sockfd != -1) {
+  if (mp_sockin != -1) {
 
     // check whether messages came in on the multiplayer port
     // set-up for select
     fd_set socks;
     FD_ZERO(&socks);
-    FD_SET(mp_sockfd, &socks);
+    FD_SET(mp_sockin, &socks);
     struct timeval timeout = { 0 };
     char buffer[2000];
 
@@ -269,31 +241,31 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
     socklen_t peer_ip_len = sizeof(peer_ip.in);
 
     // check messages
-    while (select(mp_sockfd + 1, &socks, NULL, NULL, &timeout) > 0) {
-      ssize_t nbytes = recvfrom(mp_sockfd, buffer, sizeof(buffer), 0,
+    while (select(mp_sockin + 1, &socks, NULL, NULL, &timeout) > 0) {
+      ssize_t nbytes = recvfrom(mp_sockin, buffer, sizeof(buffer), 0,
                                 &peer_ip.gen, &peer_ip_len);
 
       if (nbytes > 32) {
         MessageHead msgh(buffer);
         if (msgh.valid()) {
-          auto peer = mp_clients.find(msgh.getName());
+          // auto peer = mp_clients.find(msgh.getName());
 
           //MessageBody msgb(buffer);
           //std::cerr << "UFO time=" << msgb.time << " x=" << msgb.x
           //          << " y=" << msgb.y << " z=" << msgb.z << std::endl;
           encoder->dump(buffer, nbytes);
-          if (peer != mp_clients.end()) {
-            // known peer, update receive time
-            peer->second.age = current_tick;
-          }
-          else {
-            mp_clients.emplace(
-              std::piecewise_construct, std::forward_as_tuple(msgh.getName()),
-              std::forward_as_tuple(mp_sockfd, peer_ip.in, current_tick));
-            W_MOD("Connected to " << msgh.getName() << " at "
-                                  << inet_ntoa(peer_ip.in.sin_addr) << ":"
-                                  << ntohs(peer_ip.in.sin_port));
-          }
+          // if (peer != mp_clients.end()) {
+          //   // known peer, update receive time
+          //   peer->second.age = current_tick;
+          // }
+          // else {
+          //   mp_clients.emplace(
+          //     std::piecewise_construct, std::forward_as_tuple(msgh.getName()),
+          //     std::forward_as_tuple(mp_sockfd, peer_ip.in, current_tick));
+          //   W_MOD("Connected to " << msgh.getName() << " at "
+          //                         << inet_ntoa(peer_ip.in.sin_addr) << ":"
+          //                         << ntohs(peer_ip.in.sin_port));
+          // }
         }
       }
     }
@@ -301,42 +273,30 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
 }
 
 FlightGearViewer::MultiplayerClient::MultiplayerClient(int sockfd,
-                                                       const sockaddr_in &in,
-                                                       TimeTickType now) :
+                                                       const sockaddr &in) :
   sockfd(sockfd),
-  age(now)
+  dest(in)
 {
-  dest.ip = in;
+  //
 }
 
-bool FlightGearViewer::MultiplayerClient::update(
-  const MultiplayerEncode &encoder, TimeTickType cutoff) const
+void FlightGearViewer::MultiplayerClient::update(
+  const MultiplayerEncode &encoder) const
 {
-  if (age) {
-    if (age > cutoff) {
-      sendto(sockfd, encoder.getBuffer(), encoder.getBufferSize(), 0, &dest.gen,
-             sizeof(dest));
-    }
-    else {
-      age = 0;
-      return false;
-    }
-  }
-  return true;
+  sendto(sockfd, encoder.getBuffer(), encoder.getBufferSize(), 0, &dest,
+         sizeof(dest));
 }
 
 void FlightGearViewer::sendPositionReport()
 {
-  encoder->dump(encoder->getBuffer(), encoder->getBufferSize());
+  // encoder->dump(encoder->getBuffer(), encoder->getBufferSize());
   for (auto const &client : mp_clients) {
     MessageBody msgb(encoder->getBuffer());
     MessageHead msgh(encoder->getBuffer());
     std::cerr << msgh.getName() << "time=" << msgb.time << " x=" << msgb.x
               << " y=" << msgb.y << " z=" << msgb.z << std::endl;
 
-    if (!client.second.update(*encoder, current_tick - retain_age)) {
-      W_MOD("Disabling client " << client.first);
-    }
+    client.update(*encoder);
   }
 }
 
@@ -457,5 +417,92 @@ bool FlightGearViewer::modelTableEntry(const std::vector<std::string> &s)
   obj.type = s[1];                 // flightgear aircraft model
   obj.filename.push_back(s[2]);  // livery
   addFactorySpec(s[0], obj);
+  return true;
+}
+
+bool FlightGearViewer::addMultiplayClient(const std::string &addr)
+{
+  uint16_t mcport = 5010U;
+  std::string mcaddress;
+  size_t pport = addr.find(':');
+
+  try {
+    if (pport != string::npos) {
+      mcport = boost::lexical_cast<uint16_t>(addr.substr(pport + 1));
+      mcaddress = addr.substr(0, pport);
+    }
+    else {
+      mcaddress = addr;
+    }
+  }
+  catch (const std::exception &e) {
+    E_MOD("Cannot decode peer destination from " << addr
+                                                 << " error:" << e.what());
+    return false;
+  }
+
+  // configure the UDP address for sending
+  struct addrinfo *ta;
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_flags = AI_CANONNAME;
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_DGRAM;
+  hints.ai_protocol = IPPROTO_UDP;
+  int aires =
+    getaddrinfo(mcaddress.c_str(),
+                boost::lexical_cast<std::string>(mcport).c_str(), &hints, &ta);
+
+  if (aires || ta->ai_next != NULL) {
+    E_MOD("Cannot get address info on multicast client "
+          << mcaddress << ":" << mcport << ", error " << gai_strerror(aires));
+    return false;
+  }
+
+  if (mp_sockfd == -1) {
+    if (!mp_port) {
+      E_MOD("Need multiplay port configured first");
+      return false;
+    }
+
+    // multiplayer settings, if applicable, receive socket
+    mp_sockfd = socket(PF_INET, SOCK_DGRAM, 0);
+    if (mp_sockfd == -1) {
+      E_MOD("Error creating multiplayer socket " << strerror(errno));
+      return false;
+    }
+
+    // accept from any host, and bind to given port
+    union {
+      struct sockaddr_in recept_address;
+      struct sockaddr use_address;
+    } addru;
+    memset(&addru, 0, sizeof(addru));
+
+    // if interface specified, listen only there
+    if (mp_interface.size()) {
+      in_addr host_address;
+      if (inet_aton(mp_interface.c_str(), &host_address)) {
+        addru.recept_address.sin_addr = host_address;
+      }
+      else {
+        E_MOD("Cannot convert own interface " << mp_interface);
+        return false;
+      }
+    }
+    addru.recept_address.sin_port = htons(mp_port);
+    addru.recept_address.sin_family = AF_INET;
+    if (::bind(mp_sockfd, &addru.use_address, sizeof(addru))) {
+      E_MOD("Unable to bind to multiplay server port, error "
+            << strerror(errno));
+      return false;
+    }
+  }
+
+  mp_clients.emplace_back(mp_sockfd, *(ta->ai_addr));
+
+  // return address info
+  freeaddrinfo(ta);
+
   return true;
 }

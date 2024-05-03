@@ -16,6 +16,7 @@
 #include "SimTime.hxx"
 #include <netinet/in.h>
 #undef OTHER_TRAFFIC
+#define MPJUSTSEND
 
 #include "AxisTransform.hxx"
 #include "FlightGearObject.hxx"
@@ -88,26 +89,19 @@ private:
     int sockfd;
 
     /** Reception address */
-    union {
-      struct sockaddr_in ip;
-      struct sockaddr gen;
-    } dest;
-
-    /** Latest received update tick, so resend data. */
-    mutable TimeTickType age;
+    struct sockaddr dest;
 
     /** Create new client */
-    MultiplayerClient(int sockfd, const sockaddr_in &in, TimeTickType now);
+    MultiplayerClient(int sockfd, const sockaddr &in);
 
     /** Take current encoded message, and copy to the client.
 
-        @returns false if the current age too old
       */
-    bool update(const MultiplayerEncode &encoder, TimeTickType now) const;
+    void update(const MultiplayerEncode &encoder) const;
   };
 
   /** Map to keep info on clients. */
-  typedef std::map<dueca::Dstring<8>, MultiplayerClient> client_map_t;
+  typedef std::list<MultiplayerClient> client_map_t;
 
   /** Map with clients */
   client_map_t mp_clients;
@@ -123,8 +117,11 @@ protected:
   /** interface for UDP receive. */
   std::string mp_interface;
 
-  /** multiplayer socket. */
+  /** multiplayer socket, output. */
   int mp_sockfd;
+
+  /** multiplayer socket in */
+  int mp_sockin;
 
 private:
 
@@ -218,6 +215,9 @@ private:
 protected:
   /** Specify an additional mapping for the sim->fg classes */
   bool modelTableEntry(const std::vector<std::string> &s);
+
+  /** Add a multiplayer client */
+  bool addMultiplayClient(const std::string& s);
 };
 
 #endif

@@ -80,6 +80,11 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
         &FlightGearViewer_Dueca::mp_port),
       "Port number of the multiplayer server, enables if set" },
 
+    { "mp-client",
+      new MemberCall<FlightGearViewer_Dueca, string>
+        (&FlightGearViewer_Dueca::addMultiplayClient),
+      "Specify multiplayer client, network/host address and port" },
+
     { "mp-radarrange",
       new VarProbe<FlightGearViewer_Dueca, float>(
         &FlightGearViewer_Dueca::mp_radarrange),
