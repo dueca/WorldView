@@ -79,6 +79,9 @@ protected:
   /** Age to keep multiplayer clients active */
   TimeTickType retain_age;
 
+  /** Flag to dump communication */
+  bool debugdump;
+
 private:
   /** Structure needed for one client, socket to send to, and
       age to remember activity  */
@@ -117,11 +120,8 @@ protected:
   /** interface for UDP receive. */
   std::string mp_interface;
 
-  /** multiplayer socket, output. */
+  /** multiplayer socket, output, input. */
   int mp_sockfd;
-
-  /** multiplayer socket in */
-  int mp_sockin;
 
 private:
 

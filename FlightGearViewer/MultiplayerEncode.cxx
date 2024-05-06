@@ -10,12 +10,16 @@
 
 #include "rpc/xdr.h"
 #include <cstdint>
+#include <rapidjson/rapidjson.h>
 #define MultiplayerEncode_cxx
 #include "MultiplayerEncode.hxx"
 #include <arpa/inet.h>
+#include <fstream>
 #include <netinet/in.h>
+#include <rapidjson/document.h>
 #include <sys/socket.h>
 
+#include <dueca/debug.h>
 
 struct PropBase
 {
@@ -30,18 +34,26 @@ struct PropBase
     std::cerr << "Wrong dump " << name << std::endl;
   }
 
-  virtual void code(XDR &xdr_data, unsigned propno, int data)
+  virtual void code(XDR &xdr_data, unsigned propno, bool data)
   {
-    std::cerr << "Wrong code " << name << std::endl;
+    std::cerr << "Wrong code (bool)" << name << std::endl;
+  }
+  virtual void code(XDR &xdr_data, unsigned propno, int64_t data)
+  {
+    std::cerr << "Wrong code (int)" << name << std::endl;
   }
   virtual void code(XDR &xdr_data, unsigned propno, float data)
   {
-    std::cerr << "Wrong code " << name << std::endl;
+    std::cerr << "Wrong code (float)" << name << std::endl;
   }
   virtual void code(XDR &xdr_data, unsigned propno, const std::string &data)
   {
-    std::cerr << "Wrong code " << name << std::endl;
+    std::cerr << "Wrong code (string)" << name << std::endl;
   }
+  virtual bool isInteger() const { return false; }
+  virtual bool isFloat() const { return false; }
+  virtual bool isText() const { return false; }
+  virtual bool isBool() const { return false; }
 };
 
 struct PropInt : public PropBase
@@ -56,11 +68,13 @@ struct PropInt : public PropBase
     xdr_int(&xdr_data, &val);
     std::cout << name << "=" << val << std::endl;
   }
-  virtual void code(XDR &xdr_data, unsigned propno, int val)
+  virtual void code(XDR &xdr_data, unsigned propno, int64_t val) final
   {
     xdr_u_int(&xdr_data, &propno);
-    xdr_int(&xdr_data, &val);
+    int _val = val;
+    xdr_int(&xdr_data, &_val);
   }
+  bool isInteger() const override { return true; }
 };
 
 struct PropShort : public PropBase
@@ -81,10 +95,11 @@ struct PropShort : public PropBase
     std::cout << name << "=" << val << std::endl;
   }
 
-  virtual void code(XDR &xdr_data, unsigned propno, int val) final
+  virtual void code(XDR &xdr_data, unsigned propno, int64_t val) final
   {
     union {
-      struct {
+      struct
+      {
         short val;
         unsigned short prop;
       } d;
@@ -95,6 +110,7 @@ struct PropShort : public PropBase
 
     xdr_u_int(&xdr_data, &conv.data);
   }
+  bool isInteger() const override { return true; }
 };
 
 struct PropBool : public PropBase
@@ -114,6 +130,22 @@ struct PropBool : public PropBase
   {
     std::cout << name << "=" << val << std::endl;
   }
+
+  virtual void code(XDR &xdr_data, unsigned propno, bool val) final
+  {
+    union {
+      struct
+      {
+        short val;
+        unsigned short prop;
+      } d;
+      unsigned data;
+    } conv;
+    conv.d.prop = propno;
+    conv.d.val = val ? 1 : 0;
+    xdr_u_int(&xdr_data, &conv.data);
+  }
+  bool isBool() const override { return true; }
 };
 
 struct PropBoolArray : public PropBase
@@ -132,6 +164,13 @@ struct PropBoolArray : public PropBase
     }
     std::cout << std::endl;
   }
+  virtual void code(XDR &xdr_data, unsigned propno, int64_t val) final
+  {
+    xdr_short(&xdr_data, reinterpret_cast<short *>(&propno));
+    uint32_t _val = val;
+    xdr_u_int(&xdr_data, &_val);
+  }
+  bool isInteger() const override { return true; }
 };
 
 struct PropFloat : public PropBase
@@ -146,6 +185,12 @@ struct PropFloat : public PropBase
     xdr_float(&xdr_data, &val);
     std::cout << name << "=" << val << std::endl;
   }
+  virtual void code(XDR &xdr_data, unsigned propno, float val) final
+  {
+    xdr_short(&xdr_data, reinterpret_cast<short *>(&propno));
+    xdr_float(&xdr_data, &val);
+  }
+  bool isFloat() const override { return true; }
 };
 
 template <int scale> struct PropShortFloat : public PropBase
@@ -165,12 +210,22 @@ template <int scale> struct PropShortFloat : public PropBase
   {
     std::cout << name << "=" << val / float(scale) << std::endl;
   }
+
   virtual void code(XDR &xdr_data, unsigned propno, float val) final
   {
-    xdr_short(&xdr_data, reinterpret_cast<short *>(&propno));
-    short int scaled = round(val * scale);
-    xdr_short(&xdr_data, &scaled);
+    union {
+      struct
+      {
+        short val;
+        unsigned short prop;
+      } d;
+      unsigned data;
+    } conv;
+    conv.d.prop = propno;
+    conv.d.val = round(val * scale);
+    xdr_u_int(&xdr_data, &conv.data);
   }
+  bool isFloat() const override { return true; }
 };
 
 struct PropString : public PropBase
@@ -190,6 +245,7 @@ struct PropString : public PropBase
     // char val[64]; xdr_string(&xdr_data, reinterpret_cast<char**>(&val), 64);
     std::cout << name << "=" << val << std::endl;
   }
+
   void dump(short int len, XDR &xdr_data) final
   {
     char val[64] = {};
@@ -201,16 +257,25 @@ struct PropString : public PropBase
     std::cout << name << "=s=" << val << std::endl;
   }
 
-  virtual void code(XDR &xdr_data, unsigned propno, const std::string &data) final
+  virtual void code(XDR &xdr_data, unsigned propno,
+                    const std::string &data) final
   {
-    uint32_t word = (propno << 16) | data.size();
-    xdr_u_int(&xdr_data, &word);
-    auto cp = xdr_getpos(&xdr_data);
-    if (data.size()) {
-      xdr_opaque(&xdr_data, const_cast<char *>(data.data()), data.size());
-      xdr_setpos(&xdr_data, cp + unsigned(data.size()));
+    if (data.size() == 0) {
+      xdr_short(&xdr_data, reinterpret_cast<short *>(&propno));
+      uint32_t len=0;
+      xdr_u_int(&xdr_data, &len);
+    }
+    else {
+      uint32_t word = (propno << 16) | data.size();
+      xdr_u_int(&xdr_data, &word);
+      auto cp = xdr_getpos(&xdr_data);
+      if (data.size()) {
+        xdr_opaque(&xdr_data, const_cast<char *>(data.data()), data.size());
+        xdr_setpos(&xdr_data, cp + unsigned(data.size()));
+      }
     }
   }
+  bool isText() const override { return true; }
 };
 
 typedef std::map<uint32_t, PropBase *> propmap_t;
@@ -229,54 +294,57 @@ const int V2020_4_BASE = 13003;
 
 static propmap_t propmap = {
   std::make_pair(10, new PropShort("sim/multiplay/protocol-version")),
-  std::make_pair(100,
-                 new PropShortFloat<32767>(
-                   "surface-positions/left-aileron-pos-norm")), //::FLOAT,
-                                                                //:TT_SHORT_FLOAT_NORM,
-                                                                //:V1_1_PROP_ID
-  std::make_pair(101,
-                 new PropShortFloat<32767>(
-                   "surface-positions/right-aileron-pos-norm")), //::FLOAT,
-                                                                 //:TT_SHORT_FLOAT_NORM,
-                                                                 //:V1_1_PROP_ID
+  std::make_pair(
+    100,
+    new PropShortFloat<32767>(
+      "surface-positions/left-aileron-pos-norm")), //::FLOAT,
+                                                   //: TT_SHORT_FLOAT_NORM,
+                                                   //: V1_1_PROP_ID
+  std::make_pair(
+    101,
+    new PropShortFloat<32767>(
+      "surface-positions/right-aileron-pos-norm")), //::FLOAT,
+                                                    //: TT_SHORT_FLOAT_NORM,
+                                                    //: V1_1_PROP_ID
   std::make_pair(
     102,
     new PropShortFloat<32767>(
       "surface-positions/elevator-pos-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                               //:V1_1_PROP_ID
+                                               //: V1_1_PROP_ID
   std::make_pair(
     103,
     new PropShortFloat<32767>(
       "surface-positions/rudder-pos-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                             //:V1_1_PROP_ID
+                                             //: V1_1_PROP_ID
   std::make_pair(
     104, new PropShortFloat<32767>(
            "surface-positions/flap-pos-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                                //:V1_1_PROP_ID
+                                                //: V1_1_PROP_ID
   std::make_pair(
     105,
     new PropShortFloat<32767>(
       "surface-positions/speedbrake-pos-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                                 //:V1_1_PROP_ID
+                                                 //: V1_1_PROP_ID
   std::make_pair(
     106, new PropShortFloat<32767>(
            "gear/tailhook/position-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                            //:V1_1_PROP_ID
+                                            //: V1_1_PROP_ID
   std::make_pair(
     107, new PropShortFloat<32767>(
            "gear/launchbar/position-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                             //:V1_1_PROP_ID
+                                             //: V1_1_PROP_ID
   //
   std::make_pair(
-    108, new PropString(
-           "gear/launchbar/state")), //::STRING, TT_ASIS,  V1_1_2_PROP_ID,
-                                     //:encode_launchbar_state_for_transmission,
-                                     //:NULL },
+    108,
+    new PropString(
+      "gear/launchbar/state")), //::STRING, TT_ASIS,  V1_1_2_PROP_ID,
+                                //: encode_launchbar_state_for_transmission,
+                                //: NULL },
   std::make_pair(
     109,
     new PropShortFloat<32767>(
       "gear/launchbar/holdback-position-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                                 //:V1_1_PROP_ID
+                                                 //: V1_1_PROP_ID
   std::make_pair(
     110,
     new PropShortFloat<32767>(
@@ -284,12 +352,12 @@ static propmap_t propmap = {
   std::make_pair(
     111, new PropShortFloat<32767>(
            "surface-positions/wing-pos-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                                //:V1_1_PROP_ID
+                                                //: V1_1_PROP_ID
   std::make_pair(
     112,
     new PropShortFloat<32767>(
       "surface-positions/wing-fold-pos-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                                //:V1_1_PROP_ID
+                                                //: V1_1_PROP_ID
 
   // to enable decoding this is the transient ID record that is in the packet.
   // This is not sent directly - instead it is the result of the conversion of
@@ -298,48 +366,48 @@ static propmap_t propmap = {
     120,
     new PropInt(
       "gear/launchbar/state-value")), //::INT, TT_NOSEND,  V1_1_2_PROP_ID, NULL,
-                                      //:decode_received_launchbar_state },
+                                      //: decode_received_launchbar_state },
 
   std::make_pair(
     200, new PropShortFloat<32767>(
            "gear/gear[0]/compression-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     201, new PropShortFloat<32767>(
            "gear/gear[0]/position-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                           //:V1_1_PROP_ID
+                                           //: V1_1_PROP_ID
   std::make_pair(
     210, new PropShortFloat<32767>(
            "gear/gear[1]/compression-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     211, new PropShortFloat<32767>(
            "gear/gear[1]/position-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                           //:V1_1_PROP_ID
+                                           //: V1_1_PROP_ID
   std::make_pair(
     220, new PropShortFloat<32767>(
            "gear/gear[2]/compression-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     221, new PropShortFloat<32767>(
            "gear/gear[2]/position-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                           //:V1_1_PROP_ID
+                                           //: V1_1_PROP_ID
   std::make_pair(
     230, new PropShortFloat<32767>(
            "gear/gear[3]/compression-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     231, new PropShortFloat<32767>(
            "gear/gear[3]/position-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                           //:V1_1_PROP_ID
+                                           //: V1_1_PROP_ID
   std::make_pair(
     240, new PropShortFloat<32767>(
            "gear/gear[4]/compression-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     241, new PropShortFloat<32767>(
            "gear/gear[4]/position-norm")), //::FLOAT, TT_SHORT_FLOAT_NORM,
-                                           //:V1_1_PROP_ID
+                                           //: V1_1_PROP_ID
 
   std::make_pair(
     300, new PropShortFloat<10>(
@@ -441,43 +509,43 @@ static propmap_t propmap = {
   std::make_pair(
     810, new PropShortFloat<1000>(
            "rotors/main/blade[0]/position-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                                  //:V1_1_PROP_ID
+                                                  //: V1_1_PROP_ID
   std::make_pair(
     811, new PropShortFloat<1000>(
            "rotors/main/blade[1]/position-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                                  //:V1_1_PROP_ID
+                                                  //: V1_1_PROP_ID
   std::make_pair(
     812, new PropShortFloat<1000>(
            "rotors/main/blade[2]/position-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                                  //:V1_1_PROP_ID
+                                                  //: V1_1_PROP_ID
   std::make_pair(
     813, new PropShortFloat<1000>(
            "rotors/main/blade[3]/position-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                                  //:V1_1_PROP_ID
+                                                  //: V1_1_PROP_ID
   std::make_pair(
     820, new PropShortFloat<1000>(
            "rotors/main/blade[0]/flap-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     821, new PropShortFloat<1000>(
            "rotors/main/blade[1]/flap-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     822, new PropShortFloat<1000>(
            "rotors/main/blade[2]/flap-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     823, new PropShortFloat<1000>(
            "rotors/main/blade[3]/flap-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     830, new PropShortFloat<1000>(
            "rotors/tail/blade[0]/position-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                                  //:V1_1_PROP_ID
+                                                  //: V1_1_PROP_ID
   std::make_pair(
     831, new PropShortFloat<1000>(
            "rotors/tail/blade[1]/position-deg")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                                  //:V1_1_PROP_ID
+                                                  //: V1_1_PROP_ID
 
   std::make_pair(
     900, new PropFloat(
@@ -485,11 +553,11 @@ static propmap_t propmap = {
   std::make_pair(
     901, new PropFloat(
            "sim/hitches/aerotow/tow/elastic-constant")), //::FLOAT, TT_ASIS,
-                                                         //:V1_1_PROP_ID
+                                                         //: V1_1_PROP_ID
   std::make_pair(
     902, new PropFloat(
            "sim/hitches/aerotow/tow/weight-per-m-kg-m")), //::FLOAT, TT_ASIS,
-                                                          //:V1_1_PROP_ID
+                                                          //: V1_1_PROP_ID
   std::make_pair(
     903, new PropFloat(
            "sim/hitches/aerotow/tow/dist")), //::FLOAT, TT_ASIS,  V1_1_PROP_ID
@@ -497,11 +565,11 @@ static propmap_t propmap = {
     904,
     new PropBool(
       "sim/hitches/aerotow/tow/connected-to-property-node")), //::BOOL, TT_ASIS,
-                                                              //:V1_1_PROP_ID
+                                                              //: V1_1_PROP_ID
   std::make_pair(
     905, new PropString("sim/hitches/aerotow/tow/"
                         "connected-to-ai-or-mp-callsign")), //::STRING, TT_ASIS,
-                                                            //:V1_1_2_PROP_ID
+                                                            //: V1_1_2_PROP_ID
   std::make_pair(
     906,
     new PropFloat(
@@ -524,7 +592,7 @@ static propmap_t propmap = {
   std::make_pair(
     931, new PropFloat(
            "sim/hitches/aerotow/speed-in-tow-direction")), //::FLOAT, TT_ASIS,
-                                                           //:V1_1_PROP_ID
+                                                           //: V1_1_PROP_ID
   std::make_pair(
     932,
     new PropBool("sim/hitches/aerotow/open")), //::BOOL, TT_ASIS,  V1_1_PROP_ID
@@ -556,12 +624,12 @@ static propmap_t propmap = {
   std::make_pair(
     1005, new PropShortFloat<1000>(
             "controls/lighting/nav-lights")), //::FLOAT, TT_SHORT_FLOAT_3,
-                                              //:V1_1_PROP_ID
+                                              //: V1_1_PROP_ID
   std::make_pair(
     1006,
     new PropBool(
       "controls/armament/station[0]/jettison-all")), //::BOOL, TT_SHORTINT,
-                                                     //:V1_1_PROP_ID
+                                                     //: V1_1_PROP_ID
 
   std::make_pair(
     1100, new PropInt("sim/model/variant")), //::INT, TT_ASIS,  V1_1_PROP_ID
@@ -586,10 +654,10 @@ static propmap_t propmap = {
     1500,
     new PropShort(
       "instrumentation/transponder/transmitted-id")), //::INT, TT_SHORTINT,
-                                                      //:V1_1_PROP_ID
+                                                      //: V1_1_PROP_ID
   std::make_pair(
     1501,
-    new PropShort(
+    new PropInt(
       "instrumentation/transponder/altitude")), //::INT, TT_ASIS, V1_1_PROP_ID
   std::make_pair(
     1502,
@@ -598,20 +666,20 @@ static propmap_t propmap = {
   std::make_pair(
     1503, new PropShort(
             "instrumentation/transponder/inputs/mode")), //::INT, TT_SHORTINT,
-                                                         //:V1_1_PROP_ID
+                                                         //: V1_1_PROP_ID
   std::make_pair(
     1504, new PropShort(
             "instrumentation/transponder/ground-bit")), //::BOOL, TT_SHORTINT,
-                                                        //:V1_1_2_PROP_ID
+                                                        //: V1_1_2_PROP_ID
   std::make_pair(
     1505, new PropShort(
             "instrumentation/transponder/airspeed-kt")), //::INT, TT_SHORTINT,
-                                                         //:V1_1_2_PROP_ID
+                                                         //: V1_1_2_PROP_ID
 
   std::make_pair(
     10001, new PropString(
              "sim/multiplay/transmission-freq-hz")), //::STRING, TT_NOSEND,
-                                                     //:V1_1_2_PROP_ID
+                                                     //: V1_1_2_PROP_ID
   std::make_pair(
     10002,
     new PropString("sim/multiplay/chat")), //::STRING, TT_ASIS,  V1_1_2_PROP_ID
@@ -1630,7 +1698,32 @@ static propmap_t propmap = {
                                  "instrumentation/transponder/mach-number"))
 };
 
+const rapidjson::Document &
+MultiplayerEncode::getDefaultDoc(const std::string &docfile)
+{
+  /** Map with JSON reads */
+  static map<std::string, rapidjson::Document> default_details;
+  static rapidjson::Document empty_array;
 
+  auto curdoc = default_details.find(docfile);
+  if (curdoc != default_details.end()) {
+    return curdoc->second;
+  }
+
+  std::ifstream ifile(docfile);
+  std::string json((std::istreambuf_iterator<char>(ifile)),
+                   std::istreambuf_iterator<char>());
+  auto eres = default_details.emplace(
+    std::piecewise_construct, std::make_tuple(docfile), std::make_tuple());
+  if (ifile.good() && eres.second) {
+    eres.first->second.Parse(json.c_str());
+    if (eres.first->second.HasParseError()) {
+      W_MOD("Cannot parse JSON file " << docfile);
+      return eres.first->second;
+    }
+  }
+  return empty_array;
+}
 
 static const unsigned headersize = 32;
 static const unsigned max_text_size = 128;
@@ -1665,7 +1758,7 @@ MultiplayerEncode::~MultiplayerEncode() {}
 
 void MultiplayerEncode::encode(const BaseObjectMotion &motion,
                                const std::string &fgclass,
-                               const std::string &livery,
+                               const std::string &fixeddetails,
                                const std::string &name, double time, double lag)
 {
 
@@ -1676,7 +1769,7 @@ void MultiplayerEncode::encode(const BaseObjectMotion &motion,
 
   // ----------------------encode data-----------------------------------
   // aircraft model, fixed length 96; available models under
-   // /usr/share/FlightGear/Aircraft
+  // /usr/share/FlightGear/Aircraft
   {
     char model_ptr[96] = {};
     strncpy(model_ptr, fgclass.c_str(), min(fgclass.size(), 96UL));
@@ -1696,9 +1789,9 @@ void MultiplayerEncode::encode(const BaseObjectMotion &motion,
               motion.uvw, motion.omega);
   xdr_double(&xdr_data, &pos[0]);
   xdr_double(&xdr_data, &pos[1]);
-  xdr_double(&xdr_data, &pos[2]);  // 136
+  xdr_double(&xdr_data, &pos[2]); // 136
 
-    // orientation, ECEF, 3 float, normalized quaternion rot vector
+  // orientation, ECEF, 3 float, normalized quaternion rot vector
   xdr_float(&xdr_data, &attitude[1]);
   xdr_float(&xdr_data, &attitude[2]);
   xdr_float(&xdr_data, &attitude[3]); // 148
@@ -1713,7 +1806,7 @@ void MultiplayerEncode::encode(const BaseObjectMotion &motion,
   xdr_float(&xdr_data, &omega[1]);
   xdr_float(&xdr_data, &omega[2]); // 172
 
-    // linear acceleration, ECEF, zero for now
+  // linear acceleration, ECEF, zero for now
   float zero = 0.0f;
   xdr_float(&xdr_data, &zero);
   xdr_float(&xdr_data, &zero);
@@ -1730,44 +1823,42 @@ void MultiplayerEncode::encode(const BaseObjectMotion &motion,
   assert(xdr_getpos(&xdr_data) == 200);
 
   // protocol version 2
-  propmap[10]->code(
-    xdr_data, 10, 2);
-  if (livery.size()) {
-    propmap[1101]->code(xdr_data, 1101, livery);
+  // propmap[10]->code(xdr_data, 10U, 2L);
+
+  if (fixeddetails.size()) {
+    auto const& ddoc = getDefaultDoc(fixeddetails);
+    if (ddoc.IsArray()) {
+      for (rapidjson::SizeType i = 0; i < ddoc.Size(); i++) {
+
+        unsigned code = ddoc[i]["code"].GetInt();
+        if (propmap[code]->isInteger()) {
+          propmap[code]->code(xdr_data, code, ddoc[i]["value"].GetInt64());
+        }
+        else if (propmap[code]->isBool()) {
+          propmap[code]->code(xdr_data, code, ddoc[i]["value"].GetBool());
+        }
+        else if (propmap[code]->isFloat()) {
+          propmap[code]->code(xdr_data, code, ddoc[i]["value"].GetFloat());
+        }
+        else if (propmap[code]->isText()) {
+          propmap[code]->code(xdr_data, code, std::string(ddoc[i]["value"].GetString()));
+        }
+      }
+    }
   }
-  const std::string msg("Hello");
-  propmap[10002]->code(xdr_data, 10002, msg);
 
-  // clockmode 1
-  propmap[0x2ed6]->code(xdr_data, 0x2ed6, 1);
-  // fallback model unspecified
-  propmap[13000]->code(xdr_data, 0x32c8, 1);
-
-
-  //uint32_t chat_id = 10002;
-  //xdr_u_int(&xdr_data, &chat_id);
-  //const char *msg = "Hello";
-  //bool_t res = xdr_string(&xdr_data, const_cast<char **>(&msg), max_text_size);
-  // iterate over all properties
-  // has to be expanded. See list in multiplaymgr.cxx for propery
-  // names and ID's
-  {
-    // property id, uint32_t
-
-     // property value, int, float or string
-  }
   // update current size counter
   bufsize = headersize + xdr_getpos(&xdr_data);
-      // ----------------------encode header--------------------------------
+  // ----------------------encode header--------------------------------
 
-   // magic
-  static uint32_t magic = 0x46474653;  // "FGFS"
+  // magic
+  static uint32_t magic = 0x46474653; // "FGFS"
   // use relay magic, so messages are not being sent back
   // static uint32_t magic = 0x53464746;    // GSGF
   xdr_u_int(&xdr_header, &magic); // 4
 
-    // protocol version
-  static uint32_t version = 0x00010001;  // 1.1
+  // protocol version
+  static uint32_t version = 0x00010001; // 1.1
   xdr_u_int(&xdr_header, &version); // 8
 
   // message ID
@@ -1780,11 +1871,11 @@ void MultiplayerEncode::encode(const BaseObjectMotion &motion,
 
   // radar range
   int _rr = round(radarrange);
-  xdr_int(&xdr_header, &_rr);       // 20
+  xdr_int(&xdr_header, &_rr); // 20
 
   // receiver port, unused
   unsigned _z = 0;
-  xdr_u_int(&xdr_header, &_z);   // 24
+  xdr_u_int(&xdr_header, &_z); // 24
 
   // callsign (8 bytes)
   assert(xdr_getpos(&xdr_header) == 24);
@@ -1874,14 +1965,16 @@ void MultiplayerEncode::dump(const char *buffer, size_t bufsize)
       knowprop = false;
     }
     else {
-      std::cout << "0x" << std::setw(4) << std::hex << prop->first << std::dec
+      std::cout << "0x" << std::setw(4) << std::hex
+                << prop->first << std::dec
+                << "=" << std::setw(6) << prop->first
                 << std::setw(0);
       if (shortencode) {
         std::cout << " #";
         prop->second->dump(value, xdr_data);
       }
       else {
-        std::cout << " :";
+        std::cout << " $";
         prop->second->dump(xdr_data);
       }
     }

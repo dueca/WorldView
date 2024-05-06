@@ -18,19 +18,19 @@ static const char c_id[] =
 // include the definition of the helper class
 #include "FlightGearViewer_Dueca.hxx"
 
-// include the debug writing header, by default, write warning and
- // error messages
-#define W_MOD
-#define E_MOD
-#include <debug.h>
-
 // include additional files needed for your calculation here
-
 #define DO_INSTANTIATE
 #include <CoreCreator.hxx>
 #include <MemberCall.hxx>
 #include <MemberCall2Way.hxx>
 #include <VarProbe.hxx>
+
+// include the debug writing header, by default, write warning and
+// error messages
+#define W_MOD
+#define E_MOD
+#include <debug.h>
+
 USING_DUECA_NS;
 
 // Parameters to be inserted
@@ -81,8 +81,8 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
       "Port number of the multiplayer server, enables if set" },
 
     { "mp-client",
-      new MemberCall<FlightGearViewer_Dueca, string>
-        (&FlightGearViewer_Dueca::addMultiplayClient),
+      new MemberCall<FlightGearViewer_Dueca, string>(
+        &FlightGearViewer_Dueca::addMultiplayClient),
       "Specify multiplayer client, network/host address and port" },
 
     { "mp-radarrange",
@@ -104,6 +104,9 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
       " - Flightgear model, e.g. \"/Aircraft/c172p/Models/c172p.xml\", see\n"
       "   flightgear data folder\n"
       " - Livery, optional" },
+
+    { "debug-dump", new VarProbe<_ThisModule_, bool>(&_ThisModule_::debugdump),
+      "Dump communication between DUECA and FlightGear multiplay" },
 
     /* The table is closed off with NULL pointers for the variable
        name and MemberCall/VarProbe object. The description is used to

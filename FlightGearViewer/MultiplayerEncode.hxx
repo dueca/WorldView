@@ -16,6 +16,8 @@
 #include <TimeSpec.hxx>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
+#include <rapidjson/document.h>
+#include <string>
 
 class MultiplayerEncode
 {
@@ -44,10 +46,13 @@ protected:
   /** Radar range */
   float radarrange;
 
+  /** Function for spicing details on sent messages, constant defaults. */
+  static const rapidjson::Document& getDefaultDoc(const std::string& docfile);
+
 public:
   /** Constructor */
   MultiplayerEncode(const std::string &receiver, unsigned short replyport,
-                    const FGAxis &ax, float radarrange = 100000.0f);
+                    const FGAxis &ax, float radarrange = 100.0f);
 
   /** Destructor */
   virtual ~MultiplayerEncode();

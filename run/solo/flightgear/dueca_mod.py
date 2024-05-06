@@ -89,15 +89,16 @@ if this_node_id == ecs_node:
             set_viewer =
             dueca.FlightGearViewer().param(
                 ('model-table',
-                 ('ObjectMotion:c172', 'AI/Aircraft/c172/csna.xml', '')),
+                 ('ObjectMotion:c172', 'Aircraft/c172p/Models/c172p.xml', 'cessnadefault.json')),
                 ('model-table',
                  ('ObjectMotion:ufo', 'Aircraft/ufo/Models/ufo.xml', '')),
-                receiver='127.0.0.1',
+                receiver='',
                 own_interface='127.0.0.1',
                 port=5501,
                 lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 240.0),
                 binary_packets=True,
                 mp_interface="127.0.0.1",
+                debug_dump=True,
                 mp_port=5002,
                 mp_client="127.0.0.1:5001").complete(),
             initial_camera = ( 0, 0, -30, 0, 0, 0)
@@ -119,10 +120,10 @@ if this_node_id == ecs_node:
 	    ('rotation', (1, 1, 10)),
 	    ('dt', 0.1),
 	    #('rotation', (0, 0, 0.4)),
-	    ('add-motion', "c172|houseX"),
-	    ('position', (-70, 0, -3)),
+	    #('add-motion', "c172|houseX"),
+	    #('position', (-70, 0, -3)),
 	    #('rotation', (1, 0, 0)),
-	    ('dt', 0.1),
+	    #('dt', 0.1),
         ))
 
     # add a filer in this node for replay support

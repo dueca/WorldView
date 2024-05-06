@@ -62,6 +62,7 @@ FlightGearViewer::FlightGearViewer() :
   encoder(),
   current_tick(0),
   retain_age(100000), // one second
+  debugdump(false),
   mp_clients(),
   mp_port(0),
   mp_radarrange(50.0), // nm
@@ -76,54 +77,59 @@ FlightGearViewer::~FlightGearViewer()
 {
   if (sockfd != -1)
     close(sockfd);
+  if (mp_sockfd != -1)
+    close(mp_sockfd);
 }
 
 bool FlightGearViewer::complete()
 {
   const char *classname = "FlightGearViewer";
 
-  sockfd = socket(PF_INET, SOCK_DGRAM, 0);
-  if (sockfd == -1) {
-    perror("Creating socket");
-    return false;
-  }
-
-  // source address
-  struct sockaddr_in src_address;
-  memset(&src_address, 0, sizeof(src_address));
-  src_address.sin_family = AF_INET;
-
-  // if an interface was selected, try to set this one
-  if (own_interface.size() &&
-      inet_aton(own_interface.c_str(), &src_address.sin_addr) == 0) {
-    E_MOD(classname << " source address invalid");
-    return false;
-
-    // and bind to the source address
-    if (bind(sockfd, reinterpret_cast<sockaddr *>(&src_address),
-             sizeof(src_address) != 0)) {
-      perror("Cannot bind to source");
+  // only send data if receiver configured
+  if (receiver.size()) {
+    sockfd = socket(PF_INET, SOCK_DGRAM, 0);
+    if (sockfd == -1) {
+      perror("Creating socket");
       return false;
     }
-  }
 
-  // destination address
-  memset(&dest_address, 0, sizeof(dest_address));
-  dest_address.sin_family = AF_INET;
+    // source address
+    struct sockaddr_in src_address;
+    memset(&src_address, 0, sizeof(src_address));
+    src_address.sin_family = AF_INET;
 
-  // destination must have been filled in
-  if (!receiver.size() ||
-      inet_aton(receiver.c_str(), &dest_address.sin_addr) == 0) {
-    E_MOD(classname << " invalid receiver address!");
-    return false;
-  }
+    // if an interface was selected, try to set this one
+    if (own_interface.size() &&
+        inet_aton(own_interface.c_str(), &src_address.sin_addr) == 0) {
+      E_MOD(classname << " source address invalid");
+      return false;
 
-  // and port too
-  if (port <= 0 || port > 0xffff) {
-    E_MOD(classname << " invalid port");
-    return false;
+      // and bind to the source address
+      if (bind(sockfd, reinterpret_cast<sockaddr *>(&src_address),
+               sizeof(src_address) != 0)) {
+        perror("Cannot bind to source");
+        return false;
+      }
+    }
+
+    // destination address
+    memset(&dest_address, 0, sizeof(dest_address));
+    dest_address.sin_family = AF_INET;
+
+    // destination must have been filled in
+    if (!receiver.size() ||
+        inet_aton(receiver.c_str(), &dest_address.sin_addr) == 0) {
+      E_MOD(classname << " invalid receiver address!");
+      return false;
+    }
+
+    // and port too
+    if (port <= 0 || port > 0xffff) {
+      E_MOD(classname << " invalid port");
+      return false;
+    }
+    dest_address.sin_port = htons(port);
   }
-  dest_address.sin_port = htons(port);
 
   // create the encoder
   encoder = boost::shared_ptr<MultiplayerEncode>(
@@ -202,10 +208,13 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
     uint32_t magic = 0x44544543;
     packData(st, fg_command);
     packData(st, magic);
-    if (sendto(sockfd, buffer, sizeof(buffer), 0,
-               reinterpret_cast<sockaddr *>(&dest_address),
-               sizeof(dest_address)) == -1) {
-      perror("Sending to flightgear");
+
+    if (sockfd != -1) {
+      if (sendto(sockfd, buffer, sizeof(buffer), 0,
+                 reinterpret_cast<sockaddr *>(&dest_address),
+                 sizeof(dest_address)) == -1) {
+        perror("Sending to flightgear");
+      }
     }
   }
   else {
@@ -216,20 +225,22 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
       fg_command.latlonalt_phithtpsi[2], fg_command.latlonalt_phithtpsi[3],
       fg_command.latlonalt_phithtpsi[4], fg_command.latlonalt_phithtpsi[5],
       vis_boundary, vis_aloft);
-    if (sendto(sockfd, buffer, nchar, 0,
-               reinterpret_cast<sockaddr *>(&dest_address),
-               sizeof(dest_address)) == -1) {
-      perror("Sending to flightgear");
+    if (sockfd != -1) {
+      if (sendto(sockfd, buffer, nchar, 0,
+                 reinterpret_cast<sockaddr *>(&dest_address),
+                 sizeof(dest_address)) == -1) {
+        perror("Sending to flightgear");
+      }
     }
   }
 
-  if (mp_sockin != -1) {
+  if (mp_sockfd != -1) {
 
     // check whether messages came in on the multiplayer port
     // set-up for select
     fd_set socks;
     FD_ZERO(&socks);
-    FD_SET(mp_sockin, &socks);
+    FD_SET(mp_sockfd, &socks);
     struct timeval timeout = { 0 };
     char buffer[2000];
 
@@ -241,31 +252,26 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
     socklen_t peer_ip_len = sizeof(peer_ip.in);
 
     // check messages
-    while (select(mp_sockin + 1, &socks, NULL, NULL, &timeout) > 0) {
-      ssize_t nbytes = recvfrom(mp_sockin, buffer, sizeof(buffer), 0,
+    while (select(mp_sockfd + 1, &socks, NULL, NULL, &timeout) > 0) {
+      ssize_t nbytes = recvfrom(mp_sockfd, buffer, sizeof(buffer), 0,
                                 &peer_ip.gen, &peer_ip_len);
 
       if (nbytes > 32) {
         MessageHead msgh(buffer);
         if (msgh.valid()) {
-          // auto peer = mp_clients.find(msgh.getName());
 
-          //MessageBody msgb(buffer);
-          //std::cerr << "UFO time=" << msgb.time << " x=" << msgb.x
-          //          << " y=" << msgb.y << " z=" << msgb.z << std::endl;
-          encoder->dump(buffer, nbytes);
-          // if (peer != mp_clients.end()) {
-          //   // known peer, update receive time
-          //   peer->second.age = current_tick;
-          // }
-          // else {
-          //   mp_clients.emplace(
-          //     std::piecewise_construct, std::forward_as_tuple(msgh.getName()),
-          //     std::forward_as_tuple(mp_sockfd, peer_ip.in, current_tick));
-          //   W_MOD("Connected to " << msgh.getName() << " at "
-          //                         << inet_ntoa(peer_ip.in.sin_addr) << ":"
-          //                         << ntohs(peer_ip.in.sin_port));
-          // }
+          if (debugdump) {
+            std::cout << std::endl << "Multiplay from peer "
+                      << inet_ntoa(peer_ip.in.sin_addr) << ":"
+                      << ntohs(peer_ip.in.sin_port)
+                      << " size=" << nbytes << std::endl;
+            encoder->dump(buffer, nbytes);
+          }
+        }
+        else {
+          W_MOD("Invalid message from " <<
+                inet_ntoa(peer_ip.in.sin_addr) << ":" <<
+                ntohs(peer_ip.in.sin_port) << " size=" << nbytes);
         }
       }
     }
@@ -289,12 +295,20 @@ void FlightGearViewer::MultiplayerClient::update(
 
 void FlightGearViewer::sendPositionReport()
 {
-  // encoder->dump(encoder->getBuffer(), encoder->getBufferSize());
+  // print message for debug purposes
+  if (debugdump) {
+    std::cout << std::endl << "Multiplay send to "
+              << mp_clients.size() << " clients, size="
+              << encoder->getBufferSize() << std::endl;
+    encoder->dump(encoder->getBuffer(), encoder->getBufferSize());
+  }
+
+  // send to all the clients
   for (auto const &client : mp_clients) {
     MessageBody msgb(encoder->getBuffer());
     MessageHead msgh(encoder->getBuffer());
-    std::cerr << msgh.getName() << "time=" << msgb.time << " x=" << msgb.x
-              << " y=" << msgb.y << " z=" << msgb.z << std::endl;
+    //std::cerr << msgh.getName() << "time=" << msgb.time << " x=" << msgb.x
+    //          << " y=" << msgb.y << " z=" << msgb.z << std::endl;
 
     client.update(*encoder);
   }
@@ -414,8 +428,8 @@ bool FlightGearViewer::modelTableEntry(const std::vector<std::string> &s)
 
   WorldDataSpec obj;
   obj.name = s[0];
-  obj.type = s[1];                 // flightgear aircraft model
-  obj.filename.push_back(s[2]);  // livery
+  obj.type = s[1]; // flightgear aircraft model
+  obj.filename.push_back(s[2]); // livery
   addFactorySpec(s[0], obj);
   return true;
 }
