@@ -89,7 +89,7 @@ if this_node_id == ecs_node:
             set_viewer =
             dueca.FlightGearViewer().param(
                 ('model-table',
-                 ('ObjectMotion:c172', 'Aircraft/c172p/Models/c172p.xml', 'cessnadefault.json')),
+                 ('ObjectMotion:c172', 'AI/Aircraft/A380/Models/388-Korean.xml', 'cessnadefault.json')),
                 ('model-table',
                  ('ObjectMotion:ufo', 'Aircraft/ufo/Models/ufo.xml', '')),
                 receiver='',
