@@ -18,5 +18,6 @@ else
 fi
 
 ln -sf ../../../../WorldView/HMILabViewFiles/fg/startfg.x .
+ln -sf ../../../../WorldView/FlightGearViewer/testfg.x .
 ln -sf ../../../../WorldView/HMILabViewFiles/fg/test_camera.xml .
 ln -sf ../../../../WorldView/HMILabViewFiles/fg/fgms-test.conf fgms.conf
