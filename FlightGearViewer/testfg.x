@@ -60,20 +60,19 @@ fgfs \
     --callsign=${CS} \
     --multiplay=in,100,127.0.0.1,5001 \
     --multiplay=out,10,127.0.0.1,5002 \
-    --prop:int:/sim/multiplay/debug-level=1 \
+    --prop:int:/sim/multiplay/debug-level=0 \
     --airport=EHAM \
     --aircraft=A380  \
     --fdm=external \
     --disable-real-weather-fetch \
-    --enable-clouds3d \
     --start-date-lat=2024:08:23:14:00:00 \
+    --enable-clouds3d \
     --prop:bool:/sim/menubar/visibility=false \
     --enable-splash-screen \
     --enable-terrasync \
     --disable-random-objects \
     --disable-random-buildings \
     --disable-random-vegetation \
-    --enable-clock-freeze \
     --disable-sound \
     --disable-rembrandt \
     --disable-distance-attenuation \

@@ -11,11 +11,12 @@
 #ifndef FGLocalAxis_hxx
 #define FGLocalAxis_hxx
 
-#include "../comm-objects/RvPQuat.hxx"
+#include <dueca/extra/RvPQuat.hxx>
 #include <cmath>
 #include <dueca-version.h>
 
-#if DUECA_VERSION_NUM >= DUECA_VERSION(2, 0, 0)
+using namespace dueca;
+
 #include <Eigen/Dense>
 #define USING_EIGEN3
 // a normal matrix, allocates its own storage
@@ -46,18 +47,6 @@ typedef Eigen::Map<Eigen::VectorXf> VectorfE;
 typedef Eigen::Map<const Eigen::VectorXf> cVectorfE;
 // constant double vector, external storage
 typedef Eigen::Map<const Eigen::VectorXd> cVectorE;
-#else
-
-#include <mtl/mtl.h>
-typedef mtl::matrix<double, mtl::rectangle<>, mtl::dense<>,
-                    mtl::row_major>::type Matrix;
-typedef mtl::matrix<double, mtl::rectangle<>, mtl::dense<mtl::external>,
-                    mtl::row_major>::type MatrixE;
-typedef mtl::external_vec<double> VectorE;
-typedef mtl::external_vec<float> VectorfE;
-typedef mtl::external_vec<const double> cVectorE;
-typedef mtl::dense1D<double> Vector;
-#endif
 
 struct EulerAngles;
 

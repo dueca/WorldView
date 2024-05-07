@@ -105,7 +105,7 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
       "   flightgear data folder\n"
       " - Livery, optional" },
 
-    { "debug-dump", new VarProbe<_ThisModule_, bool>(&_ThisModule_::debugdump),
+    { "multiplay-debug-dump", new VarProbe<_ThisModule_, bool>(&_ThisModule_::debugdump),
       "Dump communication between DUECA and FlightGear multiplay" },
 
     /* The table is closed off with NULL pointers for the variable

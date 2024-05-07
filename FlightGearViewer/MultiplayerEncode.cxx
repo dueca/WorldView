@@ -21,6 +21,9 @@
 
 #include <dueca/debug.h>
 
+// flightgear protocol max text size
+#define MAX_TEXT_SIZE 768
+
 struct PropBase
 {
   const std::string name;
@@ -62,7 +65,7 @@ struct PropInt : public PropBase
     PropBase(name)
   {}
 
-  void dump(XDR &xdr_data)
+  void dump(XDR &xdr_data) override
   {
     int val;
     xdr_int(&xdr_data, &val);
@@ -237,21 +240,28 @@ struct PropString : public PropBase
 
   void dump(XDR &xdr_data) final
   {
+    // long-coded string is inefficient, one word per character
     unsigned int len;
     xdr_u_int32_t(&xdr_data, &len);
-    char val[64] = {};
-    xdr_opaque(&xdr_data, val, len);
-
-    // char val[64]; xdr_string(&xdr_data, reinterpret_cast<char**>(&val), 64);
+    char val[len + 1];
+    val[len] = '\0';
+    for (unsigned i = 0; i < len; i++) {
+      xdr_char(&xdr_data, val + i);
+    }
     std::cout << name << "=" << val << std::endl;
   }
 
   void dump(short int len, XDR &xdr_data) final
   {
-    char val[64] = {};
+    char val[len + 1];
+    val[len] = '\0';
     if (len) {
+      // the data is not 4-byte aligned with the compact string coding,
+      // so after this, the xdr_data pointer (which will be automatically
+      // given 4-byte alignment by the xdr routines, may be off boundary)
       auto cp = xdr_getpos(&xdr_data);
-      xdr_opaque(&xdr_data, reinterpret_cast<char *>(val), unsigned(len));
+      xdr_opaque(&xdr_data, val, unsigned(len));
+      // set to possibly off-boundary position
       xdr_setpos(&xdr_data, cp + unsigned(len));
     }
     std::cout << name << "=s=" << val << std::endl;
@@ -261,20 +271,31 @@ struct PropString : public PropBase
                     const std::string &data) final
   {
     if (data.size() == 0) {
+      // for the weird case, where I see zero-length strings
+      // being encoded as non-compact
+
+      // property code
       xdr_short(&xdr_data, reinterpret_cast<short *>(&propno));
-      uint32_t len=0;
+
+      // zero length
+      uint32_t len = 0;
       xdr_u_int(&xdr_data, &len);
     }
     else {
+      // compact coding, propno + length
       uint32_t word = (propno << 16) | data.size();
       xdr_u_int(&xdr_data, &word);
-      auto cp = xdr_getpos(&xdr_data);
+
+      // opaque coding of the string
       if (data.size()) {
+        auto cp = xdr_getpos(&xdr_data);
         xdr_opaque(&xdr_data, const_cast<char *>(data.data()), data.size());
         xdr_setpos(&xdr_data, cp + unsigned(data.size()));
       }
     }
   }
+
+  // flag type of data
   bool isText() const override { return true; }
 };
 
@@ -1698,33 +1719,6 @@ static propmap_t propmap = {
                                  "instrumentation/transponder/mach-number"))
 };
 
-const rapidjson::Document &
-MultiplayerEncode::getDefaultDoc(const std::string &docfile)
-{
-  /** Map with JSON reads */
-  static map<std::string, rapidjson::Document> default_details;
-  static rapidjson::Document empty_array;
-
-  auto curdoc = default_details.find(docfile);
-  if (curdoc != default_details.end()) {
-    return curdoc->second;
-  }
-
-  std::ifstream ifile(docfile);
-  std::string json((std::istreambuf_iterator<char>(ifile)),
-                   std::istreambuf_iterator<char>());
-  auto eres = default_details.emplace(
-    std::piecewise_construct, std::make_tuple(docfile), std::make_tuple());
-  if (ifile.good() && eres.second) {
-    eres.first->second.Parse(json.c_str());
-    if (eres.first->second.HasParseError()) {
-      W_MOD("Cannot parse JSON file " << docfile);
-      return eres.first->second;
-    }
-  }
-  return empty_array;
-}
-
 static const unsigned headersize = 32;
 static const unsigned max_text_size = 128;
 
@@ -1737,7 +1731,7 @@ MultiplayerEncode::MultiplayerEncode(const std::string &receiver,
   radarrange(radarrange)
 {
   // zero the buffer to get any junk out
-  memset(buffer, 0xff, sizeof(buffer));
+  memset(buffer, 0x00, sizeof(buffer));
   // to be on the safe size, initialize buffers
   xdrmem_create(&xdr_data, &buffer[headersize], sizeof(buffer) - headersize,
                 XDR_ENCODE);
@@ -1758,9 +1752,11 @@ MultiplayerEncode::~MultiplayerEncode() {}
 
 void MultiplayerEncode::encode(const BaseObjectMotion &motion,
                                const std::string &fgclass,
-                               const std::string &fixeddetails,
-                               const std::string &name, double time, double lag)
+                               const std::string &name, double time, double lag,
+                               const PropertyEncoderBase *property_encoder)
 {
+  // zero the buffer to get any junk out
+  memset(buffer, 0x00, sizeof(buffer));
 
   // re-initialize XDR buffers
   xdrmem_create(&xdr_data, &buffer[headersize], sizeof(buffer) - headersize,
@@ -1824,27 +1820,8 @@ void MultiplayerEncode::encode(const BaseObjectMotion &motion,
 
   // protocol version 2
   // propmap[10]->code(xdr_data, 10U, 2L);
-
-  if (fixeddetails.size()) {
-    auto const& ddoc = getDefaultDoc(fixeddetails);
-    if (ddoc.IsArray()) {
-      for (rapidjson::SizeType i = 0; i < ddoc.Size(); i++) {
-
-        unsigned code = ddoc[i]["code"].GetInt();
-        if (propmap[code]->isInteger()) {
-          propmap[code]->code(xdr_data, code, ddoc[i]["value"].GetInt64());
-        }
-        else if (propmap[code]->isBool()) {
-          propmap[code]->code(xdr_data, code, ddoc[i]["value"].GetBool());
-        }
-        else if (propmap[code]->isFloat()) {
-          propmap[code]->code(xdr_data, code, ddoc[i]["value"].GetFloat());
-        }
-        else if (propmap[code]->isText()) {
-          propmap[code]->code(xdr_data, code, std::string(ddoc[i]["value"].GetString()));
-        }
-      }
-    }
+  if (property_encoder) {
+    auto ncoded = (*property_encoder)(xdr_data);
   }
 
   // update current size counter
@@ -1965,10 +1942,8 @@ void MultiplayerEncode::dump(const char *buffer, size_t bufsize)
       knowprop = false;
     }
     else {
-      std::cout << "0x" << std::setw(4) << std::hex
-                << prop->first << std::dec
-                << "=" << std::setw(6) << prop->first
-                << std::setw(0);
+      std::cout << "0x" << std::setw(4) << std::hex << prop->first << std::dec
+                << "=" << std::setw(6) << prop->first << std::setw(0);
       if (shortencode) {
         std::cout << " #";
         prop->second->dump(value, xdr_data);
@@ -1979,4 +1954,54 @@ void MultiplayerEncode::dump(const char *buffer, size_t bufsize)
       }
     }
   }
+}
+
+PropertyEncoderJSON::PropertyEncoderJSON(const std::string &jfile) :
+  MultiplayerEncode::PropertyEncoderBase(),
+  doc(),
+  fname(jfile)
+{
+  std::ifstream ifile(jfile);
+  std::string json((std::istreambuf_iterator<char>(ifile)),
+                   std::istreambuf_iterator<char>());
+
+  if (ifile.good()) {
+    doc.Parse(json.c_str());
+    if (doc.HasParseError()) {
+      W_MOD("Cannot parse JSON file " << jfile);
+    }
+  }
+}
+
+PropertyEncoderJSON::~PropertyEncoderJSON() {}
+
+size_t PropertyEncoderJSON::operator()(XDR &xdr_data) const
+{
+  if (doc.IsArray()) {
+    for (rapidjson::SizeType i = 0; i < doc.Size(); i++) {
+
+      try {
+        unsigned code = doc[i]["code"].GetInt();
+        if (propmap[code]->isInteger()) {
+          propmap[code]->code(xdr_data, code, doc[i]["value"].GetInt64());
+        }
+        else if (propmap[code]->isBool()) {
+          propmap[code]->code(xdr_data, code, doc[i]["value"].GetBool());
+        }
+        else if (propmap[code]->isFloat()) {
+          propmap[code]->code(xdr_data, code, doc[i]["value"].GetFloat());
+        }
+        else if (propmap[code]->isText()) {
+          propmap[code]->code(xdr_data, code,
+                              std::string(doc[i]["value"].GetString()));
+        }
+      }
+      catch (const std::exception &e) {
+        W_MOD("Problem encoding value at item " << i + 1 << " in file " << fname
+                                                << " :" << e.what());
+      }
+    }
+    return doc.Size();
+  }
+  return 0;
 }

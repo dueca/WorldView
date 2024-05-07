@@ -2,8 +2,8 @@
 /*      item            : FlightGearObject.hxx
         made by         : Rene van Paassen
         date            : 100707
-	category        : header file 
-        description     : 
+	category        : header file
+        description     :
 	changes         : 100707 first version
         language        : C++
 */
@@ -16,6 +16,7 @@
 #include <dueca.h>
 #include <dueca_ns.h>
 #include <boost/scoped_ptr.hpp>
+#include "MultiplayerEncode.hxx"
 #include "comm-objects.h"
 
 class FlightGearViewer;
@@ -32,27 +33,27 @@ class FlightGearObject: public WorldObjectBase
 
   /** Name of this thing. */
   std::string  name;
-  
+
   /** Aircraft class as known to FlightGear. */
   std::string  fgclass;
-  
-  /** Optionally, a livery */
-  std::string  livery;
-  
+
   /** Pointer to the boss, for conversion and sending of the data */
   FlightGearViewer* master;
 
+  /** Encoder for a JSON fixed data file */
+  boost::scoped_ptr<MultiplayerEncode::PropertyEncoderBase> coder;
+
 public:
   /** Constructor */
-  FlightGearObject(const std::string& name, 
-		   const std::string& fgclass, 
-		   const std::string& livery, 
+  FlightGearObject(const std::string& name,
+		   const std::string& fgclass,
+		   const std::string& jsonfile,
 		   FlightGearViewer *master);
 
   /** Destructor */
   ~FlightGearObject();
 
-  /** Connect to a channel entry 
+  /** Connect to a channel entry
 
       @param master_id ID for opening a channel reader
       @param cname     Channel with object data

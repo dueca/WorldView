@@ -10,7 +10,7 @@
 
 #include "AxisTransform.hxx"
 // #include "comm-objects.h"
-#include "../comm-objects/RvPQuat.hxx"
+#include <dueca/extra/RvPQuat.hxx>
 #include <cmath>
 #include <iostream>
 
@@ -102,10 +102,15 @@ void FGLocalAxis::toECEF(double pos[3], float velocity[3], float attitude[4],
   // to the global ECEF system
   Orientation to_global = lla.toGlobal(psi_zero);
 
-    // conversion of the quaternion is simply multiplication - order??
+  // conversion of the quaternion is simply multiplication - order??
   QxQ(attitude, quat, to_global);
 
-    // Attitude forms the basis for the rotation matrix for converting
+  printPTP(std::cout, quat);
+  printPTP(std::cout, attitude);
+
+
+
+  // Attitude forms the basis for the rotation matrix for converting
   // the speeds and rotational rates
   float R_data[9];
   MatrixfE R(R_data, 3, 3);
@@ -115,6 +120,23 @@ void FGLocalAxis::toECEF(double pos[3], float velocity[3], float attitude[4],
   cVectorfE v_uvw(uvw, 3);
   VectorfE v_omega(omega, 3);
   cVectorfE v_pqr(pqr, 3);
+
+  // now convert the attitude vector to axis-angle representation
+  // https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation
+  float angle = 2.0*std::acos(attitude[0]);
+  float norm = std::sqrt(attitude[1]*attitude[1] + attitude[2]*attitude[2] +
+      attitude[3]*attitude[3]);
+  if (std::fabsf(angle) < 1e-5f) {
+    attitude[1] = 2.0f*attitude[1];
+    attitude[2] = 2.0f*attitude[2];
+    attitude[3] = 2.0f*attitude[3];
+  }
+  else {
+    attitude[1] = attitude[1]/norm*angle;
+    attitude[2] = attitude[2]/norm*angle;
+    attitude[3] = attitude[3]/norm*angle;
+  }
+
 
   // transform the speed vector, in body axes, to ECEF coordinates
   v_velocity = R * v_uvw;

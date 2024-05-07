@@ -8,6 +8,7 @@
         language        : C++
 */
 
+#include "MultiplayerEncode.hxx"
 #define FlightGearObject_cxx
 #include "FlightGearObject.hxx"
 #include "FlightGearViewer.hxx"
@@ -16,14 +17,17 @@
 
 FlightGearObject::FlightGearObject(const std::string &name,
                                    const std::string &fgclass,
-                                   const std::string &livery,
+                                   const std::string &jsonfile,
                                    FlightGearViewer *master) :
   itime(0.0),
   name(name),
   fgclass(fgclass),
-  livery(livery),
   master(master)
-{}
+{
+  if (jsonfile.size()) {
+    coder.reset(new PropertyEncoderJSON(jsonfile));
+  }
+}
 
 FlightGearObject::~FlightGearObject() {}
 
@@ -54,8 +58,11 @@ void FlightGearObject::iterate(TimeTickType ts, const BaseObjectMotion &base,
             o2.extrapolate(textra);
           }
         }
-        double ftime = master->getFlightTime(DataTimeSpec(0, time).getDtInSeconds());
-        master->getEncoder().encode(o2, fgclass, livery, name, ftime, 0.1);
+
+        // get the flight time for FlightGear, seconds since UTC0
+        double ftime =
+          master->getFlightTime(DataTimeSpec(0, time).getDtInSeconds());
+        master->getEncoder().encode(o2, fgclass, name, ftime, 0.1, coder.get());
         master->sendPositionReport();
       }
     }

@@ -70,7 +70,6 @@ fgfs \
     --disable-random-objects \
     --disable-random-buildings \
     --disable-random-vegetation \
-    --enable-clock-freeze \
     --disable-sound \
     --disable-rembrandt \
     --disable-distance-attenuation \
@@ -84,7 +83,10 @@ fgfs \
     --log-level=$LOGLEVEL \
     --log-class=$LOGCLASS \
     --log-dir="." \
+    --enable-ai-models \
     --disable-ai-traffic &
+
+# do not use --enable-clock-freeze, because that also stops multiplay show
 
 if [ "$1" = 'nodueca' ]; then
     echo "not starting dueca"
