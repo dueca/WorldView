@@ -50,6 +50,30 @@ typedef Eigen::Map<const Eigen::VectorXd> cVectorE;
 
 struct EulerAngles;
 
+
+/** Convert a quaternion in a vector to an angle/axis rep
+
+    This should match the flightgear approach.
+*/
+template <typename T1, typename T2>
+inline void toAngleAxis(const T1 q[4], T2 res[4])
+{
+  float nrm = std::sqrt(q[0]*q[0]+ q[1]*q[1]+ q[2]*q[2]+ q[3]*q[3]);
+  float angle = std::acos(q[0]/nrm);
+  float sinangle = std::sin(angle);
+  if (fabs(sinangle) < 1e-6) {
+    res[1] = q[1]*2.0/nrm;
+    res[2] = q[2]*2.0/nrm;
+    res[3] = q[3]+2.0/nrm;
+  }
+  else {
+    res[1] = q[1] * angle * 2.0 / (nrm*sinangle);
+    res[2] = q[2] * angle * 2.0 / (nrm*sinangle);
+    res[3] = q[3] * angle * 2.0 / (nrm*sinangle);
+  }
+}
+
+
 /** Represent an orientation or rotation step with quaternion */
 struct Orientation
 {

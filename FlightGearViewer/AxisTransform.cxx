@@ -88,11 +88,10 @@ void FGLocalAxis::toECEF(double pos[3], float velocity[3], float attitude[4],
 
   // ecef coordinates from the local axis and the relative coordinates
   ECEF ecef = axis.toECEF(c_xyz);
+
   //  print_vector(ecef.xyz);
   VectorE v_pos(pos, 3);
   v_pos = ecef.xyz;
-
-  // std::cerr << v_pos << std::endl;
 
   // lat-lon-alt representation of this location as step for the
   // orientation
@@ -103,40 +102,20 @@ void FGLocalAxis::toECEF(double pos[3], float velocity[3], float attitude[4],
   Orientation to_global = lla.toGlobal(psi_zero);
 
   // conversion of the quaternion is simply multiplication - order??
-  QxQ(attitude, quat, to_global);
-
-  printPTP(std::cout, quat);
-  printPTP(std::cout, attitude);
-
-
+  float qres[4];
+  QxQ(qres, to_global, quat);
+  toAngleAxis(qres, attitude);
 
   // Attitude forms the basis for the rotation matrix for converting
   // the speeds and rotational rates
   float R_data[9];
   MatrixfE R(R_data, 3, 3);
-  Q2R(R, attitude);
+  Q2R(R, qres);
 
   VectorfE v_velocity(velocity, 3);
   cVectorfE v_uvw(uvw, 3);
   VectorfE v_omega(omega, 3);
   cVectorfE v_pqr(pqr, 3);
-
-  // now convert the attitude vector to axis-angle representation
-  // https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation
-  float angle = 2.0*std::acos(attitude[0]);
-  float norm = std::sqrt(attitude[1]*attitude[1] + attitude[2]*attitude[2] +
-      attitude[3]*attitude[3]);
-  if (std::fabsf(angle) < 1e-5f) {
-    attitude[1] = 2.0f*attitude[1];
-    attitude[2] = 2.0f*attitude[2];
-    attitude[3] = 2.0f*attitude[3];
-  }
-  else {
-    attitude[1] = attitude[1]/norm*angle;
-    attitude[2] = attitude[2]/norm*angle;
-    attitude[3] = attitude[3]/norm*angle;
-  }
-
 
   // transform the speed vector, in body axes, to ECEF coordinates
   v_velocity = R * v_uvw;
@@ -382,14 +361,19 @@ double LatLonAlt::RP() const
 
 Orientation LatLonAlt::toGlobal(const double psi_zero) const
 {
-  // first system, ensure local axis points north
+  // first system, ensure local axis x points north, y east and z down
+  // rotating over -psi along z axis
   double q1[] = { -cos(0.5 * psi_zero), 0.0, 0.0, sin(0.5 * psi_zero) };
 
   // 2nd system, from here the Z axis points North, x points "out"
+  // rotation along y axis by lat ensures x parallel to the earth axis,
+  // then a further rotation by pi/2 to get the z pointing to the north
+  // star, and the x pointing outward.
   double q2[] = { -cos(0.5 * (lat + 0.5 * M_PI)), 0.0,
                   sin(0.5 * (lat + 0.5 * M_PI)), 0.0 };
 
-  // 3rd system, now x is aligned with the gw meridian
+  // rotate by -lon over the z axis now pointing up, 3rd system, now
+  // x is aligned with the gw meridian
   double q3[] = { -cos(0.5 * lon), 0.0, 0.0, sin(0.5 * lon) };
 
   double qtemp[4];

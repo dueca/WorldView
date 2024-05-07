@@ -80,6 +80,11 @@ if this_node_id == ecs_node:
 mymods = []
 drivemods = []
 
+# schiphol
+#  lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 240.0),
+# warshaw
+lat_lon_alt_psi0=(52+9/60+57/3600, 20+58/60+2/3600, 110, 0.0)  # EPWA
+
 if this_node_id == ecs_node:
     mymods.append(dueca.Module(
         "world-view", "", graphics_priority).param(
@@ -95,7 +100,7 @@ if this_node_id == ecs_node:
                 receiver='127.0.0.1',
                 own_interface='127.0.0.1',
                 port=5501,
-                lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 240.0),
+                lat_lon_alt_psi0=lat_lon_alt_psi0,
                 binary_packets=True,
                 mp_interface="127.0.0.1",
                 multiplay_debug_dump=False,
@@ -109,15 +114,15 @@ if this_node_id == ecs_node:
         ('set-timing', display_timing),
 	    ('check-timing', (10000, 20000)),
 	    ('add-motion', "myself"),
-	    ('position', (-80, 0, -3)),
+	    ('position', (0, -80, -110)),
 	    ('orientation', (0, 0, 0)),
 	    ('speed', (1.0, 0, 0)),
         ('rotation', (0.0, 0.0, 0.2)),
 	    ('dt', 0.1),
 	    ('add-motion', "c172|head"),
-	    ('position', (-0, 0, -6)),
+	    ('position', (-0, 0, -110)),
 	    ('orientation', (0, 0, 0)),
-	    ('rotation', (0.5, 0, 0.)),
+	    ('rotation', (0, 0, 0.5)),
         ('speed', (0.4, 0, 0)),
 	    ('dt', -0.1),
 	    #('add-motion', "c172|houseX"),

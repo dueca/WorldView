@@ -15,24 +15,6 @@
 	<node>/environment/ground-elevation-m</node>
       </chunk>
 
-      <chunk>
-	<name>nx</name>
-	<type>double</type>
-	<node>/environment/normal-x</node>
-      </chunk>
-
-      <chunk>
-	<name>ny</name>
-	<type>double</type>
-	<node>/environment/normal-y</node>
-      </chunk>
-
-      <chunk>
-	<name>nz</name>
-	<type>double</type>
-	<node>/environment/normal-z</node>
-      </chunk>
-
     </output>
 
     <input>

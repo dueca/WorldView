@@ -61,7 +61,7 @@ fgfs \
     --multiplay=in,100,127.0.0.1,5001 \
     --multiplay=out,10,127.0.0.1,5002 \
     --prop:int:/sim/multiplay/debug-level=0 \
-    --airport=EHAM \
+    --airport=EPWS \
     --aircraft=A380  \
     --fdm=external \
     --disable-real-weather-fetch \
