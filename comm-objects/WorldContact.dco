@@ -1,0 +1,20 @@
+;; -*-scheme-*-
+(Header "
+        from item       : WorldContact.dco
+        date            : Wed May  8 15:44:26 2024
+        category        : Dueca Communication Object specification
+        author          : Rene van Paassen
+        description     : Feedback information from (visual) world geometry
+        copyright       : (c) 2024
+        language        : C++")
+
+;; Definitions/includes for the different datatypes used in the object
+(Type float)
+
+;; DCO object <replace this comment>
+(Object WorldContact
+
+        ;; Terrain elevation [m]
+        (float elevation)
+        )
+

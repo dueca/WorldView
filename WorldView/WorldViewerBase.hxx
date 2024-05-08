@@ -25,7 +25,7 @@ typedef std::map<std::string,ControlledWithCount> ControllablesMap;
 
 /** Set for keeping track of object classes I cannot make */
 typedef std::set<std::string> NotCreatable;
-
+class WorldView;
 
 /** This is a base class for viewer classes based on different scene
     graphing or graphics toolkits.
@@ -60,6 +60,9 @@ public: /* Initialisation */
   virtual bool complete() = 0;
 
 public: /* per-cycle interaction, updating viewpoint and drawing */
+
+  /** If needed, provide a pointer to the WorldView object. */
+  virtual void setMaster(WorldView* m);
 
   /** Initialise the windows etc. */
   virtual void init(bool waitswap) = 0;

@@ -101,10 +101,11 @@ if this_node_id == ecs_node:
                 receiver='127.0.0.1',
                 own_interface='127.0.0.1',
                 port=5501,
+                receive_port=5502,
                 lat_lon_alt_psi0=lat_lon_alt_psi0,
                 binary_packets=True,
                 mp_interface="127.0.0.1",
-                multiplay_debug_dump=True,
+                multiplay_debug_dump=False,
                 mp_port=5002,
                 mp_client="127.0.0.1:5001").complete(),
             initial_camera = ( 0, 0, -4, 0, 0, 0)

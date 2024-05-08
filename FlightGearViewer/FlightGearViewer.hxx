@@ -48,6 +48,9 @@ protected:
   /** Port number for the data packets. */
   int port;
 
+  /** Port for communication, if left zero, port_any */
+  int receive_port;
+
   /** Destination for the packets. */
   struct sockaddr_in dest_address;
 
@@ -59,6 +62,12 @@ protected:
 
   /** Visibility aloft */
   double vis_aloft;
+
+  /** Terrain elevation */
+  double elevation;
+
+  /** Pointer to WorldView object */
+  WorldView* master;
 
 private:
   /** Current position */
@@ -146,6 +155,9 @@ public:
 
   /** Initialise the windows etc. */
   void init(bool waitswap) {};
+
+  /** Collect pointer to the master */
+  void setMaster(WorldView* m) override;
 
   /** Do a re-draw
 
