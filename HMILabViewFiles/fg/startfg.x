@@ -71,7 +71,7 @@ fgfs \
     --disable-random-vegetation \
     --disable-sound \
     --disable-rembrandt \
-    --disable-distance-attenuation \
+    --enable-distance-attenuation \
     --fog-nicest \
     --enable-specular-highlight \
     --prop:/local-weather/autostart=0 \
@@ -79,6 +79,10 @@ fgfs \
     --disable-mouse-pointer \
     --disable-save-on-exit \
     --disable-splash-screen  \
+    --prop:/sim/rendering/multi-sample-buffers=1 \
+    --prop:/sim/rendering/multi-samples=4 \
+    --prop:/sim/rendering/shaders/skydome=true \
+    --terrain-engine=pagedLOD \
     --log-level=$LOGLEVEL \
     --log-class=$LOGCLASS \
     --log-dir="." \
