@@ -55,6 +55,11 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
       new VarProbe<FlightGearViewer_Dueca, int>(&FlightGearViewer_Dueca::port),
       "Port to be used" },
 
+    { "receive-port",
+      new VarProbe<FlightGearViewer_Dueca, int>(
+        &FlightGearViewer_Dueca::receive_port),
+      "reception port, needed if return message is required" },
+
     { "lat-lon-psi0",
       new MemberCall<FlightGearViewer_Dueca, vector<double>>(
         &FlightGearViewer_Dueca::setLatLonAltPsi0),
@@ -105,7 +110,8 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
       "   flightgear data folder\n"
       " - Livery, optional" },
 
-    { "multiplay-debug-dump", new VarProbe<_ThisModule_, bool>(&_ThisModule_::debugdump),
+    { "multiplay-debug-dump",
+      new VarProbe<_ThisModule_, bool>(&_ThisModule_::debugdump),
       "Dump communication between DUECA and FlightGear multiplay" },
 
     /* The table is closed off with NULL pointers for the variable

@@ -8,10 +8,12 @@
         language        : C++
 */
 
+#include "BaseObjectPosition.hxx"
 #include "Dstring.hxx"
 #include "FlightGearCommand.hxx"
 #include "FlightGearObject.hxx"
 #include "WorldDataSpec.hxx"
+#include "../WorldView/WorldView.hxx"
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <chrono>
 #include <ctime>
@@ -53,10 +55,13 @@ FlightGearViewer::FlightGearViewer() :
   receiver("127.0.0.1"),
   own_interface("0.0.0.0"),
   port(7100),
+  receive_port(0),
   dest_address(),
   binary_packets(false),
   vis_boundary(5000.0),
   vis_aloft(10000.0),
+  elevation(0.0),
+  master(NULL),
   fg_command(),
   axis(new FGECEFAxis()),
   encoder(),
@@ -94,22 +99,30 @@ bool FlightGearViewer::complete()
     }
 
     // source address
-    struct sockaddr_in src_address;
-    memset(&src_address, 0, sizeof(src_address));
-    src_address.sin_family = AF_INET;
+    union {
+      struct sockaddr_in src_address;
+      struct sockaddr use_address;
+    } addru;
+    memset(&addru, 0, sizeof(addru));
+
+    addru.src_address.sin_port = htons(uint16_t(receive_port));
+    addru.src_address.sin_family = AF_INET;
 
     // if an interface was selected, try to set this one
-    if (own_interface.size() &&
-        inet_aton(own_interface.c_str(), &src_address.sin_addr) == 0) {
-      E_MOD(classname << " source address invalid");
-      return false;
-
-      // and bind to the source address
-      if (bind(sockfd, reinterpret_cast<sockaddr *>(&src_address),
-               sizeof(src_address) != 0)) {
-        perror("Cannot bind to source");
+    if (own_interface.size()) {
+      in_addr host_address;
+      if (inet_aton(own_interface.c_str(), &host_address)) {
+        addru.src_address.sin_addr = host_address;
+      }
+      else {
+        E_MOD(classname << " source address invalid" << strerror(errno));
         return false;
       }
+    }
+    // and bind to the source address
+    if (::bind(sockfd, &addru.use_address, sizeof(addru))) {
+      E_MOD("Unable to bind to elevation port, error " << strerror(errno));
+      return false;
     }
 
     // destination address
@@ -149,6 +162,7 @@ bool FlightGearViewer::setLatLonAltPsi0(const vector<double> &vec)
   double psi_zero = vec.size() == 4 ? vec[3] : 0.0;
   axis = boost::shared_ptr<FGAxis>(new FGLocalAxis(
     vec[0] * deg2rad, vec[1] * deg2rad, h_zero, psi_zero * deg2rad));
+  elevation = h_zero;
   return true;
 }
 
@@ -199,6 +213,7 @@ struct MessageBody
 
 void FlightGearViewer::redraw(bool wait, bool save_context)
 {
+  // step 1, send the own position
   if (binary_packets) {
 
     // send buffer
@@ -234,6 +249,7 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
     }
   }
 
+  // step 2, send positions of any other aircraft simulated
   if (mp_sockfd != -1) {
 
     // check whether messages came in on the multiplayer port
@@ -261,22 +277,72 @@ void FlightGearViewer::redraw(bool wait, bool save_context)
         if (msgh.valid()) {
 
           if (debugdump) {
-            std::cout << std::endl << "Multiplay from peer "
+            std::cout << std::endl
+                      << "Multiplay from peer "
                       << inet_ntoa(peer_ip.in.sin_addr) << ":"
-                      << ntohs(peer_ip.in.sin_port)
-                      << " size=" << nbytes << std::endl;
+                      << ntohs(peer_ip.in.sin_port) << " size=" << nbytes
+                      << std::endl;
             encoder->dump(buffer, nbytes);
           }
         }
         else {
-          W_MOD("Invalid message from " <<
-                inet_ntoa(peer_ip.in.sin_addr) << ":" <<
-                ntohs(peer_ip.in.sin_port) << " size=" << nbytes);
+          W_MOD("Invalid message from " << inet_ntoa(peer_ip.in.sin_addr) << ":"
+                                        << ntohs(peer_ip.in.sin_port)
+                                        << " size=" << nbytes);
         }
       }
     }
   }
+
+  // step 3, receive altitude above ground
+  if (receive_port) {
+
+    // use select to check for messages
+    fd_set socks;
+    FD_ZERO(&socks);
+    FD_SET(sockfd, &socks);
+    struct timeval timeout = { 0, wait ? 10000 : 0 };
+    char buffer[100];
+
+    // need the peer address, prepare a union for this
+    union {
+      struct sockaddr_in in;
+      struct sockaddr gen;
+    } peer_ip;
+    socklen_t peer_ip_len = sizeof(peer_ip.in);
+
+    // check messages
+    while (select(sockfd + 1, &socks, NULL, NULL, &timeout) > 0) {
+      ssize_t nbytes =
+        recvfrom(sockfd, buffer, sizeof(buffer), 0, &peer_ip.gen, &peer_ip_len);
+
+      uint32_t magic = 0;
+      double elevation;
+      if (nbytes == 12) {
+        AmorphReStore s(buffer, 12);
+        unPackData(s, elevation);
+        unPackData(s, magic);
+      }
+
+      if (magic == 0x454C4556) {
+        if (master) {
+          master->worldFeedback().elevation = elevation;
+        }
+        else {
+          std::cout << "elevation" << elevation << std::endl;
+        }
+      }
+      else {
+        W_MOD("Invalid elevation message from "
+              << inet_ntoa(peer_ip.in.sin_addr) << ":"
+              << ntohs(peer_ip.in.sin_port) << " size=" << nbytes);
+      }
+    }
+  }
 }
+
+void FlightGearViewer::setMaster(WorldView* m)
+{ master = m; }
 
 FlightGearViewer::MultiplayerClient::MultiplayerClient(int sockfd,
                                                        const sockaddr &in) :
@@ -297,9 +363,9 @@ void FlightGearViewer::sendPositionReport()
 {
   // print message for debug purposes
   if (debugdump) {
-    std::cout << std::endl << "Multiplay send to "
-              << mp_clients.size() << " clients, size="
-              << encoder->getBufferSize() << std::endl;
+    std::cout << std::endl
+              << "Multiplay send to " << mp_clients.size()
+              << " clients, size=" << encoder->getBufferSize() << std::endl;
     encoder->dump(encoder->getBuffer(), encoder->getBufferSize());
   }
 
@@ -307,8 +373,8 @@ void FlightGearViewer::sendPositionReport()
   for (auto const &client : mp_clients) {
     MessageBody msgb(encoder->getBuffer());
     MessageHead msgh(encoder->getBuffer());
-    //std::cerr << msgh.getName() << "time=" << msgb.time << " x=" << msgb.x
-    //          << " y=" << msgb.y << " z=" << msgb.z << std::endl;
+    // std::cerr << msgh.getName() << "time=" << msgb.time << " x=" << msgb.x
+    //           << " y=" << msgb.y << " z=" << msgb.z << std::endl;
 
     client.update(*encoder);
   }

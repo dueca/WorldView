@@ -18,6 +18,8 @@
 #include "CommObjectTraits.hxx"
 #include "DataReader.hxx"
 #include "SimulationState.hxx"
+#include "WorldContact.hxx"
+#include <vector>
 #define WorldView_cxx
 // include the definition of the module class
 #include "WorldView.hxx"
@@ -120,6 +122,12 @@ const ParameterTable *WorldView::getMyParameterTable()
       new MemberCall<_ThisModule_, bool>(&_ThisModule_::followDUSIME),
       "Follow the DUSIME state changes, and inform viewers of run/hold" },
 
+    { "set-world-feedback",
+      new MemberCall<_ThisModule_, std::vector<std::string>>(
+        &_ThisModule_::setWorldFeedbackChannel),
+      "Configure channel for information from the visual world. Set channel\n"
+      "name and label." },
+
     /* The table is closed off with NULL pointers for the variable
        name and MemberCall/VarProbe object. The description is used to
        give an overall description of the module. */
@@ -154,6 +162,7 @@ WorldView::WorldView(Entity *e, const char *part, const PrioritySpec &ps) :
   t_predict(0.01),
   num_config_per_round(1),
   freeze(false),
+  worldinfo(),
 
   // initialize the channel access tokens
   r_own(),
@@ -163,6 +172,7 @@ WorldView::WorldView(Entity *e, const char *part, const PrioritySpec &ps) :
            "WorldViewConfig", entry_any, Channel::Events,
            Channel::ZeroOrMoreEntries, Channel::ReadAllData),
   r_dusime(),
+  w_worldinfo(),
 
   // activity initialization
   cb1(this, &_ThisModule_::doCalculation),
@@ -292,6 +302,7 @@ bool WorldView::setViewer(ScriptCreatable &obj, bool in)
 #endif
 
   rendersurface = viewer;
+  rendersurface->setMaster(this);
   return true;
 }
 
@@ -372,6 +383,7 @@ bool WorldView::isPrepared()
   CHECK_TOKEN(*r_own);
   if (r_dusime)
     CHECK_TOKEN(*r_dusime);
+  if (w_worldinfo) CHECK_TOKEN(*w_worldinfo);
   //  CHECK_TOKEN(r_config);
 
   // return result of checks
@@ -502,6 +514,12 @@ void WorldView::doCalculation(const TimeSpec &ts)
     // redraw the scene
     rendersurface->redraw(claim_thread);
 
+    // if this results in world info (normals, objects, elevation, send it)
+    if (w_worldinfo) {
+      DataWriter<WorldContact> wc(*w_worldinfo, current_tick);
+      wc.data() = worldinfo;
+    }
+
     // now check if there are events on the surface, and send these
     for (list<EventFeedback>::iterator ii = w_events.begin();
          ii != w_events.end(); ii++) {
@@ -539,6 +557,17 @@ bool WorldView::followDUSIME(const bool &b)
     r_dusime.reset();
     freeze = false;
   }
+  return true;
+}
+
+bool WorldView::setWorldFeedbackChannel(const std::vector<std::string> &cname)
+{
+  if (cname.size() != 2 || !cname[0].size()) {
+    E_MOD("Need channel name and entry label for world info channel");
+  }
+  w_worldinfo.reset(new ChannelWriteToken(
+    getId(), NameSet(cname[0]), getclassname<WorldContact>(), cname[1],
+    Channel::Events, Channel::ZeroOrMoreEntries));
   return true;
 }
 

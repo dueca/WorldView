@@ -16,10 +16,12 @@
 
 // include the dusime header
 #include "ChannelReadToken.hxx"
+#include "WorldContact.hxx"
 #include <AperiodicAlarm.hxx>
 #include <dueca.h>
 #include <dueca/ChannelWatcher.hxx>
 #include <dueca/SimulationState.hxx>
+#include <vector>
 
 USING_DUECA_NS;
 
@@ -94,6 +96,9 @@ private: // simulation data
   /** Holding/freeze state */
   bool freeze;
 
+  /** Information back from any visual worlds to the simulation */
+  WorldContact worldinfo;
+
 private: // dueca configuration calls
   /** Function call that adds an object to the scene. */
   bool addObject(ScriptCreatable &ava, bool in);
@@ -137,6 +142,9 @@ private: // channel access
 
   /** Follow DUSIME states */
   boost::scoped_ptr<ChannelReadToken> r_dusime;
+
+  /** Send back world contact information */
+  boost::scoped_ptr<ChannelWriteToken> w_worldinfo;
 
 private: // activity allocation
   /** Callback object for simulation calculation. */
@@ -197,6 +205,9 @@ public: // construction and further specification
   /** Listen to the DUSIME state changes */
   bool followDUSIME(const bool& b);
 
+  /** Send information about visual world (currently only elevation) */
+  bool setWorldFeedbackChannel(const std::vector<std::string>& cname);
+
 public: // member functions for cooperation with DUECA
   /** indicate that everything is ready. */
   bool isPrepared();
@@ -206,6 +217,9 @@ public: // member functions for cooperation with DUECA
 
   /** stop responsiveness to input data. */
   void stopModule(const TimeSpec &time);
+
+  /** access feedback to world */
+  inline WorldContact &worldFeedback() { return worldinfo; }
 
 public: // the member functions that are called for activities
   /** the method that implements the main calculation. */

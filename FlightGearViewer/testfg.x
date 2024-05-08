@@ -50,14 +50,17 @@ if [ "$DIRECTORY" == "dutmms16" ]; then
 fi
 
 UDP_PORT=5501
+UDP2_PORT=5502
 
 BGAMP="&"
 if [ "$1" = 'nodueca' ]; then
     BGAMP=""
 fi
 
+#    --generic=socket,out,100,127.0.0.1,${UDP2_PORT},udp,duecavis \
 fgfs \
     --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavis \
+    --generic=socket,out,100,127.0.0.1,${UDP2_PORT},udp,duecavis \
     --callsign=${CS} \
     --multiplay=in,100,127.0.0.1,5001 \
     --prop:int:/sim/multiplay/debug-level=0 \

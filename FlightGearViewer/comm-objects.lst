@@ -1,9 +1,9 @@
-# this file contains a list of all communicated objects needed by this 
+# this file contains a list of all communicated objects needed by this
 # specific module
 # specify these with the .dco extension, examples:
 # WorldView/comm-objects/MyDataObject.dco
 # Generic/comm-objects/PrimaryControls.dco
-WorldView/comm-objects/FlightGearReadback.dco
+WorldView/comm-objects/WorldContact.dco
 WorldView/comm-objects/FlightGearCommand.dco
 WorldView/comm-objects/ObjectMotion.dco
 WorldView/comm-objects/BaseObjectMotion.dco
