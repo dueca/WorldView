@@ -107,7 +107,7 @@ void OSGOverlay::connect(const GlobalId& master_id, const NameSet& cname,
 }
 
 void OSGOverlay::iterate(TimeTickType ts,
-                       const BaseObjectMotion& base, double late)
+                       const BaseObjectMotion& base, double late, bool freeze)
 {
   // todo
 }

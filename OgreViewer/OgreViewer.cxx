@@ -658,7 +658,7 @@ void OgreViewer::waitSwap()
 }
 
 void OgreViewer::setBase(TimeTickType tick, const BaseObjectMotion& base,
-                         double late)
+                         double late, bool freeze)
 {
   ego_transform->setPosition(AxisTransform::ogrePosition(base.xyz));
   ego_transform->setOrientation(AxisTransform::ogreQuaternion(base.attitude_q));

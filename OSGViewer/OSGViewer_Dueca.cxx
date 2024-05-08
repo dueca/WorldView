@@ -11,7 +11,6 @@
         language        : C++
 */
 
-
 #define OSGViewer_Dueca_cxx
 // include the definition of the helper class
 #include "OSGViewer_Dueca.hxx"
@@ -21,10 +20,10 @@
 #include "OSGObjectFactory.hxx"
 
 #define DO_INSTANTIATE
-#include <VarProbe.hxx>
+#include <CoreCreator.hxx>
 #include <MemberCall.hxx>
 #include <MemberCall2Way.hxx>
-#include <CoreCreator.hxx>
+#include <VarProbe.hxx>
 
 // include the debug writing header, by default, write warning and
 // error messages
@@ -35,7 +34,7 @@
 USING_DUECA_NS;
 
 // Parameters to be inserted
-const ParameterTable* OSGViewer_Dueca::getParameterTable()
+const ParameterTable *OSGViewer_Dueca::getParameterTable()
 {
   static const ParameterTable parameter_table[] = {
 
@@ -43,8 +42,7 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
        VarProbe pointers to perform calls or insert values into your
        class objects. Please also add a description (c-style string). */
     { "set-resourcepath",
-      new VarProbe<_ThisObject_,string>
-      (&_ThisObject_::resourcepath),
+      new VarProbe<_ThisObject_, string>(&_ThisObject_::resourcepath),
       "set the path to the resources" },
 
 #if 0
@@ -62,56 +60,47 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
 #endif
 
     { "keep-cursor",
-      new VarProbe<_ThisObject_,bool>
-      (&_ThisObject_::keep_pointer),
+      new VarProbe<_ThisObject_, bool>(&_ThisObject_::keep_pointer),
       "By default, the cursor is removed. Set to true to keep the cursor" },
 
     { "add-window",
-      new MemberCall<_ThisObject_,string>
-      (&_ThisObject_::addWindow),
+      new MemberCall<_ThisObject_, string>(&_ThisObject_::addWindow),
       "Add a window to this Scene drawer. Specify the window name. Do not\n"
-      "forget to specify window size and (optionally) position"
-    },
+      "forget to specify window size and (optionally) position" },
 
     { "window-size+pos",
-      new MemberCall<_ThisObject_,vector<int> >
-      (&_ThisObject_::setWindowPosition),
+      new MemberCall<_ThisObject_, vector<int>>(
+        &_ThisObject_::setWindowPosition),
       "specify width, height and optionally x, y position of a new window" },
 
     { "window-x-screen",
-      new MemberCall<_ThisObject_,string>
-      (&_ThisObject_::setWindowXScreen),
+      new MemberCall<_ThisObject_, string>(&_ThisObject_::setWindowXScreen),
       "Set the display string for this window" },
 
     { "add-viewport",
-       new MemberCall<_ThisObject_,string>
-      (&_ThisObject_::addViewport),
+      new MemberCall<_ThisObject_, string>(&_ThisObject_::addViewport),
       "Add a viewport to this Scene drawer, specify a name" },
 
     { "viewport-window",
-      new MemberCall<_ThisObject_,string>
-      (&_ThisObject_::setViewportWindow),
+      new MemberCall<_ThisObject_, string>(&_ThisObject_::setViewportWindow),
       "Specify the window for this viewport" },
 
     { "viewport-pos+size",
-      new MemberCall<_ThisObject_,vector<int> >
-      (&_ThisObject_::setViewportSize),
+      new MemberCall<_ThisObject_, vector<int>>(&_ThisObject_::setViewportSize),
       "Specify size and location (top left) for a viewport, 4 parameters" },
 
     { "eye-offset",
-      new MemberCall<_ThisObject_,vector<float> >
-      (&_ThisObject_::setEyeOffset),
+      new MemberCall<_ThisObject_, vector<float>>(&_ThisObject_::setEyeOffset),
       "Offset of the eye with respect to sent position; 3 parameters for\n"
       "x, y and z location, and three parameters for phi, theta, psi [deg]" },
 
     { "static-object",
-      new MemberCall<_ThisObject_,vector<string> >
-      (&_ThisObject_::createStatic),
+      new MemberCall<_ThisObject_, vector<string>>(&_ThisObject_::createStatic),
       "Add a new static object, supply a class match and (optional) name" },
 
     { "add-object-class-coordinates",
-      new MemberCall<_ThisObject_,vector<double> >
-      (&_ThisObject_::addCoordinates),
+      new MemberCall<_ThisObject_, vector<double>>(
+        &_ThisObject_::addCoordinates),
       "Set coordinates for the object; x, y, z position, and phi, theta, psi\n"
       "orientation. Note that these may also be used differently, depending\n"
       "on the specified object-class\n"
@@ -133,12 +122,11 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
       "- linear attenuation, (0 .. 1)\n"
       "- quadratic attenuation, (0 .. 1)\n"
       "- spot exponent, defines sharpness of beam edge\n"
-      "- spot cutoff, defines beam width in degrees"
-    },
+      "- spot cutoff, defines beam width in degrees" },
 
     { "add-object-class-data",
-      new MemberCall<_ThisObject_,std::vector<std::string> >
-      (&_ThisObject_::addObjectClassData),
+      new MemberCall<_ThisObject_, std::vector<std::string>>(
+        &_ThisObject_::addObjectClassData),
       "Add a class of objects, arguments:\n"
       " - <matchstring>: The first argument is the match string;\n"
       "   For objects controlled through a channel, matching is done on the\n"
@@ -158,18 +146,17 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
       "   following are available: 'moving', 'static', 'centered' or 'tiled'\n"
       "                            'light', 'static-light', 'centered-light\n"
       " - [<additional strings>]: supply, depending on type of object, \n"
-      "   additional parameters like filenames etc."
-    },
+      "   additional parameters like filenames etc." },
 
     { "create-static",
-      new MemberCall<_ThisObject_,std::vector<std::string> >
-      (&_ThisObject_::createStatic),
+      new MemberCall<_ThisObject_, std::vector<std::string>>(
+        &_ThisObject_::createStatic),
       "Create an object through the factory that will not receive a\n"
       "connection to a channel entry, specify match string and name" },
 
     { "add-object-class",
-      new MemberCall<_ThisObject_,vector<string> >
-      (&_ThisObject_::addObjectClass),
+      new MemberCall<_ThisObject_, vector<string>>(
+        &_ThisObject_::addObjectClass),
       "Create a new class (type) of simple objects, compatible for old\n"
       "ObjectMotion types. Specify the type name, the name of a model file\n"
       "Based on the \"klass\"\n"
@@ -177,52 +164,48 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
       "created.\n" },
 
     { "set-frustum",
-      new MemberCall<_ThisObject_,vector<float> >
-      (&_ThisObject_::setFrustum),
+      new MemberCall<_ThisObject_, vector<float>>(&_ThisObject_::setFrustum),
       "Set frustum geometry, <near plane> <far plane>, and then either:\n"
       "<fov y> [rad] for specifying viewing with only a field-o-view angle,\n"
       "or <left> <right> <bottom> <top> of the near frustum plane\n"
       "in camera coordinates" },
 
     { "add-external-object",
-      new MemberCall2Way<_ThisObject_,ScriptCreatable>
-      (&_ThisObject_::addScriptObject),
+      new MemberCall2Way<_ThisObject_, ScriptCreatable>(
+        &_ThisObject_::addScriptObject),
       "Add a graphic object created in the script file. The object must\n"
       "derive from OSGObject." },
 
     { "set-bg-color",
-      new VarProbe<_ThisObject_,std::vector<double> >
-      (&_ThisObject_::bg_color),
+      new VarProbe<_ThisObject_, std::vector<double>>(&_ThisObject_::bg_color),
       "set the background color, R, G, B, A components, scaled 0 -- 1" },
 
     { "set-fog",
-      new MemberCall<_ThisObject_, std::vector<double> >
-      (&_ThisObject_::setFog),
+      new MemberCall<_ThisObject_, std::vector<double>>(&_ThisObject_::setFog),
       "Set fog parameters, expects 8 numbers:\n"
       "{1|2|3 for linear, exp, exp2}, fog density,\n"
       "fog color (RGBA, 4 elts), fog start, fog end" },
 
     { "use-compositeviewer",
-      new VarProbe<_ThisObject_,bool>
-      (&_ThisObject_::use_compositeviewer),
+      new VarProbe<_ThisObject_, bool>(&_ThisObject_::use_compositeviewer),
       "Use openscenegraph composite viewer" },
 
     { "allow-unknown",
-      new VarProbe<_ThisObject_,bool>(&_ThisObject_::allow_unknown),
+      new VarProbe<_ThisObject_, bool>(&_ThisObject_::allow_unknown),
       "ignore unknown or unconnected objects in world information channels" },
 
     { "add-draw-callback",
-      new MemberCall2Way<_ThisObject_, ScriptCreatable>
-      (&_ThisObject_::addDrawCallback),
+      new MemberCall2Way<_ThisObject_, ScriptCreatable>(
+        &_ThisObject_::addDrawCallback),
       "Add a (post-draw) callback to the current viewport's camera,\n"
       "expects an object similar to an OSGCallback" },
 
       /* The table is closed off with NULL pointers for the variable
-       name and MemberCall/VarProbe object. The description is used to
-       give an overall description of the module. */
+     name and MemberCall/VarProbe object. The description is used to
+     give an overall description of the module. */
     { NULL, NULL,
       "Helper object that implements a view (or more) with the use of OSG\n"
-      "as scene manager. To be used by a world-view module"}
+      "as scene manager. To be used by a world-view module" }
   };
 
   return parameter_table;
@@ -232,9 +215,7 @@ const ParameterTable* OSGViewer_Dueca::getParameterTable()
 OSGViewer_Dueca::OSGViewer_Dueca() :
   ScriptCreatable(),
   build_callback(NULL)
-{
-
-}
+{}
 
 bool OSGViewer_Dueca::complete()
 {
@@ -278,7 +259,7 @@ OSGViewer_Dueca::~OSGViewer_Dueca()
   //
 }
 
-bool OSGViewer_Dueca::addWindow(const std::string& window)
+bool OSGViewer_Dueca::addWindow(const std::string &window)
 {
   // check whether there is a complete window
   if (build_win_spec.sufficient()) {
@@ -290,7 +271,7 @@ bool OSGViewer_Dueca::addWindow(const std::string& window)
   return true;
 }
 
-bool OSGViewer_Dueca::setWindowPosition(const std::vector<int>& pos)
+bool OSGViewer_Dueca::setWindowPosition(const std::vector<int> &pos)
 {
   if (pos.size() != 2 && pos.size() != 4) {
     E_CNF("Need 2 or 4 parameters for window size and position");
@@ -300,13 +281,13 @@ bool OSGViewer_Dueca::setWindowPosition(const std::vector<int>& pos)
   return true;
 }
 
-bool OSGViewer_Dueca::setWindowXScreen(const std::string& scr)
+bool OSGViewer_Dueca::setWindowXScreen(const std::string &scr)
 {
   build_win_spec.display = scr;
   return true;
 }
 
-bool OSGViewer_Dueca::addViewport(const std::string& viewport)
+bool OSGViewer_Dueca::addViewport(const std::string &viewport)
 {
   // check whether the viewport currently under construction
   // is complete, and finalize it
@@ -324,13 +305,13 @@ bool OSGViewer_Dueca::addViewport(const std::string& viewport)
   return true;
 }
 
-bool OSGViewer_Dueca::setViewportWindow(const std::string& vp_window)
+bool OSGViewer_Dueca::setViewportWindow(const std::string &vp_window)
 {
   build_view_spec.winname = vp_window;
   return true;
 }
 
-bool OSGViewer_Dueca::setViewportSize(const std::vector<int>& vpwin)
+bool OSGViewer_Dueca::setViewportSize(const std::vector<int> &vpwin)
 {
   if (vpwin.size() != 4) {
     E_CNF("Need four parameter for viewport size");
@@ -340,7 +321,7 @@ bool OSGViewer_Dueca::setViewportSize(const std::vector<int>& vpwin)
   return true;
 }
 
-bool OSGViewer_Dueca::setFrustum(const std::vector<float>& frustum)
+bool OSGViewer_Dueca::setFrustum(const std::vector<float> &frustum)
 {
   if (frustum.size() != 3 && frustum.size() != 6) {
     E_CNF("Need 3 or 6 parameters for frustum size");
@@ -350,7 +331,7 @@ bool OSGViewer_Dueca::setFrustum(const std::vector<float>& frustum)
   return true;
 }
 
-bool OSGViewer_Dueca::setEyeOffset(const std::vector<float>& eye)
+bool OSGViewer_Dueca::setEyeOffset(const std::vector<float> &eye)
 {
   if (eye.size() != 3 && eye.size() != 6) {
     E_CNF("Need 3 or 6 parameters for eye offset");
@@ -361,37 +342,37 @@ bool OSGViewer_Dueca::setEyeOffset(const std::vector<float>& eye)
 }
 
 /** This is for adding dueca script created object. */
-bool OSGViewer_Dueca::addScriptObject(ScriptCreatable& ava, bool in)
+bool OSGViewer_Dueca::addScriptObject(ScriptCreatable &ava, bool in)
 {
   // check direction
-  if (!in) return false;
+  if (!in)
+    return false;
 
   // try a dynamic cast
-  OSGObject* object = dynamic_cast<OSGObject*> (&ava);
+  OSGObject *object = dynamic_cast<OSGObject *>(&ava);
   if (object == NULL) {
     E_CNF("must supply an ObjectBase for the visual");
     return false;
   }
 
-#if DUECA_VERSION_NUM < DUECA_VERSION(2,3,0)
+#if DUECA_VERSION_NUM < DUECA_VERSION(2, 3, 0)
   // now make sure Scheme does not clean this helper from right
   // under our noses:
   scheme_id.addReferred(ava.scheme_id.getSCM());
 #endif
   assert(0);
-  //OSGViewer::addObject(object);
+  // OSGViewer::addObject(object);
 
   return true;
 }
 
-
-bool OSGViewer_Dueca::setObjectCoordinates(const std::vector<double>& coord)
+bool OSGViewer_Dueca::setObjectCoordinates(const std::vector<double> &coord)
 {
   build_object_spec.coordinates = coord;
   return true;
 }
 
-bool OSGViewer_Dueca::setObjectBehavior(const std::string& beh)
+bool OSGViewer_Dueca::setObjectBehavior(const std::string &beh)
 {
   if (beh.size() != 0) {
     build_object_spec.type = beh;
@@ -403,7 +384,7 @@ bool OSGViewer_Dueca::setObjectBehavior(const std::string& beh)
 
 /** Pre-cooked single-file movable object that can be controlled with
     a BaseObjectMotion entry. */
-class SimpleOSGObject: public OSGObject
+class SimpleOSGObject : public OSGObject
 {
 public:
   /** Constructor.
@@ -413,7 +394,7 @@ public:
       @param name      Name of the object.
       @param filename  3D model to be read.
   */
-  SimpleOSGObject(const string& name, const string& filename)
+  SimpleOSGObject(const string &name, const string &filename)
   {
     this->modelfile = filename;
     this->name = name;
@@ -425,46 +406,49 @@ public:
       @param cname     Channel with object data
       @param entry_id  Entry in the channel
       @param time_aspect How should the channel data be read. */
-  virtual void connect(const GlobalId& master_id, const NameSet& cname,
+  virtual void connect(const GlobalId &master_id, const NameSet &cname,
                        entryid_type entry_id,
-                       Channel::EntryTimeAspect time_aspect) {}
+                       Channel::EntryTimeAspect time_aspect) override
+  {}
 
   /** Play, update, recalculate, etc. */
-  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late)
+  void iterate(TimeTickType ts, const BaseObjectMotion &base, double late,
+               bool freeze = false) override
   {}
 };
 
-class SimpleOSGSubcontractor: public SubcontractorBase<OSGObjectTypeKey>
+class SimpleOSGSubcontractor : public SubcontractorBase<OSGObjectTypeKey>
 {
   /** File with the graphic model */
   string filename;
 
 public:
   /** Constructor */
-  SimpleOSGSubcontractor(const string& filename) :
-    filename(filename) { }
+  SimpleOSGSubcontractor(const string &filename) :
+    filename(filename)
+  {}
 
   /** create the object */
-  OSGObjectTypeKey::ProductBase create
-  (const OSGObjectTypeKey::Key& key,
-   const OSGObjectTypeKey::SpecBase& spec) {
+  OSGObjectTypeKey::ProductBase create(const OSGObjectTypeKey::Key &key,
+                                       const OSGObjectTypeKey::SpecBase &spec)
+  {
     return new SimpleOSGObject(key, filename);
   }
 };
 
-bool OSGViewer_Dueca::addObjectClass(const std::vector<std::string>& names)
+bool OSGViewer_Dueca::addObjectClass(const std::vector<std::string> &names)
 {
   if (names.size() != 2) {
     E_CNF("Specify a class name and a file describing the object");
     return false;
   }
 
-  OSGObjectFactory::instance().addSubcontractor
-    (names[0], SubconPtr(new SimpleOSGSubcontractor(names[1])));
+  OSGObjectFactory::instance().addSubcontractor(
+    names[0], SubconPtr(new SimpleOSGSubcontractor(names[1])));
   return true;
 }
 
-bool OSGViewer_Dueca::addObjectClassData(const std::vector<std::string>& names)
+bool OSGViewer_Dueca::addObjectClassData(const std::vector<std::string> &names)
 {
   if (names.size() < 3) {
     E_CNF("Specify at least a match name, object name and the class type");
@@ -482,7 +466,7 @@ bool OSGViewer_Dueca::addObjectClassData(const std::vector<std::string>& names)
   return true;
 }
 
-bool OSGViewer_Dueca::setFog(const std::vector<double>& fog)
+bool OSGViewer_Dueca::setFog(const std::vector<double> &fog)
 {
   if (fog.size() != 8) {
     E_CNF("Specify 8 numbers for fog");
@@ -499,13 +483,14 @@ bool OSGViewer_Dueca::setFog(const std::vector<double>& fog)
   return true;
 }
 
-bool OSGViewer_Dueca::addDrawCallback(ScriptCreatable& cb, bool in)
+bool OSGViewer_Dueca::addDrawCallback(ScriptCreatable &cb, bool in)
 {
   // check direction
-  if (!in) return false;
+  if (!in)
+    return false;
 
   // try a dynamic cast
-  build_callback = dynamic_cast<osg::Camera::Camera::DrawCallback*> (&cb);
+  build_callback = dynamic_cast<osg::Camera::Camera::DrawCallback *>(&cb);
   if (build_callback == NULL) {
     E_CNF("must supply an osg DrawCallback for the visual");
     return false;

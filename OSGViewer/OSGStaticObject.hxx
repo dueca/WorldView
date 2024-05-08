@@ -2,8 +2,8 @@
 /*      item            : OSGStaticObject.hxx
         made by         : Rene van Paassen
         date            : 100127
-	category        : header file 
-        description     : 
+	category        : header file
+        description     :
 	changes         : 100127 first version
         language        : C++
 */
@@ -30,15 +30,15 @@ protected:
 public:
   /** Constructor */
   OSGStaticObject(const WorldDataSpec &specification);
-  
+
   /** Destructor */
   ~OSGStaticObject();
 
   /** Initialise position */
   virtual void init(const osg::ref_ptr<osg::Group>& root,
 		    OSGViewer* master) override;
-  
-  /** Connect to a channel entry 
+
+  /** Connect to a channel entry
 
       @param master_id ID for opening a channel reader
       @param cname     Channel with object data
@@ -49,7 +49,7 @@ public:
 
   /** Play, update, recalculate, etc. */
   void iterate(TimeTickType ts, const BaseObjectMotion& base,
-	       double late) override; 
+	       double late, bool freeze) override;
 };
 
 #endif

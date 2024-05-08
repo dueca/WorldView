@@ -44,7 +44,7 @@ sim_priority = dueca.PrioritySpec(2, 0)
 sim_timing = dueca.TimeSpec(0, 100)
 
 ## for now, display on 50 Hz
-display_timing = dueca.TimeSpec(0, 200)
+display_timing = dueca.TimeSpec(0, 1000)
 
 ## log a bit more economical, 25 Hz
 log_timing = dueca.TimeSpec(0, 400)
@@ -80,42 +80,56 @@ if this_node_id == ecs_node:
 mymods = []
 drivemods = []
 
+# schiphol
+lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 0.0)
+# warshaw
+# lat_lon_alt_psi0=(52+9/60+57/3600, 20+58/60+2/3600, 110, 0.0)  # EPWA
+
 if this_node_id == ecs_node:
     mymods.append(dueca.Module(
         "world-view", "", graphics_priority).param(
             set_timing = display_timing,
             check_timing = (10000, 20000),
             claim_thread = False,
+            follow_dusime = True,
             set_viewer =
             dueca.FlightGearViewer().param(
+                ('model-table',
+                 ('ObjectMotion:c172', 'Aircraft/A380/XML/A380.xml', 'a380.json')),
+                ('model-table',
+                 ('ObjectMotion:ufo', 'Aircraft/ufo/Models/ufo.xml', '')),
                 receiver='127.0.0.1',
                 own_interface='127.0.0.1',
                 port=5501,
-                lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 240.0),
-                binary_packets=True
-            ).complete(),
-            initial_camera = ( 0, 0, -30, 0, 0, 0)
+                lat_lon_alt_psi0=lat_lon_alt_psi0,
+                binary_packets=True,
+                mp_interface="127.0.0.1",
+                multiplay_debug_dump=True,
+                mp_port=5002,
+                mp_client="127.0.0.1:5001").complete(),
+            initial_camera = ( 0, 0, -4, 0, 0, 0)
         ))
 
     mymods.append(dueca.Module(
         "visual-test-drive", "", admin_priority).param(
-            ('set-timing', sim_timing),
+        ('set-timing', display_timing),
 	    ('check-timing', (10000, 20000)),
 	    ('add-motion', "myself"),
-	    ('position', (-80, 0, -3)),
+	    ('position', (-80, 0, -2)),
 	    ('orientation', (0, 0, 0)),
 	    ('speed', (1.0, 0, 0)),
+        ('rotation', (0.0, 0.0, 0.2)),
 	    ('dt', 0.1),
-	    ('rotation', (0, 0, 0.4)),
-	    ('add-motion', "houseX"),
-	    ('position', (0, 0, -30)),
-	    ('rotation', (1, 0, 0)),
-	    ('dt', 0.1),
-	    ('add-motion', "head"),
-	    ('position', (160, 40, -40)),
+	    ('add-motion', "c172|head"),
+	    ('position', (-0, 0, -2)),
 	    ('orientation', (0, 0, 0)),
-	    ('rotation', (1, 1, 10)),
-	    ('dt', 0.1)
+	    ('rotation', (0, 0, 0.5)),
+        ('speed', (0.4, 0, 0)),
+	    ('dt', -0.1),
+	    #('add-motion', "c172|houseX"),
+	    #('position', (-70, 0, -3)),
+	    #('rotation', (1, 0, 0)),
+	    #('dt', 0.1),
         ))
 
     # add a filer in this node for replay support
@@ -126,4 +140,4 @@ if drivemods:
     driveentity = dueca.Entity("drive", drivemods)
 
 if mymods:
-    myentity = dueca.Entity("ogre", mymods)
+    myentity = dueca.Entity("fg", mymods)

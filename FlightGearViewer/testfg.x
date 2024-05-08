@@ -51,18 +51,22 @@ fi
 
 UDP_PORT=5501
 
+BGAMP="&"
+if [ "$1" = 'nodueca' ]; then
+    BGAMP=""
+fi
+
 fgfs \
     --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavis \
-    --config=${CAMERA_CONFIG} \
     --callsign=${CS} \
     --multiplay=in,100,127.0.0.1,5001 \
     --prop:int:/sim/multiplay/debug-level=0 \
     --airport=EHAM \
+    --aircraft=A380  \
     --fdm=external \
-    --aircraft=ufo \
     --disable-real-weather-fetch \
-    --enable-clouds3d \
     --start-date-lat=2024:08:23:14:00:00 \
+    --enable-clouds3d \
     --prop:bool:/sim/menubar/visibility=false \
     --enable-splash-screen \
     --enable-terrasync \
@@ -83,9 +87,7 @@ fgfs \
     --log-class=$LOGCLASS \
     --log-dir="." \
     --enable-ai-models \
-    --disable-ai-traffic &
-
-# do not use --enable-clock-freeze, because that also stops multiplay show
+    --disable-ai-traffic $BGAMP
 
 if [ "$1" = 'nodueca' ]; then
     echo "not starting dueca"

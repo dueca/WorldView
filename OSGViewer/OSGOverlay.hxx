@@ -2,8 +2,8 @@
 /*      item            : OSGOverlay.hxx
         made by         : Rene van Paassen
         date            : 100127
-	category        : header file 
-        description     : 
+	category        : header file
+        description     :
 	changes         : 100127 first version
         language        : C++
 */
@@ -32,21 +32,21 @@ protected:
 
   /** Matching view */
   std::string                  view_name;
-  
+
 public:
-  /** Constructor 
-      
+  /** Constructor
+
       @param spec Generic data specification for graphic
                   objects
                   - filename[0]: name of the mask bitmap
-                  - 
+                  -
   */
   OSGOverlay(const WorldDataSpec &spec);
-  
+
   /** Destructor */
   ~OSGOverlay();
 
-  /** Connect to a channel entry 
+  /** Connect to a channel entry
 
       @param master_id ID for opening a channel reader
       @param cname     Channel with object data
@@ -56,7 +56,7 @@ public:
                        Channel::EntryTimeAspect time_aspect);
 
   /** Play, update, recalculate, etc. */
-  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late); 
+  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late, bool freeze) override;
 
   /** Initialise position */
   virtual void init(const osg::ref_ptr<osg::Group>& root,

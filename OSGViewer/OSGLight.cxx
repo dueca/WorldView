@@ -170,7 +170,7 @@ void OSGLight::connect(const GlobalId& master_id, const NameSet& cname,
 }
 
 void OSGLight::iterate(TimeTickType ts,
-                       const BaseObjectMotion& base, double late)
+                       const BaseObjectMotion& base, double late, bool freeze)
 {
   // todo
 }
@@ -194,7 +194,7 @@ void OSGCenteredLight::connect(const GlobalId& master_id, const NameSet& cname,
 
 void OSGCenteredLight::iterate(TimeTickType ts,
                                 const BaseObjectMotion& base,
-                                double late)
+                                double late, bool freeze)
 {
   if (base.dt != 0.0 && late != 0.0) {
     BaseObjectMotion o2(base); o2.extrapolate(late);

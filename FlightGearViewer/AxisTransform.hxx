@@ -11,11 +11,12 @@
 #ifndef FGLocalAxis_hxx
 #define FGLocalAxis_hxx
 
-#include "../comm-objects/RvPQuat.hxx"
+#include <dueca/extra/RvPQuat.hxx>
 #include <cmath>
 #include <dueca-version.h>
 
-#if DUECA_VERSION_NUM >= DUECA_VERSION(2, 0, 0)
+using namespace dueca;
+
 #include <Eigen/Dense>
 #define USING_EIGEN3
 // a normal matrix, allocates its own storage
@@ -46,20 +47,32 @@ typedef Eigen::Map<Eigen::VectorXf> VectorfE;
 typedef Eigen::Map<const Eigen::VectorXf> cVectorfE;
 // constant double vector, external storage
 typedef Eigen::Map<const Eigen::VectorXd> cVectorE;
-#else
-
-#include <mtl/mtl.h>
-typedef mtl::matrix<double, mtl::rectangle<>, mtl::dense<>,
-                    mtl::row_major>::type Matrix;
-typedef mtl::matrix<double, mtl::rectangle<>, mtl::dense<mtl::external>,
-                    mtl::row_major>::type MatrixE;
-typedef mtl::external_vec<double> VectorE;
-typedef mtl::external_vec<float> VectorfE;
-typedef mtl::external_vec<const double> cVectorE;
-typedef mtl::dense1D<double> Vector;
-#endif
 
 struct EulerAngles;
+
+
+/** Convert a quaternion in a vector to an angle/axis rep
+
+    This should match the flightgear approach.
+*/
+template <typename T1, typename T2>
+inline void toAngleAxis(const T1 &q, T2 &res)
+{
+  float nrm = std::sqrt(q[0]*q[0]+ q[1]*q[1]+ q[2]*q[2]+ q[3]*q[3]);
+  float angle = std::acos(q[0]/nrm);
+  float sinangle = std::sin(angle);
+  if (fabs(sinangle) < 1e-6) {
+    res[1] = q[1]*2.0/nrm;
+    res[2] = q[2]*2.0/nrm;
+    res[3] = q[3]+2.0/nrm;
+  }
+  else {
+    res[1] = q[1] * angle * 2.0 / (nrm*sinangle);
+    res[2] = q[2] * angle * 2.0 / (nrm*sinangle);
+    res[3] = q[3] * angle * 2.0 / (nrm*sinangle);
+  }
+}
+
 
 /** Represent an orientation or rotation step with quaternion */
 struct Orientation
@@ -81,6 +94,12 @@ struct Orientation
   /** Construction from angle and axis */
   template <class V> Orientation(double angle, const V &axis);
 
+  /** Construct from raw quaternion */
+  template <class V> Orientation(const V& q) :
+    L(q[0]), lx(q[1]), ly(q[2]), lz(q[3]),
+    quat(&(this->L), 4)
+  { normalize(); }
+
   /** Default, null orientation */
   Orientation();
 
@@ -100,7 +119,11 @@ struct Orientation
     QxQ(res, *this, o);
     return res;
   }
+
+  /** Normalize the vector. */
+  inline void normalize() { quat.normalize(); }
 };
+
 namespace std {
 ostream &operator<<(ostream &os, const Orientation &c);
 }
@@ -161,7 +184,7 @@ struct ECEF : public Carthesian
   /** Constructor, straightforward from x, y and z */
   ECEF(double x = 0.0, double y = 0.0, double z = 0.0);
 
-    /** Constructor from lat, lon, altitude */
+  /** Constructor from lat, lon, altitude */
   ECEF(const LatLonAlt &lla);
 
   /** Copy constructor */
@@ -212,9 +235,11 @@ ostream &operator<<(ostream &os, const LatLonAlt &lla);
     simulation and use those */
 class LocalAxis
 {
-  /** Conversion matrix to convert local position to ECEF relative
-      coordinates */
-  Matrix to_ECEF;
+  /** Conversion matrix to convert local position to ECEF orientation */
+  Eigen::Matrix<double, 3, 3> to_ECEF;
+
+  /** Rotation quaternion describing local orienation wrt ECEF */
+  Orientation qbase;
 
   /** Vector in ECEF to the lat-lon-zero origin */
   ECEF origin;
@@ -222,8 +247,11 @@ class LocalAxis
   /** Local Radius meridian */
   double RM;
 
-    /** Local Radius parallel */
+  /** Local Radius parallel */
   double RP;
+
+  /** Altitude local axis, needed for final correction */
+  double h_zero;
 
 public:
   /** Constructor */
@@ -232,11 +260,17 @@ public:
   /** Create an ECEF representation from a local xy_altitude set */
   ECEF toECEF(const Carthesian &coords) const;
 
+  /** Create and ECEF orientation from a local orientation */
+  Orientation toECEF(const Orientation& o) const;
+
   /** Create a local representation from an ECEF location */
   Carthesian toLocal(const ECEF &ecef) const;
 
   /** Orientation conversion */
   Orientation toNorthUp(const Orientation &o) const;
+
+  /** Orientation conversion matrix */
+  inline const Eigen::Matrix<double, 3, 3> &R() const { return to_ECEF; }
 };
 
 /** Base class for flightgear axes. Derived class implements ecef
