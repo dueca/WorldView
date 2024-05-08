@@ -350,29 +350,16 @@ double LatLonAlt::RP() const
 
 Orientation LatLonAlt::toGlobal(const double psi_zero) const
 {
+  // resulting orientation
   Orientation result;
 
   // first system, ensure local axis x points north, y east and z down
   // rotating over -psi along z axis
   double q1[] = { cos(0.5 * psi_zero), 0.0, 0.0, sin(0.5 * psi_zero) };
-#if 0
-  // 2nd system, from here the Z axis points North, x points "out"
-  // rotation along y axis by lat ensures x parallel to the earth axis,
-  // then a further rotation by pi/2 to get the z pointing to the north
-  // star, and the x pointing outward.
-  double q2[] = { -cos(0.5 * (lat + 0.5 * M_PI)), 0.0,
-                  sin(0.5 * (lat + 0.5 * M_PI)), 0.0 };
 
-  // rotate by -lon over the z axis now pointing up, 3rd system, now
-  // x is aligned with the gw meridian
-  double q3[] = { -cos(0.5 * lon), 0.0, 0.0, sin(0.5 * lon) };
-
-  double qtemp[4];
-  QxQ(qtemp, q2, q1);
-
-  QxQ(result, q3, qtemp);
-#else
-  // check against flightgear
+  // checked against flightgear, rotation describing local north axis
+  // (x north, y east, z down)
+  // in ECEF axis (x through meridian, z through north pole)
   double zd2 = double(0.5)*lon;
   double yd2 = double(-0.25)*M_PI - double(0.5)*lat;
   double Szd2 = sin(zd2);
@@ -380,10 +367,9 @@ Orientation LatLonAlt::toGlobal(const double psi_zero) const
   double Czd2 = cos(zd2);
   double Cyd2 = cos(yd2);
   double q3[] = {Czd2*Cyd2, -Szd2*Syd2, Czd2*Syd2, Szd2*Cyd2};
+
+  // combine with local heading in q1
   QxQ(result, q3, q1);
-#endif
-
-
 
   return result;
 }
@@ -393,11 +379,10 @@ LocalAxis::LocalAxis(const LatLonAlt &lla, double psi_zero) :
   qbase(lla.toGlobal(psi_zero)),
   origin(lla),
   RM(lla.RM()),
-  RP(lla.RP())
+  RP(lla.RP()),
+  h_zero(lla.alt)
 {
-  to_ECEF.setZero();
-
-  // set rotation matrix in first 3x3
+  // set rotation matrix
   Q2R(to_ECEF, qbase);
 }
 
@@ -425,19 +410,14 @@ ECEF LocalAxis::toECEF(const Carthesian &coords) const
   // following converts and adds the local vector to the origin
   // defined in ECEF already. An approximating correction is added for
   // distance from the local origin
-#ifdef USING_EIGEN3
   result.xyz = to_ECEF * c2.xyz + (1.0 - 0.5 / sqr(a) * dsqr) * origin.xyz;
-#else
-  mult(to_ECEF, c2.xyz, scaled(origin.xyz, 1.0 - 0.5 / sqr(a) * dsqr),
-       result.xyz);
-#endif
 
 #ifdef FINAL_ALTITUDE_CORRECTION
   // this is a further refinement; convert to lat, lon, alt, then correct
   // the z /alt coordinate, and return to ECEF, this corrects the final
   // z deviation from WGS84
   LatLonAlt lla(result);
-  lla.alt = -coords.z;
+  lla.alt = h_zero -coords.z;
   result = ECEF(lla);
 #endif
 

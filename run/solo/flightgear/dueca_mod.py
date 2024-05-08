@@ -81,7 +81,7 @@ mymods = []
 drivemods = []
 
 # schiphol
-lat_lon_alt_psi0=(52.3626, 4.71199, -6.0, 0.0)
+lat_lon_alt_psi0=(52.3626, 4.71199, 0.0, 0.0)
 # warshaw
 # lat_lon_alt_psi0=(52+9/60+57/3600, 20+58/60+2/3600, 110, 0.0)  # EPWA
 
@@ -91,6 +91,7 @@ if this_node_id == ecs_node:
             set_timing = display_timing,
             check_timing = (10000, 20000),
             claim_thread = False,
+            follow_dusime = True,
             set_viewer =
             dueca.FlightGearViewer().param(
                 ('model-table',
@@ -103,10 +104,10 @@ if this_node_id == ecs_node:
                 lat_lon_alt_psi0=lat_lon_alt_psi0,
                 binary_packets=True,
                 mp_interface="127.0.0.1",
-                multiplay_debug_dump=False,
+                multiplay_debug_dump=True,
                 mp_port=5002,
                 mp_client="127.0.0.1:5001").complete(),
-            initial_camera = ( 0, 0, -30, 0, 0, 0)
+            initial_camera = ( 0, 0, -4, 0, 0, 0)
         ))
 
     mymods.append(dueca.Module(

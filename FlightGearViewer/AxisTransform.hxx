@@ -247,8 +247,11 @@ class LocalAxis
   /** Local Radius meridian */
   double RM;
 
-    /** Local Radius parallel */
+  /** Local Radius parallel */
   double RP;
+
+  /** Altitude local axis, needed for final correction */
+  double h_zero;
 
 public:
   /** Constructor */
