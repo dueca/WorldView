@@ -56,7 +56,7 @@ struct EulerAngles;
     This should match the flightgear approach.
 */
 template <typename T1, typename T2>
-inline void toAngleAxis(const T1 q[4], T2 res[4])
+inline void toAngleAxis(const T1 &q, T2 &res)
 {
   float nrm = std::sqrt(q[0]*q[0]+ q[1]*q[1]+ q[2]*q[2]+ q[3]*q[3]);
   float angle = std::acos(q[0]/nrm);
@@ -94,6 +94,12 @@ struct Orientation
   /** Construction from angle and axis */
   template <class V> Orientation(double angle, const V &axis);
 
+  /** Construct from raw quaternion */
+  template <class V> Orientation(const V& q) :
+    L(q[0]), lx(q[1]), ly(q[2]), lz(q[3]),
+    quat(&(this->L), 4)
+  { normalize(); }
+
   /** Default, null orientation */
   Orientation();
 
@@ -113,7 +119,11 @@ struct Orientation
     QxQ(res, *this, o);
     return res;
   }
+
+  /** Normalize the vector. */
+  inline void normalize() { quat.normalize(); }
 };
+
 namespace std {
 ostream &operator<<(ostream &os, const Orientation &c);
 }
@@ -225,9 +235,11 @@ ostream &operator<<(ostream &os, const LatLonAlt &lla);
     simulation and use those */
 class LocalAxis
 {
-  /** Conversion matrix to convert local position to ECEF relative
-      coordinates */
-  Matrix to_ECEF;
+  /** Conversion matrix to convert local position to ECEF orientation */
+  Eigen::Matrix<double, 3, 3> to_ECEF;
+
+  /** Rotation quaternion describing local orienation wrt ECEF */
+  Orientation qbase;
 
   /** Vector in ECEF to the lat-lon-zero origin */
   ECEF origin;
@@ -245,11 +257,17 @@ public:
   /** Create an ECEF representation from a local xy_altitude set */
   ECEF toECEF(const Carthesian &coords) const;
 
+  /** Create and ECEF orientation from a local orientation */
+  Orientation toECEF(const Orientation& o) const;
+
   /** Create a local representation from an ECEF location */
   Carthesian toLocal(const ECEF &ecef) const;
 
   /** Orientation conversion */
   Orientation toNorthUp(const Orientation &o) const;
+
+  /** Orientation conversion matrix */
+  inline const Eigen::Matrix<double, 3, 3> &R() const { return to_ECEF; }
 };
 
 /** Base class for flightgear axes. Derived class implements ecef

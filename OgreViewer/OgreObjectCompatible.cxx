@@ -2,8 +2,8 @@
 /*      item            : OgreObjectCompatible.cxx
         made by         : Rene' van Paassen
         date            : 180903
-	category        : body file 
-        description     : 
+	category        : body file
+        description     :
 	changes         : 180903 first version
         language        : C++
         copyright       : (c) 18 TUDelft-AE-C&S
@@ -46,7 +46,7 @@ void OgreObjectCompatible::init(Ogre::SceneManager* manager)
   this->manager = manager;
   failreport = false;
 }
-  
+
 void OgreObjectCompatible::connect(const GlobalId& master_id,
                                    const NameSet& cname,
                                    entryid_type entry_id,
@@ -60,13 +60,13 @@ void OgreObjectCompatible::connect(const GlobalId& master_id,
 
 void OgreObjectCompatible::iterate(TimeTickType ts,
                                    const BaseObjectMotion& base,
-                                   double late)
+                                   double late, bool freeze)
 {
   if (r_motion->isValid()) {
     try {
       DataReader<ObjectMotion,MatchIntervalStartOrEarlier>
         r(*r_motion, ts);
-      
+
       // get the data, this might trigger a nodataavailable
       ObjectMotion o2(r.data());
 
@@ -78,16 +78,16 @@ void OgreObjectCompatible::iterate(TimeTickType ts,
               << " origin=" << ei.origin);
         failreport = false;
       }
-      
+
       // initialize if this is the first read
       if (node == NULL && manager && o2.klass.size()) {
 
         try {
-          
+
           this->name = o2.name.c_str();
           this->mesh_name = typemap[std::string(o2.klass.c_str())].mesh;
           this->groupname = typemap[std::string(o2.klass.c_str())].group;
-          
+
           // call init?
           this->OgreObject::init(manager);
         }

@@ -57,12 +57,12 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
 
     { "lat-lon-psi0",
       new MemberCall<FlightGearViewer_Dueca, vector<double>>(
-        &FlightGearViewer_Dueca::setLatLonPsi0),
+        &FlightGearViewer_Dueca::setLatLonAltPsi0),
       "call with three parameters to set local coordinate system" },
 
     { "lat-lon-alt-psi0",
       new MemberCall<FlightGearViewer_Dueca, vector<double>>(
-        &FlightGearViewer_Dueca::setLatLonPsi0),
+        &FlightGearViewer_Dueca::setLatLonAltPsi0),
       "call with four parameters to set local coordinate system" },
 
     { "binary-packets",

@@ -37,7 +37,7 @@ void FlightGearObject::visible(bool vis)
 }
 
 void FlightGearObject::iterate(TimeTickType ts, const BaseObjectMotion &base,
-                               double late)
+                               double late, bool freeze)
 {
   if (r_motion->isValid()) {
     try {
@@ -50,7 +50,11 @@ void FlightGearObject::iterate(TimeTickType ts, const BaseObjectMotion &base,
         itime = time;
 
         BaseObjectMotion o2(r.data());
-        if (r.data().dt != 0.0) {
+        if (freeze) {
+          o2.omega = 0.0;
+          o2.uvw = 0.0;
+        }
+        else if (r.data().dt != 0.0) {
           double textra =
             DataTimeSpec(r.timeSpec().getValidityStart(), ts).getDtInSeconds() +
             late;

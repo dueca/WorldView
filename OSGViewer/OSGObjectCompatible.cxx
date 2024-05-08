@@ -2,8 +2,8 @@
 /*      item            : OSGObjectCompatible.cxx
         made by         : Rene' van Paassen
         date            : 180903
-	category        : body file 
-        description     : 
+	category        : body file
+        description     :
 	changes         : 180903 first version
         language        : C++
         copyright       : (c) 18 TUDelft-AE-C&S
@@ -60,7 +60,7 @@ void OSGObjectCompatible::init(const osg::ref_ptr<osg::Group>& root,
 
 void OSGObjectCompatible::iterate(TimeTickType ts,
                                   const BaseObjectMotion& base,
-                                  double late)
+                                  double late, bool freeze)
 {
   if (r_motion->isValid()) {
     try {
@@ -69,10 +69,10 @@ void OSGObjectCompatible::iterate(TimeTickType ts,
 
       if (entity == NULL) {
         try {
-          
+
           this->name = r.data().name.c_str();
           this->modelfile = typemap[std::string(r.data().klass.c_str())];
-          
+
           // call init?
           this->OSGObject::init(root, master);
         }
@@ -94,7 +94,7 @@ void OSGObjectCompatible::iterate(TimeTickType ts,
         else {
           transform->setPosition(AxisTransform::osgPos(r.data().xyz));
           transform->setAttitude(AxisTransform::osgQuat(r.data().attitude_q));
-        }        
+        }
       }
     }
     catch (const std::exception& e) {

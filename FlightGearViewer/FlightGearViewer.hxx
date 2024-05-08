@@ -110,7 +110,6 @@ private:
   client_map_t mp_clients;
 
 protected:
-
   /** Port number for multiplay messages */
   int mp_port;
 
@@ -124,7 +123,6 @@ protected:
   int mp_sockfd;
 
 private:
-
   /** Time offset */
   double mp_time0;
 
@@ -141,11 +139,13 @@ public:
   /** set the base camera position
       @param tick  DUECA current time tick
       @param base  Object motion, position, etc.
-      @param late  Time after DUECA tick */
-  void setBase(TimeTickType tick, const BaseObjectMotion &base, double late);
+      @param late  Time after DUECA tick
+      @param freeze Frozen simulation, suppress extrapolation */
+  void setBase(TimeTickType tick, const BaseObjectMotion &base, double late,
+               bool freeze);
 
   /** Initialise the windows etc. */
-  void init(bool waitswap){};
+  void init(bool waitswap) {};
 
   /** Do a re-draw
 
@@ -158,7 +158,7 @@ public:
   void waitSwap();
 
     /** Set the origin point for a local coordinate system */
-  bool setLatLonPsi0(const vector<double> &vec);
+  bool setLatLonAltPsi0(const vector<double> &vec);
 
   /** Send other object data */
   inline MultiplayerEncode &getEncoder() { return *encoder; }
@@ -171,8 +171,8 @@ public:
 
 private:
     /** Map with created (due to presence in the world channel)
-  objects. They are indexed with channel entry index, and removed
-  from the map when the entry is removed from the channel. */
+objects. They are indexed with channel entry index, and removed
+from the map when the entry is removed from the channel. */
   typedef std::map<creation_key_t, boost::intrusive_ptr<FlightGearObject>>
     created_objects_t;
 
@@ -217,7 +217,7 @@ protected:
   bool modelTableEntry(const std::vector<std::string> &s);
 
   /** Add a multiplayer client */
-  bool addMultiplayClient(const std::string& s);
+  bool addMultiplayClient(const std::string &s);
 };
 
 #endif

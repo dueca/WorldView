@@ -388,14 +388,14 @@ void OSGViewer::init(bool waitswap)
   }
 
   // imperfect, but set swap cb on first window gc
-  //#define OSG_DOES_NOT_WAIT_ON_X11_SWAP 
+  //#define OSG_DOES_NOT_WAIT_ON_X11_SWAP
 #ifdef OSG_DOES_NOT_WAIT_ON_X11_SWAP
   if (waitswap) {
     swapcb = new MySwapCb;
     windows.begin()->second.gc->setSwapCallback(swapcb);
   }
 #endif
- 
+
   // if applicable, initialize static objects and dynamic objects
   for (auto &ao: active_objects) { ao.second->init(root, this); }
   for (auto &so: static_objects) { so->init(root, this); }
@@ -428,7 +428,7 @@ void OSGViewer::init(bool waitswap)
   osgUtil::Optimizer optimizer;
   optimizer.optimize(root);
 
-  
+
 }
 
 void OSGViewer::addViewport(const ViewSpec& vp)
@@ -537,7 +537,7 @@ bool OSGViewer::adaptSceneGraph(const WorldViewConfig& adapt)
 }
 
 void OSGViewer::setBase(TimeTickType tick, const BaseObjectMotion& ownm,
-                        double late)
+                        double late, bool freeze)
 {
   // \todo: modify to update all cameras, as they are in the viewset list
 

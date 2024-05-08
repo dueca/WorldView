@@ -93,29 +93,17 @@ void FGLocalAxis::toECEF(double pos[3], float velocity[3], float attitude[4],
   VectorE v_pos(pos, 3);
   v_pos = ecef.xyz;
 
+
   // lat-lon-alt representation of this location as step for the
   // orientation
-  LatLonAlt lla(ecef);
-
-  // Orientation conversion from the local north-heading lat, lon, alt
-  // to the global ECEF system
-  Orientation to_global = lla.toGlobal(psi_zero);
-
-  // conversion of the quaternion is simply multiplication - order??
-  float qres[4];
-  QxQ(qres, to_global, quat);
-  toAngleAxis(qres, attitude);
-
-  // Attitude forms the basis for the rotation matrix for converting
-  // the speeds and rotational rates
-  float R_data[9];
-  MatrixfE R(R_data, 3, 3);
-  Q2R(R, qres);
+  Orientation o_ecef = axis.toECEF(Orientation(quat));
+  toAngleAxis(o_ecef, attitude);
 
   VectorfE v_velocity(velocity, 3);
   cVectorfE v_uvw(uvw, 3);
   VectorfE v_omega(omega, 3);
   cVectorfE v_pqr(pqr, 3);
+  Eigen::Matrix<float, 3, 3> R = axis.R().cast<float>();
 
   // transform the speed vector, in body axes, to ECEF coordinates
   v_velocity = R * v_uvw;
@@ -359,12 +347,15 @@ double LatLonAlt::RP() const
   return a * (1.0 + esqr * 0.5 * sin(lat) * sin(lat));
 }
 
+
 Orientation LatLonAlt::toGlobal(const double psi_zero) const
 {
+  Orientation result;
+
   // first system, ensure local axis x points north, y east and z down
   // rotating over -psi along z axis
-  double q1[] = { -cos(0.5 * psi_zero), 0.0, 0.0, sin(0.5 * psi_zero) };
-
+  double q1[] = { cos(0.5 * psi_zero), 0.0, 0.0, sin(0.5 * psi_zero) };
+#if 0
   // 2nd system, from here the Z axis points North, x points "out"
   // rotation along y axis by lat ensures x parallel to the earth axis,
   // then a further rotation by pi/2 to get the z pointing to the north
@@ -378,20 +369,35 @@ Orientation LatLonAlt::toGlobal(const double psi_zero) const
 
   double qtemp[4];
   QxQ(qtemp, q2, q1);
-  Orientation result;
+
   QxQ(result, q3, qtemp);
+#else
+  // check against flightgear
+  double zd2 = double(0.5)*lon;
+  double yd2 = double(-0.25)*M_PI - double(0.5)*lat;
+  double Szd2 = sin(zd2);
+  double Syd2 = sin(yd2);
+  double Czd2 = cos(zd2);
+  double Cyd2 = cos(yd2);
+  double q3[] = {Czd2*Cyd2, -Szd2*Syd2, Czd2*Syd2, Szd2*Cyd2};
+  QxQ(result, q3, q1);
+#endif
+
+
+
   return result;
 }
 
 LocalAxis::LocalAxis(const LatLonAlt &lla, double psi_zero) :
-  to_ECEF(3, 3),
+  to_ECEF(),
+  qbase(lla.toGlobal(psi_zero)),
   origin(lla),
   RM(lla.RM()),
   RP(lla.RP())
 {
-  Orientation qbase = lla.toGlobal(psi_zero);
+  to_ECEF.setZero();
 
-  // set rotation matrix
+  // set rotation matrix in first 3x3
   Q2R(to_ECEF, qbase);
 }
 
@@ -437,6 +443,13 @@ ECEF LocalAxis::toECEF(const Carthesian &coords) const
 
   DEB(std::cout << "corr " << result << LatLonAlt(result) << std::endl);
 
+  return result;
+}
+
+Orientation LocalAxis::toECEF(const Orientation& o) const
+{
+  Orientation result;
+  QxQ(result, qbase, o);
   return result;
 }
 

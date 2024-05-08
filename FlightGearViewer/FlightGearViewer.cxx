@@ -138,15 +138,15 @@ bool FlightGearViewer::complete()
   return true;
 }
 
-bool FlightGearViewer::setLatLonPsi0(const vector<double> &vec)
+bool FlightGearViewer::setLatLonAltPsi0(const vector<double> &vec)
 {
   if (vec.size() != 2 && vec.size() != 3 && vec.size() != 4) {
-    E_MOD("FlightGearViewer::setLatLonPsi0 Need 2, 3 or 4 parameters");
+    E_MOD("FlightGearViewer::setLatLonAltPsi0 Need 2, 3 or 4 parameters");
     return false;
   }
   const double deg2rad = M_PI / 180.0;
-  double psi_zero = vec.size() >= 3 ? vec[2] : 0.0;
-  double h_zero = vec.size() == 4 ? vec[3] : 0.0;
+  double h_zero = vec.size() >= 3 ? vec[2] : 0.0;
+  double psi_zero = vec.size() == 4 ? vec[3] : 0.0;
   axis = boost::shared_ptr<FGAxis>(new FGLocalAxis(
     vec[0] * deg2rad, vec[1] * deg2rad, h_zero, psi_zero * deg2rad));
   return true;
@@ -317,13 +317,13 @@ void FlightGearViewer::sendPositionReport()
 void FlightGearViewer::waitSwap() {}
 
 void FlightGearViewer::setBase(TimeTickType tick, const BaseObjectMotion &base,
-                               double late)
+                               double late, bool freeze)
 {
   current_tick = tick;
   axis->transform(fg_command.latlonalt_phithtpsi, base.xyz, base.attitude_q);
 
   for (auto &obj : active_objects) {
-    obj.second->iterate(tick, base, late);
+    obj.second->iterate(tick, base, late, freeze);
   }
 }
 
