@@ -12,7 +12,6 @@
 #ifndef FlightGearViewer_hxx
 #define FlightGearViewer_hxx
 
-#include "Dstring.hxx"
 #include "SimTime.hxx"
 #include <netinet/in.h>
 #undef OTHER_TRAFFIC
@@ -133,7 +132,7 @@ protected:
 
 private:
   /** Time offset */
-  double mp_time0;
+  mutable double mp_time0;
 
 public:
   /** Constructor */
@@ -173,13 +172,13 @@ public:
   bool setLatLonAltPsi0(const vector<double> &vec);
 
   /** Send other object data */
-  inline MultiplayerEncode &getEncoder() { return *encoder; }
+  inline MultiplayerEncode &getEncoder() const { return *encoder; }
 
   /** Send multiplayer encoded report */
-  void sendPositionReport();
+  void sendPositionReport() const;
 
   /** Flight time calculation */
-  double getFlightTime(double time);
+  double getFlightTime(double time) const;
 
 private:
     /** Map with created (due to presence in the world channel)

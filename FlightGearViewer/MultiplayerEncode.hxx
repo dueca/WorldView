@@ -77,8 +77,20 @@ public:
                       const std::string &fgclass, const std::string &name, double time, double lag,
                       const PropertyEncoderBase *coder = NULL);
 
+  /** Functions that code xdr and return num
+  ber of coded */
+  typedef size_t (*XDRCoder)(XDR& xdr_data);
+  virtual void encode(const BaseObjectMotion &motion,
+                      const std::string &fgclass, const std::string &name, double time, double lag,
+                      const XDRCoder& xdrfunc);
+
+
   /** Log print of a received or created buffer. */
   void dump(const char *buffer, size_t bufsize);
+
+  static void propertyEncode(XDR &xdr_data, unsigned propno, float value);
+  static void propertyEncode(XDR &xdr_data, unsigned propno, bool value);
+  static void propertyEncode(XDR &xdr_data, unsigned propno, int value);
 };
 
 /** Encode fixed properties available in a JSON file */

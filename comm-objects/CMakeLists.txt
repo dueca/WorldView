@@ -36,6 +36,7 @@ dueca_add_dco()
 # detect any needed libraries here with CMake's mechanisms, such as
 # find_package, pkg_check_modules, or low-level find_path/find_library
 # (rarely needed for DCO objects)
+pkg_check_modules(TIRPC REQUIRED libtirpc)
 
 # if you need specific define's for the compilation, give them here
 set(CUSTOM_OPTIONS )
@@ -47,7 +48,8 @@ dueca_add_module(
 
   # specify include directories, add for used libraries as needed
   INCLUDEDIRS ${DCO_INCLUDE_DIRS}
-  
+  ${TIRPC_INCLUDE_DIRS}
+
   # optionally add more DUECA components
   # DUECA_COMPONENTS
 
@@ -58,6 +60,7 @@ dueca_add_module(
 
   # optionally specify libraries
   LIBRARIES
+  ${TIRPC_LIBRARIES}
 
   # optionally give compiler options
   COMPILEOPTIONS ${CUSTOM_OPTIONS}

@@ -12,6 +12,7 @@
 #define FlightGearObject_hxx
 
 #include "MultiplayerEncode.hxx"
+#include "WorldDataSpec.hxx"
 #include "comm-objects.h"
 #include <WorldObjectBase.hxx>
 #include <boost/scoped_ptr.hpp>
@@ -25,6 +26,7 @@ class FlightGearViewer;
     server */
 class FlightGearObject : public WorldObjectBase
 {
+protected:
   /** Channel read token for motion input */
   boost::scoped_ptr<ChannelReadToken> r_motion;
 
@@ -38,18 +40,23 @@ class FlightGearObject : public WorldObjectBase
   std::string fgclass;
 
   /** Pointer to the boss, for conversion and sending of the data */
-  FlightGearViewer *master;
+  const FlightGearViewer *master;
 
   /** Encoder for a JSON fixed data file */
   boost::scoped_ptr<MultiplayerEncode::PropertyEncoderBase> coder;
 
 public:
   /** Constructor */
-  FlightGearObject(const std::string &name, const std::string &fgclass,
-                   const std::string &jsonfile, FlightGearViewer *master);
+  FlightGearObject(const WorldDataSpec& spec);
+
+  /** Set pointer to the current viewer */
+  void setViewer(const FlightGearViewer* v);
 
   /** Destructor */
   ~FlightGearObject();
+
+  /** Set pointer to the FlightGearViewer */
+  void setViewer(FlightGearViewer *viewer);
 
   /** Connect to a channel entry
 
@@ -58,11 +65,11 @@ public:
       @param entry_id  Entry in the channel */
   virtual void connect(const GlobalId &master_id, const NameSet &cname,
                        entryid_type entry_id,
-                       Channel::EntryTimeAspect time_aspect);
+                       Channel::EntryTimeAspect time_aspect) override;
 
   /** Play, update, recalculate, etc. */
   void iterate(TimeTickType ts, const BaseObjectMotion &base, double late,
-               bool freeze);
+               bool freeze) override;
 
   /** Information about the name of this object, might be useful. */
   inline const std::string &getName() const { return name; }
