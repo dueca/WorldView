@@ -9,26 +9,28 @@ LOGLEVEL=info
 LOGCLASS=all
 CS=test
 
-# check that the protocol is installed in flightgear
-if [ -n "${FG_ROOT}" ]; then
-    if [ ! -f ${FG_ROOT}/Protocol/duecavis.xml ]; then
-	echo "Please install duecavis.xml in your FG_ROOT ${FG_ROOT}/Protocol"
-	exit 1
-    fi
-elif [ -d /usr/share/flightgear ]; then
-    if [ ! -f /usr/share/flightgear/Protocol/duecavis.xml ]; then
-	echo "Please install duecavis.xml in /usr/share/flightgear/Protocol"
-	exit 1
-    fi
-elif  [ -d /usr/share/games/flightgear ]; then
-    if [ ! -f /usr/share/games/flightgear/Protocol/duecavis.xml ]; then
-	echo "Please install duecavis.xml in /usr/share/games/flightgear/Protocol"
-	exit 1
-    fi
+# If local, check that the protocol is installed
+if test -z "${FG_ROOT}"; then
+    test -d /usr/share/flightgear && FG_ROOT=/usr/share/flightgear
+    test -d /usr/share/games/flightgear && FG_ROOT=/usr/share/games/flightgear
+fi
+
+# Check that protocol is installed (works for local FG only)
+if diff ../../../../WorldView/FlightGearViewer/duecavis.xml \
+	${FG_ROOT}/Protocol/duecavis.xml; then
+    echo "Using protocol duecavis.xml"
 else
-    echo "Cannot find your flightgear root, please set FG_ROOT"
+    echo "Please install or update duecavis.xml in ${FG_ROOT}/Protocol"
     exit 1
 fi
+
+# reception of data
+UDP_PORT=5501
+# feedback of height above terrain
+UDP2_PORT=5502
+# reception and feedback of multiplay
+UDP_MULTIPLAY=5001
+UDP2_MULTIPLAY=5002
 
 # On the lab, cameras/projectors all have different FOV/frustum and offset
 if [ "$DIRECTORY" == "dutmms14" ]; then
@@ -53,9 +55,11 @@ UDP_PORT=5501
 
 fgfs \
     --generic=socket,in,100,127.0.0.1,${UDP_PORT},udp,duecavis \
+    --generic=socket,out,100,127.0.0.1,${UDP2_PORT},udp,duecavis \
     --config=${CAMERA_CONFIG} \
     --callsign=${CS} \
-    --multiplay=in,100,127.0.0.1,5001 \
+    --multiplay=in,100,127.0.0.1,${UDP_MULTIPLAY} \
+    --multiplay=out,100,127.0.0.1,${UDP2_MULTIPLAY} \
     --prop:int:/sim/multiplay/debug-level=0 \
     --airport=EHAM \
     --fdm=external \
