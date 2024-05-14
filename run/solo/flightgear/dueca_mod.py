@@ -99,7 +99,7 @@ if this_node_id == ecs_node:
                 ('model-table',
                  ('ObjectMotion:ufo', 'base', 'Aircraft/ufo/Models/ufo.xml', '')),
                 ('model-table',
-                 ('FGObjectMotion:pc12', 'fgprops', 'Aircraft/PC-12/pc12-set.xml', 'pc12.json'
+                 ('FGObjectMotion:pc12', 'fgprops', 'Aircraft/A320-family/Models/A320neo-PW.xml', 'a320.json'
 )),
                 receiver='127.0.0.1',
                 own_interface='127.0.0.1',
@@ -108,7 +108,7 @@ if this_node_id == ecs_node:
                 lat_lon_alt_psi0=lat_lon_alt_psi0,
                 binary_packets=True,
                 mp_interface="127.0.0.1",
-                multiplay_debug_dump=False,
+                multiplay_debug_dump=True,
                 mp_port=5002,
                 mp_client="127.0.0.1:5001").complete(),
             initial_camera = ( 0, 0, -4, 0, 0, 0)
