@@ -11,7 +11,7 @@
 ;; Definitions/includes for the different datatypes used in the object
 (Type BaseObjectMotion
 "#include \"BaseObjectMotion.hxx\"
-#include <rpc/xdr.h>")
+typedef struct __rpc_xdr XDR;")
 (Type bool)
 
 ;; DCO object <replace this comment>

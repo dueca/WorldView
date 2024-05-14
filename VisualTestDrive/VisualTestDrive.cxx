@@ -94,6 +94,16 @@ const ParameterTable *VisualTestDrive::getMyParameterTable()
     { "set-class",
       new MemberCall<VisualTestDrive, string>(&VisualTestDrive::setClass),
       "Specify the object class for a new motion drive" },
+    { "add-fg-motion",
+      new MemberCall<_ThisModule_, std::string>(&_ThisModule_::addFGMotion),
+      "Create a flightgear enhanced aircraft entry, which moves various "
+      "parts." },
+
+    { "fg-motion-parameters",
+      .probe = new MemberCall<_ThisModule_, std::vector<double>>(
+        &_ThisModule_::supplyFGMotion),
+      "Add coordinates for flightgear object, xyz, phi, theta, psi, uvw, "
+      "omega" },
 
     /* You can extend this table with labels and MemberCall or
        VarProbe pointers to perform calls or insert values into your
@@ -142,7 +152,7 @@ VisualTestDrive::VisualTestDrive(Entity *e, const char *part,
 {
   // connect the triggers for simulation
   do_calc.setTrigger(myclock);
-
+  fgspec.coordinates.resize(12, 0.0);
   // connect the triggers for trim calculation. Leave this out if you
   // don not need input for trim calculation
   // trimCalculationCondition(/* fill in your trim triggering channels */);
@@ -153,6 +163,7 @@ bool VisualTestDrive::complete()
   /* All your parameters have been set. You may do extended
      initialisation here. Return false if something is wrong. */
   addMotion("");
+  addFGMotion("");
   return true;
 }
 
@@ -213,6 +224,127 @@ bool VisualTestDrive::addMotion(const std::string &name)
   temp.name = name;
   temp.klass = name;
   return true;
+}
+
+bool VisualTestDrive::addFGMotion(const std::string &name)
+{
+  if (fgspec.name.size()) {
+    fg_sets.emplace_back(fgspec, this);
+    fgspec = WorldDataSpec();
+    fgspec.coordinates.resize(12, 0.0);
+  }
+
+  // copy the label
+  fgspec.name = name;
+  return true;
+}
+
+bool VisualTestDrive::supplyFGMotion(const std::vector<double> &coords)
+{
+  for (unsigned ii = std::max(coords.size(), size_t(12)); ii--;) {
+    fgspec.coordinates[ii] = coords[ii];
+  }
+  return true;
+}
+
+VisualTestDrive::FlightGearTestSet::FlightGearTestSet(const WorldDataSpec &i,
+                                                      Module *module) :
+  moving_part(0),
+  tmove(0.0),
+  initial(),
+  moving(),
+  w_entry(new ChannelWriteToken(module->getId(),
+                                NameSet("world", "ObjectMotion", ""),
+                                getclassname<FGBaseAircraftMotion>(), i.name,
+                                Channel::Continuous, Channel::OneOrMoreEntries))
+{
+  initial.xyz[0] = i.coordinates[0];
+  initial.xyz[1] = i.coordinates[1];
+  initial.xyz[2] = i.coordinates[2];
+  initial.setquat(i.coordinates[3] * M_PI / 180.0,
+                  i.coordinates[4] * M_PI / 180.0,
+                  i.coordinates[5] * M_PI / 180.0);
+  initial.uvw[0] = i.coordinates[6];
+  initial.uvw[1] = i.coordinates[7];
+  initial.uvw[2] = i.coordinates[8];
+  initial.omega[0] = i.coordinates[9];
+  initial.omega[1] = i.coordinates[10];
+  initial.omega[2] = i.coordinates[11];
+  initial.dt = 1.0;
+  moving = initial;
+}
+
+static double zigzag(double t, double n, double p1)
+{
+  if (t <= 0.0 || t >= 1.0) {
+    return n;
+  }
+  else if (t <= 0.5) {
+    return n + 2.0 * t * (p1 - n);
+  }
+  else {
+    return 2 * p1 - n + 2.0 * t * (n - p1);
+  }
+}
+
+static double zigzag(double t, double n, double p1, double p2)
+{
+  if (t <= 0.5) {
+    return zigzag(2 * t, n, p1);
+  }
+  else {
+    return zigzag(2 * t - 1.0, n, p2);
+  }
+}
+
+void VisualTestDrive::FlightGearTestSet::advance(const DataTimeSpec &ts,
+                                                 bool move)
+{
+  if (move) {
+    tmove += ts.getDtInSeconds();
+    if (tmove > 1.0) {
+      moving_part++;
+      if (moving_part == 12) moving_part = 0;
+      tmove = 0.0;
+    }
+    switch (moving_part) {
+    case 0:
+    case 1:
+    case 2:
+      moving.gear_extension_norm[moving_part] = zigzag(tmove, 0.0, 1.0);
+      break;
+    case 3:
+    case 4:
+    case 5:
+      moving.gear_compression_norm[moving_part - 3] = zigzag(tmove, 0.0, 1.0);
+      break;
+    case 6:
+      moving.left_aileron_norm = zigzag(tmove, 0.0, -1.0, 1.0);
+      break;
+    case 7:
+      moving.right_aileron_norm = zigzag(tmove, 0.0, -1.0, 1.0);
+      break;
+    case 8:
+      moving.elevator_norm = zigzag(tmove, 0.0, -1.0, 1.0);
+      break;
+    case 9:
+      moving.rudder_norm = zigzag(tmove, 0.0, -1.0, 1.0);
+      break;
+    case 10:
+      moving.flaps_norm = zigzag(tmove, 0.0, 1.0);
+      break;
+    case 11:
+      moving.speedbrake_norm = zigzag(tmove, 0.0, 1.0);
+      break;
+    }
+
+    // and follow speed/rotation
+    moving.extrapolate(ts.getDtInSeconds());
+  }
+
+  // anyhow write the data
+  DataWriter<FGBaseAircraftMotion> wm(*w_entry, ts);
+  wm.data() = moving;
 }
 
 bool VisualTestDrive::setClass(const std::string &name)
@@ -287,6 +419,10 @@ bool VisualTestDrive::isPrepared()
     CHECK_TOKEN(*(ii->w_entity));
   }
 
+  for (auto const &fgt : fg_sets) {
+    CHECK_TOKEN(*(fgt.w_entry));
+  }
+
   // return result of checks
   return res;
 }
@@ -359,6 +495,10 @@ void VisualTestDrive::doCalculation(const TimeSpec &ts)
       ii->moving.dt = 0.0;
     }
 
+    for (auto &fgt : fg_sets) {
+      fgt.advance(ts, false);
+    }
+
     break;
   }
 
@@ -372,6 +512,10 @@ void VisualTestDrive::doCalculation(const TimeSpec &ts)
          ii != motion_sets.end(); ii++) {
       ii->moving.dt = ii->initial.dt;
       ii->moving.extrapolate(ts.getDtInSeconds());
+    }
+
+    for (auto &fgt : fg_sets) {
+      fgt.advance(ts, true);
     }
 #if 0
     cout << "xyz "

@@ -95,9 +95,12 @@ if this_node_id == ecs_node:
             set_viewer =
             dueca.FlightGearViewer().param(
                 ('model-table',
-                 ('ObjectMotion:c172', 'Aircraft/A380/XML/A380.xml', 'a380.json')),
+                 ('ObjectMotion:c172', 'base', 'Aircraft/A380/XML/A380.xml', 'a380.json')),
                 ('model-table',
-                 ('ObjectMotion:ufo', 'Aircraft/ufo/Models/ufo.xml', '')),
+                 ('ObjectMotion:ufo', 'base', 'Aircraft/ufo/Models/ufo.xml', '')),
+                ('model-table',
+                 ('FGObjectMotion:pc12', 'fgprops', 'Aircraft/PC-12/pc12-set.xml', 'pc12.json'
+)),
                 receiver='127.0.0.1',
                 own_interface='127.0.0.1',
                 port=5501,
@@ -117,9 +120,9 @@ if this_node_id == ecs_node:
 	    ('check-timing', (10000, 20000)),
 	    ('add-motion', "myself"),
 	    ('position', (-80, 0, -2)),
-	    ('orientation', (0, 0, 0)),
-	    ('speed', (1.0, 0, 0)),
-        ('rotation', (0.0, 0.0, 0.2)),
+	    ('orientation', (0, 0, 180)),
+	    ('speed', (0.0, 0, 0)),
+        ('rotation', (0.0, 0.0, 0.0)),
 	    ('dt', 0.1),
 	    ('add-motion', "c172|head"),
 	    ('position', (-0, 0, -2)),
@@ -127,6 +130,10 @@ if this_node_id == ecs_node:
 	    ('rotation', (0, 0, 0.5)),
         ('speed', (0.4, 0, 0)),
 	    ('dt', -0.1),
+        ('add-fg-motion', "pc12|phlab"),
+        ('fg-motion-parameters',
+          (-110, 0, -3, 0, 0, 0,
+          0.0, 0, 0, 0, 0, 0.5))
 	    #('add-motion', "c172|houseX"),
 	    #('position', (-70, 0, -3)),
 	    #('rotation', (1, 0, 0)),

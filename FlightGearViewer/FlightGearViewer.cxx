@@ -496,15 +496,16 @@ FlightGearViewer::FGSpecs::FGSpecs()
 
 bool FlightGearViewer::modelTableEntry(const std::vector<std::string> &s)
 {
-  if (s.size() != 3 || !s[0].size() || !s[1].size()) {
-    cerr << "Need to specify 3 strings, first two non-empty" << endl;
+  if (s.size() != 4 || !s[0].size() || !s[1].size() || !s[2].size()) {
+    cerr << "Need to specify 4 strings, first three non-empty" << endl;
     return false;
   }
 
   WorldDataSpec obj;
   obj.name = s[0];
-  obj.type = s[1]; // flightgear aircraft model
-  obj.filename.push_back(s[2]); // livery
+  obj.type = s[1]; // type of interface, "base" or "fgprops"
+  obj.filename.push_back(s[2]);
+  obj.filename.push_back(s[3]); // livery
   addFactorySpec(s[0], obj);
   return true;
 }

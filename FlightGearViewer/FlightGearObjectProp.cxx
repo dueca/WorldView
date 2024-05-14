@@ -10,11 +10,30 @@
 
 #include "MultiplayerEncode.hxx"
 #define FlightGearObjectProp_cxx
+#include "FGObjectFactory.hxx"
 #include "FlightGearObjectProp.hxx"
 #include "FlightGearViewer.hxx"
 #include <dueca/Ticker.hxx>
-#include "FGObjectFactory.hxx"
 #include <dueca/debug.h>
+
+class PropertyEncoderDCO : public MultiplayerEncode::PropertyEncoderBase
+{
+  const FGObjectMotion &obj;
+  const PropertyEncoderBase &json;
+
+public:
+  PropertyEncoderDCO(const FGObjectMotion &obj,
+                     const PropertyEncoderBase &json) :
+    obj(obj),
+    json(json)
+  {}
+  virtual ~PropertyEncoderDCO() {}
+
+  virtual size_t operator()(XDR &xdr_data) const final
+  {
+    return obj.encodeProperties(xdr_data) + json(xdr_data);
+  }
+};
 
 FlightGearObjectProp::FlightGearObjectProp(const WorldDataSpec &spec) :
   FlightGearObject(spec)
@@ -56,14 +75,12 @@ void FlightGearObjectProp::iterate(TimeTickType ts,
           master->getFlightTime(DataTimeSpec(0, time).getDtInSeconds());
 
         // encodes fixed properties and the standard set in the DCO object
-        auto mycoder = [&r, this](XDR &xdr_data) -> size_t {
-          return (*(this->coder))(xdr_data) + r.data().encodeProperties(xdr_data);
-        };
+        PropertyEncoderDCO mycoder(r.data(), *coder);
 
- // convert to FG protocol
-        master->getEncoder().encode(o2, fgclass, name, ftime, 0.1, mycoder);
+        // convert to FG protocol
+        master->getEncoder().encode(o2, fgclass, name, ftime, 0.1, &mycoder);
 
- // send the result
+        // send the result
         master->sendPositionReport();
       }
     }
@@ -85,4 +102,4 @@ void FlightGearObjectProp::connect(const GlobalId &master_id,
 
 static auto FlightGearObjectProp_maker =
   new SubContractor<FGObjectTypeKey, FlightGearObjectProp>(
-    "props", "Moving FlighGear object, position controlled, property added");
+    "fgprops", "Moving FlighGear object, position controlled, property added");

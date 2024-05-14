@@ -15,6 +15,9 @@
 #define VisualTestDrive_hxx
 
 // include the dusime header
+#include "ChannelWriteToken.hxx"
+#include "WorldDataSpec.hxx"
+#include <boost/smart_ptr/scoped_ptr.hpp>
 #include <dusime.h>
 USING_DUECA_NS;
 
@@ -34,6 +37,8 @@ USING_DUECA_NS;
 */
 class VisualTestDrive : public SimulationModule
 {
+  typedef VisualTestDrive _ThisModule_;
+
 private: // simulation data
   /** Combination of an initial and current motion description */
   struct MotionSet
@@ -41,7 +46,7 @@ private: // simulation data
     /** Initial motion object */
     ObjectMotion initial;
 
-        /** Current motion object, gets updated during simulation */
+    /** Current motion object, gets updated during simulation */
     ObjectMotion moving;
 
         /* channel token pointer for writing the results */
@@ -75,6 +80,36 @@ private: // simulation data
   /** Ego motion set. */
   MotionSet ego;
 
+  /** Data set for flightgear object */
+  WorldDataSpec fgspec;
+
+  /** New flightgear test set */
+  struct FlightGearTestSet
+  {
+    /** Which part of the airplane are we trying to move */
+    unsigned moving_part;
+
+    /** Time counter */
+    double tmove;
+
+    FGBaseAircraftMotion initial;
+
+    /** Moving and flapping aircraft motion */
+    FGBaseAircraftMotion moving;
+
+    /** Channel write token */
+    boost::scoped_ptr<ChannelWriteToken> w_entry;
+
+    /** Constructor, with only motion object and token pointer */
+    FlightGearTestSet(const WorldDataSpec &i, Module* module);
+
+    /** Advance step */
+    void advance(const DataTimeSpec& ts, bool move);
+  };
+
+  /** Flightgear enabled test sets*/
+  std::list<FlightGearTestSet>  fg_sets;
+
   /** Parameter callback, add the name of a motion device */
   bool addMotion(const std::string &name);
 
@@ -95,6 +130,12 @@ private: // simulation data
 
   /** Parameter callback, set time step */
   bool setDt(const double &x);
+
+  /** Flightgear motion object setting. */
+  bool addFGMotion(const std::string& label);
+
+  /** Flightgear motion parameters */
+  bool supplyFGMotion(const std::vector<double>& coords);
 
 private: // trim calculation data
   // declare the trim calculation data needed for your simulation

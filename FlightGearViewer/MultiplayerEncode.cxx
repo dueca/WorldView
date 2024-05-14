@@ -8,7 +8,7 @@
         language        : C++
 */
 
-#include "rpc/xdr.h"
+#include <rpc/xdr.h>
 #include <cstdint>
 #include <rapidjson/rapidjson.h>
 #define MultiplayerEncode_cxx
@@ -1953,6 +1953,43 @@ void MultiplayerEncode::dump(const char *buffer, size_t bufsize)
         prop->second->dump(xdr_data);
       }
     }
+  }
+}
+
+void MultiplayerEncode::propertyEncode(XDR &xdr_data, unsigned propno, float value)
+{
+  try {
+    propmap[propno]->code(xdr_data, propno, value);
+  }
+  catch (std::exception& e) {
+    W_MOD("Cannot encode property " << propno)
+  }
+}
+void MultiplayerEncode::propertyEncode(XDR &xdr_data, unsigned propno, int64_t value)
+{
+  try {
+    propmap[propno]->code(xdr_data, propno, value);
+  }
+  catch (std::exception& e) {
+    W_MOD("Cannot encode property " << propno)
+  }
+}
+void MultiplayerEncode::propertyEncode(XDR &xdr_data, unsigned propno, bool value)
+{
+  try {
+    propmap[propno]->code(xdr_data, propno, value);
+  }
+  catch (std::exception& e) {
+    W_MOD("Cannot encode property " << propno)
+  }
+}
+void MultiplayerEncode::propertyEncode(XDR &xdr_data, unsigned propno, const std::string& value)
+{
+  try {
+    propmap[propno]->code(xdr_data, propno, value);
+  }
+  catch (std::exception& e) {
+    W_MOD("Cannot encode property " << propno)
   }
 }
 

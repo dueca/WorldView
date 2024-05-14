@@ -17,14 +17,14 @@
 
 ;; DCO object <replace this comment>
 (Object FGBaseAircraftMotion
-	(IncludeFile FGBaseAircraftMotionExtra)
 	(Inherits FGObjectMotion)
+	(IncludeFile FGBaseAircraftMotionExtra)
 
 	;; normalized gear position, 3 gears
-	(dueca::fixvector<float> gear_extension_norm (Default 0.0f))
+	(dueca::fixvector<3,float> gear_extension_norm (Default 0.0f))
 
 	;; normalized gear compression, 3 gears
-	(dueca::fixvector<float> gear_compression_norm (Default 0.0f))
+	(dueca::fixvector<3,float> gear_compression_norm (Default 0.0f))
 
 	;; aileron left position, normalized
 	(float left_aileron_norm (Default 0.0f))

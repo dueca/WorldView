@@ -1,6 +1,6 @@
 #include "../FlightGearViewer/MultiplayerEncode.hxx"
 
-size_t FGObjectMotion::encodeProperties(XDR &xdr_data) const
+size_t FGBaseAircraftMotion::encodeProperties(XDR &xdr_data) const
 {
   MultiplayerEncode::propertyEncode(xdr_data, 200, gear_compression_norm[0]);
   MultiplayerEncode::propertyEncode(xdr_data, 201, gear_extension_norm[0]);

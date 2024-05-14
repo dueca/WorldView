@@ -55,9 +55,6 @@ public:
   /** Destructor */
   ~FlightGearObject();
 
-  /** Set pointer to the FlightGearViewer */
-  void setViewer(FlightGearViewer *viewer);
-
   /** Connect to a channel entry
 
       @param master_id ID for opening a channel reader
