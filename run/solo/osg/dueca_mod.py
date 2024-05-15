@@ -80,6 +80,7 @@ if this_node_id == ecs_node:
 # modules for your project (example)
 mymods = []
 drivemods = []
+entity = "osg"
 
 if this_node_id == ecs_node:
     mymods.append(dueca.Module(
@@ -95,47 +96,44 @@ if this_node_id == ecs_node:
                 # Front window
                 ('add-window', "front"),
                 ('window-size+pos', (int(1920/f), int(1080/f), 0, 0)),
-                               
+
                 ## one viewport for the front window
                 ('add-viewport', "front"),
                 ('viewport-window', "front"),
                 ('viewport-pos+size', (int(62/f), 0, int(1796/f), int(1080/f))),
-                ('set-frustum',
+               ('set-frustum',
                  (1.0, 10000.0,
-                  -1.171378,  0.724228,
-                  -0.479275,  0.660622)),
+                  -0.814457,  0.495843,
+                  -0.428832,  0.388686)),
                 ('eye-offset',
                  (0.0, 0.0, 0.0, 0.0, 0.0, -0.000000)),
-                ('viewport-overlay', "HMILabOverlays/MaskFrontSharp"),
 
                 ## window with side views
                 ('add-window', "sides"),
                 ('window-size+pos', (
                     int(3840/f), int(1080/f), 0, 0)),
-                
+
                 ('add-viewport', "left side"),
                 ('viewport-window', "sides"),
                 ('viewport-pos+size', (
                     int(121/f), 0, int(1719/f), int(1080/f))),
-                 ('set-frustum',
-                  (1.0, 10000.0,
-                   -0.750118,  0.675156,
-                   -0.376500,  0.518960)),
-                 ('eye-offset',
-                  (0.0, 0.0, 0.0, 0.0, 0.0, -82.361594)),
-                ('viewport-overlay', "HMILabOverlays/MaskLeftSideSharp"),
-                
+                ('set-frustum',
+                 (1.0, 10000.0,
+                  -0.386757,  0.949842,
+                  -0.458358,  0.415448)),
+                ('eye-offset',
+                 (0.0, 0.0, 0.0, 0.0, 0.0, -81.678434)),
+
                 ('add-viewport', "right side"),
                 ('viewport-window', "sides"),
                 ('viewport-pos+size', (
                     int(2175/f), 0, int(1345/f), int(1080/f))),
                 ('set-frustum',
                  (1.0, 10000.0,
-                  -1.218198,  0.588489,
-                  -0.609963,  0.840760)),
+                  -1.643665, -0.013667,
+                  -0.735209,  0.666381)),
                 ('eye-offset',
-                 (0.0, 0.0, 0.0, 0.0, 0.0, 85.112990)),
-                ('viewport-overlay', "HMILabOverlays/MaskRightSideSharp"),
+                 (0.0, 0.0, 0.0, 0.0, 0.0, 83.955908)),
 
                 # add visual objects (classes, then instantiation)
                 ('add-object-class-data',
@@ -154,12 +152,24 @@ if this_node_id == ecs_node:
                  ("centered:skydome", "skydome", "centered", "skydome.obj")),
                 ('add-object-class-coordinates',
                  (0.0, 0.0, 50.0)),
+                ('add-object-class-data',
+                 ("static:overlayleft", "left", "overlay",
+                 "hmilabmasklefttest.png", "sides", "left side")),
+                ('add-object-class-data',
+                 ("static:overlaycenter", "center", "overlay",
+                 "hmilabmaskfronttest.png", "front", "front")),
+                ('add-object-class-data',
+                 ("static:overlayright", "right", "overlay",
+                 "hmilabmaskrighttest.png", "sides", "right side")),
 
                 # make the objects
-                ('static-object', ('static:sunlight', 'sunlight')),
-                ('static-object', ('static:terrain', 'terrain')),
-                ('static-object', ('centered:skydome', 'skydome'))
-                
+                ('create-static', ('static:sunlight', 'sunlight')),
+                ('create-static', ('static:terrain', 'terrain')),
+                ('create-static', ('centered:skydome', 'skydome')),
+                ('create-static', ('static:overlayleft', 'overlayleft')),
+                ('create-static', ('static:overlayright', 'overlayright')),
+                ('create-static', ('static:overlaycenter', 'overlaycenter')),
+
             ).complete(),
             initial_camera = ( 0, 0, -30, 0, 0, 0)
         ))
@@ -169,21 +179,12 @@ if this_node_id == ecs_node:
             ('set-timing', sim_timing),
 	    ('check-timing', (10000, 20000)),
 	    ('add-motion', "myself"),
-	    ('position', (-80, 0, -3)),
+	    ('position', (-80, 0, -2)),
 	    ('orientation', (0, 0, 0)),
 	    ('speed', (1.0, 0, 0)),
 	    ('dt', 0.1),
 	    ('rotation', (0, 0, 0.4)),
-	    ('add-motion', "houseX"),
-	    ('position', (0, 0, -30)),
-	    ('rotation', (1, 0, 0)),
-	    ('dt', 0.1),
-	    ('add-motion', "head"),
-	    ('position', (160, 40, -40)),
-	    ('orientation', (0, 0, 0)),
-	    ('rotation', (1, 1, 10)),
-	    ('dt', 0.1)
-        ))
+       ))
 
     # add a filer in this node for replay support
     # filer = dueca.ReplayFiler("PLHLAB")
@@ -191,6 +192,6 @@ if this_node_id == ecs_node:
 # then combine in an entity (one "copy" per node)
 if drivemods:
     driveentity = dueca.Entity("drive", drivemods)
-    
+
 if mymods:
-    myentity = dueca.Entity("ogre", mymods)
+    myentity = dueca.Entity(entity, mymods)
