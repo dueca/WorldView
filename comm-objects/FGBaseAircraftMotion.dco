@@ -14,33 +14,38 @@
 (Type FGObjectMotion "#include \"FGObjectMotion.hxx\"")
 (Type float)
 (Type dueca::fixvector<3,float> "#include <dueca/fixvector.hxx>")
+(Type dueca::fixvector<4,float> "#include <dueca/fixvector.hxx>")
 
 ;; DCO object <replace this comment>
 (Object FGBaseAircraftMotion
-	(Inherits FGObjectMotion)
-	(IncludeFile FGBaseAircraftMotionExtra)
+        (Inherits FGObjectMotion)
+        (IncludeFile FGBaseAircraftMotionExtra)
 
-	;; normalized gear position, 3 gears
-	(dueca::fixvector<3,float> gear_extension_norm (Default 0.0f))
+        ;; normalized gear position, 3 gears
+        (dueca::fixvector<3,float> gear_extension_norm (Default 0.0f))
 
-	;; normalized gear compression, 3 gears
-	(dueca::fixvector<3,float> gear_compression_norm (Default 0.0f))
+        ;; normalized gear compression, 3 gears
+        (dueca::fixvector<3,float> gear_compression_norm (Default 0.0f))
 
-	;; aileron left position, normalized
-	(float left_aileron_norm (Default 0.0f))
+        ;; aileron left position, normalized
+        (float left_aileron_norm (Default 0.0f))
 
-	;; aileron right position, normalized
-	(float right_aileron_norm (Default 0.0f))
+        ;; aileron right position, normalized
+        (float right_aileron_norm (Default 0.0f))
 
-	;; elevator position, normaized
-	(float elevator_norm (Default 0.0f))
+        ;; elevator position, normaized
+        (float elevator_norm (Default 0.0f))
 
-	;; rudder position, normalized
-	(float rudder_norm (Default 0.0f))
+        ;; rudder position, normalized
+        (float rudder_norm (Default 0.0f))
 
-	;; flaps position, normalized
-	(float flaps_norm (Default 0.0f))
+        ;; flaps position, normalized
+        (float flaps_norm (Default 0.0f))
 
-	;; spoiler/speedbrake position
-	(float speedbrake_norm (Default 0.0f))
+        ;; spoiler/speedbrake position
+        (float speedbrake_norm (Default 0.0f))
+
+        ;; engine rpms, visible for prop engines
+        (dueca::fixvector<4,float> engine_rpm (Default 0.0f))
+
         )

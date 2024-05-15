@@ -336,6 +336,11 @@ void VisualTestDrive::FlightGearTestSet::advance(const DataTimeSpec &ts,
     case 11:
       moving.speedbrake_norm = zigzag(tmove, 0.0, 1.0);
       break;
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+      moving.engine_rpm[moving_part-12] = zigzag(tmove, 0.0, 1200.0);
     }
 
     // and follow speed/rotation

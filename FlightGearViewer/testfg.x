@@ -4,7 +4,7 @@
 DIRECTORY=${PWD##*/}
 
 # Default for all non-configured platforms
-LOGLEVEL=info
+LOGLEVEL=warn
 LOGCLASS=all
 CS=PHTEST
 
@@ -40,7 +40,7 @@ fgfs \
     --multiplay=out,100,127.0.0.1,${UDP2_MULTIPLAY} \
     --prop:int:/sim/multiplay/debug-level=0 \
     --airport=EHAM \
-    --aircraft=ufo  \
+    --aircraft=pc12  \
     --fdm=external \
     --disable-real-weather-fetch \
     --start-date-lat=2024:08:23:14:00:00 \

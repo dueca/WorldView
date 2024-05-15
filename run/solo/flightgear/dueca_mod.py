@@ -99,7 +99,7 @@ if this_node_id == ecs_node:
                 ('model-table',
                  ('ObjectMotion:ufo', 'base', 'Aircraft/ufo/Models/ufo.xml', '')),
                 ('model-table',
-                 ('FGObjectMotion:pc12', 'fgprops', 'Aircraft/A320-family/Models/A320neo-PW.xml', 'a320.json'
+                 ('FGObjectMotion:pc12', 'fgprops', 'Aircraft/PC-12/Models/pc12.xml', 'pc12.json'
 )),
                 receiver='127.0.0.1',
                 own_interface='127.0.0.1',

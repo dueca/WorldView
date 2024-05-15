@@ -15,5 +15,10 @@ size_t FGBaseAircraftMotion::encodeProperties(XDR &xdr_data) const
   MultiplayerEncode::propertyEncode(xdr_data, 103, rudder_norm);
   MultiplayerEncode::propertyEncode(xdr_data, 104, flaps_norm);
   MultiplayerEncode::propertyEncode(xdr_data, 105, speedbrake_norm);
-  return 12;
+
+  MultiplayerEncode::propertyEncode(xdr_data, 302, engine_rpm[0]);
+  MultiplayerEncode::propertyEncode(xdr_data, 312, engine_rpm[1]);
+  MultiplayerEncode::propertyEncode(xdr_data, 322, engine_rpm[2]);
+  MultiplayerEncode::propertyEncode(xdr_data, 332, engine_rpm[3]);
+  return 16;
 }
