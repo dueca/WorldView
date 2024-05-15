@@ -1,0 +1,23 @@
+;; -*-scheme-*-
+(Header "
+        from item       : FGObjectMotion.dco
+        date            : Mon May 13 13:22:58 2024
+        category        : Dueca Communication Object specification
+        author          : repa
+        description     : FlightGear enabled extras
+        copyright       : (c) 2024
+        language        : C++")
+
+;; Definitions/includes for the different datatypes used in the object
+(Type BaseObjectMotion
+"#include \"BaseObjectMotion.hxx\"
+typedef struct __rpc_xdr XDR;")
+(Type bool)
+
+;; DCO object <replace this comment>
+(Object FGObjectMotion
+        (Inherits BaseObjectMotion)
+        (IncludeFile FGObjectMotionExtra)
+        ;; Visibility of the object
+        (bool visible (Default true))
+        )

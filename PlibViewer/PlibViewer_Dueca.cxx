@@ -4,8 +4,8 @@
 	from template   : DuecaModuleTemplate.cxx
         template made by: Rene van Paassen
         date            : Tue Jan 26 15:25:27 2010
-	category        : body file 
-        description     : 
+	category        : body file
+        description     :
 	changes         : Tue Jan 26 15:25:27 2010 first version
 	template changes: 030401 RvP Added template creation comment
         language        : C++
@@ -15,12 +15,6 @@
 #include "PlibViewer_Dueca.hxx"
 #include <dueca-version.h>
 
-// include the debug writing header, by default, write warning and 
-// error messages
-#define W_MOD
-#define E_MOD
-#include <debug.h>
-
 // include additional files needed for your calculation here
 #include "PlibObjectFactory.hxx"
 
@@ -29,6 +23,11 @@
 #include <MemberCall.hxx>
 #include <MemberCall2Way.hxx>
 #include <CoreCreator.hxx>
+
+// include the debug writing header, by default, write warning and
+// error messages
+#include <debug.h>
+
 USING_DUECA_NS;
 
 // Parameters to be inserted
@@ -39,77 +38,77 @@ const ParameterTable* PlibViewer_Dueca::getParameterTable()
     /* You can extend this table with labels and MemberCall or
        VarProbe pointers to perform calls or insert values into your
        class objects. Please also add a description (c-style string). */
-    { "set-modelpath", 
+    { "set-modelpath",
       new VarProbe<PlibViewer_Dueca,string>
       (&PlibViewer_Dueca::modelpath),
       "set the path to the models" },
 
-    { "set-texturepath", 
+    { "set-texturepath",
       new VarProbe<PlibViewer_Dueca,string>
       (&PlibViewer_Dueca::texturepath),
       "set the path to the texture files" },
 
-    { "sync-divisor", 
+    { "sync-divisor",
       new VarProbe<PlibViewer_Dueca,int>
       (&PlibViewer_Dueca::glx_sync_divisor),
       "For video sync wait mode, set the divisor (e.g. 2 means 30 Hz at a\n"
       "60 Hz refresh rate)" },
 
-    { "sync-offset", 
+    { "sync-offset",
       new VarProbe<PlibViewer_Dueca,int>
       (&PlibViewer_Dueca::glx_sync_offset),
       "For video sync wait mode, set the offset" },
 
-    { "keep-cursor", 
+    { "keep-cursor",
       new VarProbe<PlibViewer_Dueca,bool>
-      (&PlibViewer_Dueca::keep_pointer), 
+      (&PlibViewer_Dueca::keep_pointer),
       "By default, the cursor is removed. Set to true to keep the cursor" },
 
-    { "add-window", 
+    { "add-window",
       new MemberCall<PlibViewer_Dueca,string>
       (&PlibViewer_Dueca::addWindow),
       "Add a window to this Scene drawer. Do not forget to specify\n"
       "window size and (optionally) position" },
-    
-    { "window-size+pos", 
+
+    { "window-size+pos",
       new MemberCall<PlibViewer_Dueca,vector<int> >
-      (&PlibViewer_Dueca::setWindowPosition), 
+      (&PlibViewer_Dueca::setWindowPosition),
       "specify width, height and optionally x, y position of a new window" },
-    
+
     { "set-x-display",
       new MemberCall<PlibViewer_Dueca,string>
       (&PlibViewer_Dueca::setWindowXScreen),
       "Specify the X display (e.g. \":0.0\" for the window" },
 
-    { "add-viewport", 
+    { "add-viewport",
        new MemberCall<PlibViewer_Dueca,string>
       (&PlibViewer_Dueca::addViewport),
       "Add a viewport to this Scene drawer" },
 
-    { "viewport-window", 
+    { "viewport-window",
       new MemberCall<PlibViewer_Dueca,string>
-      (&PlibViewer_Dueca::setViewportWindow), 
+      (&PlibViewer_Dueca::setViewportWindow),
       "Specify the window for this viewport" },
 
-    { "viewport-pos+size", 
+    { "viewport-pos+size",
       new MemberCall<PlibViewer_Dueca,vector<int> >
       (&PlibViewer_Dueca::setViewportSize),
-      "Specify location (top left) and size for a viewport, 4 parameters" }, 
+      "Specify location (top left) and size for a viewport, 4 parameters" },
 
-    { "eye-offset", 
+    { "eye-offset",
       new MemberCall<PlibViewer_Dueca,vector<float> >
       (&PlibViewer_Dueca::setEyeOffset),
       "Offset of the eye with respect to sent position; 3 parameters for\n"
       "x, y and z location, and three parameters for phi, theta, psi [deg]" },
-    
+
     { "object-coordinates",
       new MemberCall<PlibViewer_Dueca,vector<double> >
       (&PlibViewer_Dueca::addCoordinates),
       "Set coordinates for the object; x, y, z position, and phi, theta, psi\n"
       "orientation. Note that these may be used differently, depending on\n"
       "the behaviour specified" },
-    
-    { "object-class", 
+
+    { "object-class",
       new MemberCall<PlibViewer_Dueca,string >
       (&PlibViewer_Dueca::setObjectBehavior),
       "set the type of an added object, currently the following are\n"
@@ -123,7 +122,7 @@ const ParameterTable* PlibViewer_Dueca::getParameterTable()
       "       observer\n"
       "For all three object types you can also add sx, sy, sz scale factors" },
 
-    { "add-object-class", 
+    { "add-object-class",
       new MemberCall<PlibViewer_Dueca,vector<string> >
       (&PlibViewer_Dueca::addObjectClass),
       "Create a new class of objects. i.e. those that can be\n"
@@ -157,22 +156,22 @@ const ParameterTable* PlibViewer_Dueca::getParameterTable()
       "name " },
 #if 0
     { "add-external-object",
-      new MemberCall2Way<PlibViewer_Dueca,ScriptCreatable> 
+      new MemberCall2Way<PlibViewer_Dueca,ScriptCreatable>
       (&PlibViewer_Dueca::addScriptObject),
       "Add a graphic object created in the script file. The object must\n"
       "derive from PlibObject." },
 #endif
-    { "set-bg-color", 
+    { "set-bg-color",
       new VarProbe<PlibViewer_Dueca,std::vector<double> >
-      (&PlibViewer_Dueca::bg_color), 
+      (&PlibViewer_Dueca::bg_color),
       "set the background color, R, G, B components, scaled 0 -- 1" },
 
     /* The table is closed off with NULL pointers for the variable
        name and MemberCall/VarProbe object. The description is used to
        give an overall description of the module. */
-    { NULL, NULL, 
+    { NULL, NULL,
       "Helper object that implements a view (or more) with the use of PLIB\n"
-      "as scene manager. To be used by a world-view module"} 
+      "as scene manager. To be used by a world-view module"}
   };
 
   return parameter_table;
@@ -182,7 +181,7 @@ const ParameterTable* PlibViewer_Dueca::getParameterTable()
 PlibViewer_Dueca::PlibViewer_Dueca() :
   ScriptCreatable()
 {
-  
+
 }
 
 bool PlibViewer_Dueca::complete()
@@ -193,13 +192,13 @@ bool PlibViewer_Dueca::complete()
     E_CNF("Need 3 components for background color");
     return false;
   }
-  
+
   if (build_win_spec.sufficient()) {
     cout << "adding last window specification" << endl;
     PlibViewer::addWindow(build_win_spec);
     build_win_spec = WinSpec();
-  } 
-  
+  }
+
   if (build_view_spec.sufficient()) {
     cout << "adding last viewport specification" << endl;
     PlibViewer::addViewport(build_view_spec);
@@ -226,7 +225,7 @@ bool PlibViewer_Dueca::addWindow(const std::string& window)
     PlibViewer::addWindow(build_win_spec);
     build_win_spec = WinSpec();
   }
-  
+
   build_win_spec.name = window;
   return true;
 }
@@ -240,7 +239,7 @@ bool PlibViewer_Dueca::setWindowPosition(const std::vector<int>& pos)
   build_win_spec.size_and_position = pos;
   return true;
 }
-  
+
 bool PlibViewer_Dueca::setWindowXScreen(const std::string& scr)
 {
   build_win_spec.display = scr;
@@ -263,7 +262,7 @@ bool PlibViewer_Dueca::setViewportWindow(const std::string& vp_window)
   build_view_spec.winname = vp_window;
   return true;
 }
-  
+
 bool PlibViewer_Dueca::setViewportSize(const std::vector<int>& vpwin)
 {
   if (vpwin.size() != 4) {
@@ -308,7 +307,7 @@ bool PlibViewer_Dueca::setObjectBehavior(const std::string& beh)
 class SimplePlibObject: public PlibObject
 {
 public:
-  SimplePlibObject(const string& name, const string& filename) 
+  SimplePlibObject(const string& name, const string& filename)
   {
     this->modelfile = filename;
     this->name = name;
@@ -324,10 +323,10 @@ public:
   /** Constructor */
   SimplePlibSubcontractor(const string& filename) :
     filename(filename) { }
-  
+
   /** create the object */
   PlibObjectTypeKey::ProductBase create
-  (const PlibObjectTypeKey::Key& key, 
+  (const PlibObjectTypeKey::Key& key,
    const PlibObjectTypeKey::SpecBase& spec) {
     return new SimplePlibObject(key, filename);
   }
@@ -365,4 +364,3 @@ static CoreCreator<PlibViewer_Dueca> a(PlibViewer_Dueca::getParameterTable(),
 #else
 static CoreCreator<PlibViewer_Dueca> a(PlibViewer_Dueca::getParameterTable());
 #endif
-

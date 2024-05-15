@@ -2,8 +2,8 @@
 /*      item            : OgreObjectMoving.cxx
         made by         : Rene' van Paassen
         date            : 180903
-	category        : body file 
-        description     : 
+	category        : body file
+        description     :
 	changes         : 180903 first version
         language        : C++
         copyright       : (c) 18 TUDelft-AE-C&S
@@ -45,7 +45,7 @@ OgreObjectMoving::OgreObjectMoving(const WorldDataSpec& spec) :
 
 OgreObjectMoving::~OgreObjectMoving()
 {
-  
+
 }
 
 void OgreObjectMoving::connect(const GlobalId& master_id, const NameSet& cname,
@@ -60,7 +60,7 @@ void OgreObjectMoving::connect(const GlobalId& master_id, const NameSet& cname,
 
 void OgreObjectMoving::iterate(TimeTickType ts,
                                const BaseObjectMotion& base,
-                               double late)
+                               double late, bool freeze)
 {
   if (r_motion->isValid() && node != NULL) {
     try {
@@ -81,7 +81,7 @@ void OgreObjectMoving::iterate(TimeTickType ts,
           (AxisTransform::ogrePosition(r.data().xyz));
         node->setOrientation
           (AxisTransform::ogreQuaternion(r.data().attitude_q));
-      }        
+      }
     }
     catch (const std::exception& e) {
       W_MOD("Cannot read BaseObjectMotion data for object " <<

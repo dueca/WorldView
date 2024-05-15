@@ -2,8 +2,8 @@
 /*      item            : OSGStaticObject.cxx
         made by         : Rene' van Paassen
         date            : 100127
-	category        : body file 
-        description     : 
+	category        : body file
+        description     :
 	changes         : 100127 first version
         language        : C++
 */
@@ -33,13 +33,13 @@ OSGStaticObject::OSGStaticObject(const WorldDataSpec &specification) :
     }
   }
   if (specification.coordinates.size() >= 6) {
-    phithtpsi2Q(orientation, 
-		specification.coordinates[3]*deg2rad, 
-		specification.coordinates[4]*deg2rad, 
+    phithtpsi2Q(orientation,
+		specification.coordinates[3]*deg2rad,
+		specification.coordinates[4]*deg2rad,
 		specification.coordinates[5]*deg2rad);
   }
   if (specification.coordinates.size() >= 9) {
-    std::copy(&specification.coordinates[6], &specification.coordinates[9], 
+    std::copy(&specification.coordinates[6], &specification.coordinates[9],
 	      scale);
   }
   if (specification.filename.size() > 0) modelfile = specification.filename[0];
@@ -71,7 +71,7 @@ void OSGStaticObject::connect(const GlobalId& master_id, const NameSet& cname,
 }
 
 void OSGStaticObject::iterate(TimeTickType ts,
-                       const BaseObjectMotion& base, double late)
+                       const BaseObjectMotion& base, double late, bool freeze)
 {
   // todo
 }
@@ -82,7 +82,7 @@ void OSGStaticObject::iterate(TimeTickType ts,
 #define OPT(A)
 #endif
 
-static SubContractor<OSGObjectTypeKey, OSGStaticObject> 
-*OSGStaticObject_maker = 
+static SubContractor<OSGObjectTypeKey, OSGStaticObject>
+*OSGStaticObject_maker =
   new SubContractor<OSGObjectTypeKey, OSGStaticObject>
   ("static" OPT("Static object, defined by a single model"));

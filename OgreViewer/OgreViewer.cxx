@@ -658,7 +658,7 @@ void OgreViewer::waitSwap()
 }
 
 void OgreViewer::setBase(TimeTickType tick, const BaseObjectMotion& base,
-                         double late)
+                         double late, bool freeze)
 {
   ego_transform->setPosition(AxisTransform::ogrePosition(base.xyz));
   ego_transform->setOrientation(AxisTransform::ogreQuaternion(base.attitude_q));
@@ -777,7 +777,7 @@ bool OgreViewer::createStatic(const std::vector<std::string>& name)
 
 void OgreViewer::removeControllable(const NameSet& cname, uint32_t creation_id)
 {
-  active_objects[std::make_pair(cname.name, creation_id)].reset();
+  active_objects.erase(std::make_pair(cname.name, creation_id));
 }
 
 bool OgreViewer::adaptSceneGraph (const WorldViewConfig& adapt)

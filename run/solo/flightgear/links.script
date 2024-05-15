@@ -1,0 +1,23 @@
+# -*-sh-*-
+# this file creates all links to files in the data directory needed for
+# running the application is a specific machine.
+
+# standard folder with project-wide data
+DATADIR=../../run-data
+
+# create a folder for run log history
+if [ ! -d runlogs ]; then
+   mkdir runlogs
+fi
+
+# convenience link to executable (cmake or legacy)
+if [ -d ../../../build ]; then
+   ln -sf ../../../build/dueca_run.x .
+else
+   ln -sf ../../../dueca_run.x .
+fi
+
+ln -sf ../../../../WorldView/HMILabViewFiles/fg/startfg.x .
+ln -sf ../../../../WorldView/FlightGearViewer/testfg.x .
+ln -sf ../../../../WorldView/HMILabViewFiles/fg/test_camera.xml .
+ln -sf ../../../../WorldView/FlightGearViewer/*.json .

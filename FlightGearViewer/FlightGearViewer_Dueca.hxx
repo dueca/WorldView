@@ -1,13 +1,13 @@
 /* ------------------------------------------------------------------   */
 /*      item            : FlightGearViewer_Dueca.hxx
         made by         : rvanpaassen
-	from template   : DuecaHelperTemplate.hxx
+        from template   : DuecaHelperTemplate.hxx
         template made by: Rene van Paassen
         date            : Tue Jan 26 13:49:33 2010
-	category        : header file 
-        description     : 
-	changes         : Tue Jan 26 13:49:33 2010 first version
-	template changes: 050825 RvP Added template creation comment
+        category        : header file
+        description     :
+        changes         : Tue Jan 26 13:49:33 2010 first version
+        template changes: 050825 RvP Added template creation comment
         language        : C++
 */
 
@@ -15,20 +15,20 @@
 #define FlightGearViewer_Dueca_hxx
 
 // include the dueca header
-#include <ScriptCreatable.hxx>
-#include <stringoptions.h>
 #include <ParameterTable.hxx>
+#include <ScriptCreatable.hxx>
 #include <dueca_ns.h>
+#include <stringoptions.h>
 
 #include "FlightGearViewer.hxx"
 
 USING_DUECA_NS;
 
 /** This helper class can communicate position reports to a FlightGear
-    viewer. 
+    viewer.
 
     Configure FlightGear to use an "external" fdm and read the
-    position data from a socket. 
+    position data from a socket.
 
     \verbatim
     fgfs --config=emptypanel.xml \
@@ -59,10 +59,12 @@ USING_DUECA_NS;
 
     \verbinclude flight-gear-viewer.scm
  */
-class FlightGearViewer_Dueca: public ScriptCreatable, public FlightGearViewer
+class FlightGearViewer_Dueca : public ScriptCreatable, public FlightGearViewer
 {
 private: // simulation data
-  
+  // define for internal reference
+  typedef FlightGearViewer_Dueca _ThisModule_;
+
 public: // construction and further specification
   /** Constructor. Is normally called from scheme/the creation script. */
   FlightGearViewer_Dueca();
@@ -76,12 +78,11 @@ public: // construction and further specification
   ~FlightGearViewer_Dueca();
 
   /** Obtain a pointer to the parameter table. */
-  static const ParameterTable* getParameterTable();
+  static const ParameterTable *getParameterTable();
 
 public:
   /** Default script linkage. */
   SCM_FEATURES_DEF;
- 
 };
 
 #endif

@@ -2,9 +2,9 @@
 /*      item            : OgreObject_Dueca.cxx
         made by         : Rene' van Paassen
         date            : 100125
-	category        : body file 
-        description     : 
-	changes         : 100125 first version
+        category        : body file
+        description     :
+        changes         : 100125 first version
         language        : C++
 */
 
@@ -12,15 +12,16 @@
 #include "OgreObject_Dueca.hxx"
 #include "AxisTransform.hxx"
 
-#define W_MOD
-#define E_MOD
-#include <debug.h>
-
 #define DO_INSTANTIATE
 #include <VarProbe.hxx>
 #include <MemberCall.hxx>
 #include <MemberCall2Way.hxx>
 #include <CoreCreator.hxx>
+
+#define W_MOD
+#define E_MOD
+#include <debug.h>
+
 
 USING_DUECA_NS;
 
@@ -32,14 +33,14 @@ const ParameterTable* OgreObject_Dueca::getParameterTable()
     /* You can extend this table with labels and MemberCall or
        VarProbe pointers to perform calls or insert values into your
        class objects. Please also add a description (c-style string). */
-    { "name", 
+    { "name",
       new VarProbe<OgreObject_Dueca, string>(&OgreObject_Dueca::name),
       "set the name of the ogre object" },
 
     /* The table is closed off with NULL pointers for the variable
        name and MemberCall/VarProbe object. The description is used to
        give an overall description of the module. */
-    { NULL, NULL, 
+    { NULL, NULL,
       "Simple link between dueca and Ogre"} };
 
   return parameter_table;
@@ -74,15 +75,15 @@ OgreObject_Dueca::~OgreObject_Dueca()
 #if 0
 // disable for now? Not complete any more?
 
-SCM_FEATURES_NOIMPINH(OgreObject_Dueca, ScriptCreatable, 
-		      "ogre-object-dueca");
+SCM_FEATURES_NOIMPINH(OgreObject_Dueca, ScriptCreatable,
+                      "ogre-object-dueca");
 
 #ifdef SCRIPT_PYTHON
 static CoreCreator<OgreObject_Dueca> a(OgreObject_Dueca::getParameterTable(),
-				       "OgreObject");
+                                       "OgreObject");
 #else
 static CoreCreator<OgreObject_Dueca> a(OgreObject_Dueca::getParameterTable(),
-				       "ogre-object-dueca");
+                                       "ogre-object-dueca");
 #endif
 
 #endif

@@ -2,9 +2,9 @@
 /*      item            : SpecificationBase.hxx
         made by         : Rene van Paassen
         date            : 190430
-	category        : header file
+        category        : header file
         description     :
-	changes         : 190430 first version
+        changes         : 190430 first version
         language        : C++
         copyright       : (c) 2019 TUDelft-AE-C&S
 */
@@ -12,23 +12,22 @@
 #ifndef SpecificationBase_hxx
 #define SpecificationBase_hxx
 
+#include "comm-objects.h"
 #include <map>
 #include <string>
-#include "comm-objects.h"
 
 /** Exception for failing to look up specification */
-class MapSpecificationError: public std::exception
+class MapSpecificationError : public std::exception
 {
   /** Message to print */
   std::string reason;
 
 public:
-
   /** print the problem. */
-  const char* what() const noexcept;
+  const char *what() const noexcept;
 
   /** constructor, the argument shows what the function tried to match */
-  MapSpecificationError(const std::string& match);
+  MapSpecificationError(const std::string &match);
 };
 
 /** Common base class for WorldViewerBase and ListenerBase, provides a
@@ -78,7 +77,7 @@ class SpecificationBase
 {
   /** type for map with specifications (mesh names etc) for objects created
       through the factory */
-  typedef std::map<std::string,WorldDataSpec> factoryspecs_t;
+  typedef std::map<std::string, WorldDataSpec> factoryspecs_t;
 
   /** Map with information for factory methods */
   factoryspecs_t factoryspecs;
@@ -102,7 +101,7 @@ protected:
       @param match   String to match against.
       @param spec    Specification.
   */
-  void addFactorySpec(const std::string& match, const WorldDataSpec& spec);
+  void addFactorySpec(const std::string &match, const WorldDataSpec &spec);
 
   /** Set coordinates to the latest added factory specifications, e.g., to
       provide data on sound location and attenuation, relative locations of
@@ -111,7 +110,7 @@ protected:
       @param coords  Vector with coordinates
       @returns       True if successful
   */
-  bool addCoordinates(const std::vector<double>& coords);
+  bool addCoordinates(const std::vector<double> &coords);
 
   /** Retrieve a specification for a graphical object, previously added by
       addFactorySpec
@@ -168,12 +167,12 @@ protected:
      @param cid     Channel entry id.
      @param strict  Strict matching, i.e. against label only.
   */
-  WorldDataSpec retrieveFactorySpec
-  (const std::string& dclass, const std::string& label,
-   unsigned cid = 0U, bool strict=false);
+  WorldDataSpec retrieveFactorySpec(const std::string &dclass,
+                                    const std::string &label, unsigned cid = 0U,
+                                    bool strict = false);
 
   /** Check that the database has a specific specification */
-  bool hasFactorySpec(const std::string& match);
+  bool hasFactorySpec(const std::string &match);
 
 public:
   /** Constructor */

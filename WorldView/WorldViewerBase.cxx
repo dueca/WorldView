@@ -28,6 +28,11 @@ WorldViewerBase::~WorldViewerBase()
   // no action
 }
 
+void WorldViewerBase::setMaster(WorldView* m)
+{
+  // maybe not needed
+}
+
 void WorldViewerBase::makeContextCurrent()
 {
   // not implemented

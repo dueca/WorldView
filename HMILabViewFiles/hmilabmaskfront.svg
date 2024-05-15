@@ -2,33 +2,34 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1796"
+   width="1735"
    height="1080"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.91 r13725"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    version="1.0"
    sodipodi:docname="hmilabmaskfront.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="/data/repa/dapps/ae4-361/RepaTest/RepaTest/OgreScene/hmilabmaskleftside.png"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   viewBox="0 0 1735 1080"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 384 : 1"
-       inkscape:vp_y="0 : 1000 : 0"
-       inkscape:vp_z="1024 : 384 : 1"
-       inkscape:persp3d-origin="512 : 256 : 1"
+       inkscape:vp_x="0 : 414.4 : 1"
+       inkscape:vp_y="0 : 1066.6667 : 0"
+       inkscape:vp_z="1092.2667 : 414.4 : 1"
+       inkscape:persp3d-origin="546.13332 : 277.86667 : 1"
        id="perspective12" />
   </defs>
   <sodipodi:namedview
@@ -41,19 +42,21 @@
      objecttolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.2083333"
-     inkscape:cx="56.635583"
-     inkscape:cy="809.49431"
+     inkscape:zoom="4.0000001"
+     inkscape:cx="8.4999998"
+     inkscape:cy="376.62499"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
-     width="1024px"
+     width="1714px"
      height="768px"
-     inkscape:window-width="1589"
-     inkscape:window-height="1013"
-     inkscape:window-x="37"
-     inkscape:window-y="30"
+     inkscape:window-width="1858"
+     inkscape:window-height="1016"
+     inkscape:window-x="62"
+     inkscape:window-y="27"
      showgrid="true"
-     inkscape:window-maximized="0">
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="0"
+     scale-x="1">
     <inkscape:grid
        type="xygrid"
        id="grid3007"
@@ -62,8 +65,10 @@
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true"
-       spacingx="1px"
-       spacingy="1px" />
+       spacingx="1"
+       spacingy="1"
+       originx="0"
+       originy="0" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -73,32 +78,44 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="mask">
+     inkscape:label="mask"
+     style="display:inline">
     <path
        style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 1751,1100 L 1751,630 L 1754,-10 L 1830,-10 L 1830,1110 L 1751,1100 z"
+       d="M 1715,1089.5437 V 619.54373 l 3,-640 h 76 V 1099.5437 Z"
        id="path3177"
        sodipodi:nodetypes="cccccc" />
     <path
-       style="fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
-       d="M -80,1080 L 45,1120 L 45,760 L 30,2.2737368e-13 L -40,0 L -80,1080 z"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.910505px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M -86.865411,1079.2799 21.246,1120.5919 22.815,760.62092 18.026737,0.52431058 -40,-0.21221961 Z"
        id="themask"
        sodipodi:nodetypes="cccccc"
        inkscape:label="#path3179" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="testbar"
+     style="display:none">
+    <rect
+       style="fill:#ff0000;stroke-width:2.80014"
+       id="rect161"
+       width="1695"
+       height="20"
+       x="20"
+       y="550" />
   </g>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,312)"
-     sodipodi:insensitive="true"
      style="display:none">
     <g
        id="g3156"
@@ -107,7 +124,8 @@
        inkscape:tile-w="45"
        inkscape:tile-h="60"
        inkscape:tile-x0="1751"
-       inkscape:tile-y0="0">
+       inkscape:tile-y0="0"
+       transform="matrix(0.44444444,0,0,1,936.77779,0)">
       <rect
          y="-312"
          x="1751"
@@ -136,7 +154,7 @@
        y="0"
        inkscape:tiled-clone-of="#g3156"
        xlink:href="#g3156"
-       transform="translate(0,120)"
+       transform="translate(-2.1777759e-7,120)"
        id="use3264"
        width="1796"
        height="1080" />
@@ -145,7 +163,7 @@
        y="0"
        inkscape:tiled-clone-of="#g3156"
        xlink:href="#g3156"
-       transform="translate(0,240)"
+       transform="translate(-2.1777759e-7,240)"
        id="use3266"
        width="1796"
        height="1080" />
@@ -154,7 +172,7 @@
        y="0"
        inkscape:tiled-clone-of="#g3156"
        xlink:href="#g3156"
-       transform="translate(0,360)"
+       transform="translate(-2.1777759e-7,360)"
        id="use3268"
        width="1796"
        height="1080" />
@@ -163,7 +181,7 @@
        y="0"
        inkscape:tiled-clone-of="#g3156"
        xlink:href="#g3156"
-       transform="translate(0,480)"
+       transform="translate(-2.1777759e-7,480)"
        id="use3270"
        width="1796"
        height="1080" />
@@ -172,7 +190,7 @@
        y="0"
        inkscape:tiled-clone-of="#g3156"
        xlink:href="#g3156"
-       transform="translate(0,600)"
+       transform="translate(-2.1777759e-7,600)"
        id="use3272"
        width="1796"
        height="1080" />
@@ -181,7 +199,7 @@
        y="0"
        inkscape:tiled-clone-of="#g3156"
        xlink:href="#g3156"
-       transform="translate(0,720)"
+       transform="translate(-2.1777759e-7,720)"
        id="use3274"
        width="1796"
        height="1080" />
@@ -190,7 +208,7 @@
        y="0"
        inkscape:tiled-clone-of="#g3156"
        xlink:href="#g3156"
-       transform="translate(0,840)"
+       transform="translate(-2.1777759e-7,840)"
        id="use3276"
        width="1796"
        height="1080" />
@@ -199,7 +217,7 @@
        y="0"
        inkscape:tiled-clone-of="#g3156"
        xlink:href="#g3156"
-       transform="translate(0,960)"
+       transform="translate(-2.1777759e-7,960)"
        id="use3278"
        width="1796"
        height="1080" />
@@ -211,7 +229,7 @@
        inkscape:tile-cy="30"
        inkscape:tile-cx="1773.5"
        id="g3282"
-       transform="matrix(1,0,0,-1,-1751,396)">
+       transform="matrix(0.44444038,0,0,-1,-778.21533,396)">
       <rect
          style="fill:#0000ff;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          id="rect3284"
@@ -233,12 +251,12 @@
        inkscape:tiled-clone-of="#g3156"
        y="0"
        x="0"
-       transform="matrix(1,0,0,-1,-1751,396)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,396)"
        width="1796"
        height="1080" />
     <use
        id="use3290"
-       transform="matrix(1,0,0,-1,-1751,276)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,276)"
        xlink:href="#g3156"
        inkscape:tiled-clone-of="#g3156"
        y="0"
@@ -247,7 +265,7 @@
        height="1080" />
     <use
        id="use3292"
-       transform="matrix(1,0,0,-1,-1751,156)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,156)"
        xlink:href="#g3156"
        inkscape:tiled-clone-of="#g3156"
        y="0"
@@ -256,7 +274,7 @@
        height="1080" />
     <use
        id="use3294"
-       transform="matrix(1,0,0,-1,-1751,36)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,36)"
        xlink:href="#g3156"
        inkscape:tiled-clone-of="#g3156"
        y="0"
@@ -265,7 +283,7 @@
        height="1080" />
     <use
        id="use3296"
-       transform="matrix(1,0,0,-1,-1751,-84)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,-84)"
        xlink:href="#g3156"
        inkscape:tiled-clone-of="#g3156"
        y="0"
@@ -274,7 +292,7 @@
        height="1080" />
     <use
        id="use3298"
-       transform="matrix(1,0,0,-1,-1751,-204)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,-204)"
        xlink:href="#g3156"
        inkscape:tiled-clone-of="#g3156"
        y="0"
@@ -283,7 +301,7 @@
        height="1080" />
     <use
        id="use3300"
-       transform="matrix(1,0,0,-1,-1751,-324)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,-324)"
        xlink:href="#g3156"
        inkscape:tiled-clone-of="#g3156"
        y="0"
@@ -292,7 +310,7 @@
        height="1080" />
     <use
        id="use3302"
-       transform="matrix(1,0,0,-1,-1751,-444)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,-444)"
        xlink:href="#g3156"
        inkscape:tiled-clone-of="#g3156"
        y="0"
@@ -301,7 +319,7 @@
        height="1080" />
     <use
        id="use3304"
-       transform="matrix(1,0,0,-1,-1751,-564)"
+       transform="matrix(1.0666663,0,0,-1,-1829.3331,-564)"
        xlink:href="#g3156"
        inkscape:tiled-clone-of="#g3156"
        y="0"

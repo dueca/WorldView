@@ -21,9 +21,9 @@ set to 0.0. If you want a positional light, specify the x,y,z and set w = 1.0.
 Don't use setDirection().
 */
 
+#include "OSGCenteredObject.hxx"
 #include "OSGObject.hxx"
 #include "OSGStaticObject.hxx"
-#include "OSGCenteredObject.hxx"
 
 class OSGLightBase
 {
@@ -60,12 +60,11 @@ public:
 
 public:
   /** Constructor */
-  template<class IT>
-  OSGLightBase(IT begin, const IT& end);
+  template <class IT> OSGLightBase(IT begin, const IT &end);
 
   /** Initialisation */
-  virtual void init(const osg::ref_ptr<osg::Group>& root,
-                    osg::ref_ptr<osg::Group>& parent);
+  virtual void init(const osg::ref_ptr<osg::Group> &root,
+                    osg::ref_ptr<osg::Group> &parent);
 };
 
 /** OSGLight - a light object that can move with the world
@@ -80,7 +79,7 @@ public:
     - spot exponent
     - spot cutoff = opening angle in rad
 */
-class OSGLight: public OSGObject
+class OSGLight : public OSGObject
 {
 protected:
   /** Base data and interpretation */
@@ -88,7 +87,7 @@ protected:
 
 public:
   /** Constructor */
-  OSGLight(const WorldDataSpec& specification);
+  OSGLight(const WorldDataSpec &specification);
 
   /** Destructor */
   ~OSGLight();
@@ -98,7 +97,7 @@ public:
       @param master_id ID for opening a channel reader
       @param cname     Channel with object data
       @param entry_id  Entry in the channel */
-  virtual void connect(const GlobalId& master_id, const NameSet& cname,
+  virtual void connect(const GlobalId &master_id, const NameSet &cname,
                        entryid_type entry_id,
                        Channel::EntryTimeAspect time_aspect) override;
 
@@ -108,14 +107,13 @@ public:
       @param base      Movement of the base object, extrapolated if applicable
       @param late      Time elapsed since ts start tick
    */
-  virtual void iterate(TimeTickType ts,
-                       const BaseObjectMotion& base, double late);
+  virtual void iterate(TimeTickType ts, const BaseObjectMotion &base,
+                       double late, bool freeze);
 
   /** Initialise the light */
-  virtual void init(const osg::ref_ptr<osg::Group>& root,
-		    OSGViewer* master) override;
+  virtual void init(const osg::ref_ptr<osg::Group> &root,
+                    OSGViewer *master) override;
 };
-
 
 /** A light that is centered on the observer. It has an offset position, and
     possibly an offset direction.
@@ -124,11 +122,11 @@ public:
     or a spotlight. Note that it has no use to create a directional
     light that follows the observer!
 */
-class OSGCenteredLight: public OSGLight
+class OSGCenteredLight : public OSGLight
 {
 public:
   /** Constructor */
-  OSGCenteredLight(const WorldDataSpec& specification);
+  OSGCenteredLight(const WorldDataSpec &specification);
 
   /** Destructor */
   ~OSGCenteredLight();
@@ -138,9 +136,9 @@ public:
       @param master_id ID for opening a channel reader
       @param cname     Channel with object data
       @param entry_id  Entry in the channel */
-  void connect(const GlobalId& master_id, const NameSet& cname,
-                       entryid_type entry_id,
-                       Channel::EntryTimeAspect time_aspect) final;
+  void connect(const GlobalId &master_id, const NameSet &cname,
+               entryid_type entry_id,
+               Channel::EntryTimeAspect time_aspect) final;
 
   /** Play, update, recalculate, etc.
 
@@ -148,10 +146,9 @@ public:
       @param base      Movement of the base object, extrapolated if applicable
       @param late      Time elapsed since ts start tick
    */
-   void iterate(TimeTickType ts,
-                const BaseObjectMotion& base, double late) final;
+  void iterate(TimeTickType ts, const BaseObjectMotion &base, double late,
+               bool freeze = false) final;
 };
-
 
 /** A light that is static in the world. It has a position, and
     possibly a direction.
@@ -159,11 +156,11 @@ public:
     Parameters dictate whether it is a point light, directional light
     or a spotlight.
 */
-class OSGStaticLight: public OSGLight
+class OSGStaticLight : public OSGLight
 {
 public:
   /** Constructor */
-  OSGStaticLight(const WorldDataSpec& specification);
+  OSGStaticLight(const WorldDataSpec &specification);
 
   /** Destructor */
   ~OSGStaticLight();
@@ -173,13 +170,11 @@ public:
       @param master_id ID for opening a channel reader
       @param cname     Channel with object data
       @param entry_id  Entry in the channel */
-  void connect(const GlobalId& master_id, const NameSet& cname,
-               entryid_type entry_id,
-               Channel::EntryTimeAspect time_aspect);
+  void connect(const GlobalId &master_id, const NameSet &cname,
+               entryid_type entry_id, Channel::EntryTimeAspect time_aspect);
 
   /** Play, update, recalculate, etc. */
-  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late);
+  void iterate(TimeTickType ts, const BaseObjectMotion &base, double late);
 };
-
 
 #endif
