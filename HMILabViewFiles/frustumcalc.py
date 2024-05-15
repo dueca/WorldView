@@ -182,7 +182,8 @@ class Plane(np.matrix):
             dist = float(np.inner(normal, kwargs['point0']))
 #        print([float(normal[0, 0]), float(normal[0, 1]), float(normal[0, 2]), -dist])
         return super(Plane, cls).__new__(
-            cls, [float(normal[0, 0]), float(normal[0, 1]), float(normal[0, 2]), -dist])
+            cls, [float(normal[0,0]), float(normal[0,1]),
+                  float(normal[0,2]), -float(dist)])
 
     def distance(self, other):
         if isinstance(other, Point):
@@ -230,15 +231,17 @@ def frustum_calc(p0, p1, p2, pv, f_dist):
                 plane_r.distance(pv)/dist*f_dist,
                -plane_b.distance(pv)/dist*f_dist,
                 plane_t.distance(pv)/dist*f_dist)
-    offset = -np.arctan2(plane_p.normal()[0, 0], -plane_p.normal()[0, 1]) * 180/np.pi
+    angle = -np.arctan2(plane_p.normal()[0, 0], -plane_p.normal()[0, 1]) * 180/np.pi
 
-    print(-plane_l.distance(pv)/dist*f_dist,
-          plane_r.distance(pv)/dist*f_dist,
-          -plane_b.distance(pv)/dist*f_dist,
-          plane_t.distance(pv)/dist*f_dist)
+    print(f"""
+                ('set-frustum',
+                 ({f_dist}, 10000.0,
+                  {frustum[0]:9.6f}, {frustum[1]:9.6f},
+                  {frustum[2]:9.6f}, {frustum[3]:9.6f})),
+                ('eye-offset',
+                 (0.0, 0.0, 0.0, 0.0, 0.0, {angle:9.6f})),""")
 
-    print(-np.arctan2(plane_p.normal()[0, 0], -plane_p.normal()[0, 1]) * 180/np.pi)
-    return frustum, offset
+    return frustum, angle
 
 # lab dimensions,  origin, left rear, left front, right front (meter)
 lab_width = 4.687
@@ -299,7 +302,7 @@ print("Front screen pixels:", pixels_f, "with offset: ", 120)
 print("Front screen pixels with blend:", pixels_f + 40, "with offset: ", 100)
 print("")
 bleed_f = proj_width * (pixels_f+40)/res_width - width_f.length
-print(bleed_f/2, 20/1080*2.24)
+# print(bleed_f/2, 20/1080*2.24)
 
 # front screen virtual end points
 screen_flv = screen_fl - (screen_fr - screen_fl) * \
@@ -324,18 +327,18 @@ screen_rlv = screen_fr - (screen_rr - screen_fr) * \
              bleed_r / width_r.length
 # print( "right lv=", screen_rlv, "l=", screen_fr, "r=", screen_rr)
 
-print("Frustum values right eye")
-print("left screen frustum, right eye")
+print("Frustum values right seat")
+print("left screen frustum, right seat")
 frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_right, 1.0)
-print("front screen frustum, right eye")
+print("front screen frustum, right seat")
 frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_right, 1.0)
-print("right screen frustum, right eye")
+print("right screen frustum, right seat")
 frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_right, 1.0)
 print("")
-print("Frustum values left eye")
-print("left screen frustum, left eye")
+print("Frustum values left seat")
+print("left screen frustum, left seat")
 frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_left, 1.0)
-print("front screen frustum, left eye")
+print("front screen frustum, left seat")
 frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_left, 1.0)
-print("right screen frustum, left eye")
+print("right screen frustum, left seat")
 frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_left, 1.0)
