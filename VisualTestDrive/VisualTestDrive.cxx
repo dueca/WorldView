@@ -304,7 +304,7 @@ void VisualTestDrive::FlightGearTestSet::advance(const DataTimeSpec &ts,
     tmove += ts.getDtInSeconds();
     if (tmove > 1.0) {
       moving_part++;
-      if (moving_part == 12) moving_part = 0;
+      if (moving_part == 16) moving_part = 0;
       tmove = 0.0;
     }
     switch (moving_part) {
