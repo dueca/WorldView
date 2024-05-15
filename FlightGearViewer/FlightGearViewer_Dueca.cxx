@@ -106,9 +106,15 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
       "   * \"BaseObjectMotion:PH-ANH\",to match label PH-ANH as name\n"
       "   * \"BaseObjectMotion:c172\", would match label c172|PH-ANH\n"
       "   See also the documentation on SpecificationBase class.\n"
+      " - Interface/factory type, currently \"base\" (only fixed set of\n"
+      "   properties), or \"fgprops\", specific DCO types that can encode to\n"
+      "   FlightGear properties\n"
       " - Flightgear model, e.g. \"/Aircraft/c172p/Models/c172p.xml\", see\n"
-      "   flightgear data folder\n"
-      " - Livery, optional" },
+      "   flightgear data folder. If needed, use fgfs --launcher to select\n"
+      "   and download more aircraft types to ${HOME}/.fgfs folder\n"
+      " - Fixed property file (JSON format), normally used to specify\n"
+      "   the livery choice (property 1001) and fallback model id (property\n"
+      "   13000, for those, see FG file \"fallback_models.xml\")" },
 
     { "multiplay-debug-dump",
       new VarProbe<_ThisModule_, bool>(&_ThisModule_::debugdump),

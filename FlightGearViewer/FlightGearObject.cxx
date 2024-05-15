@@ -9,23 +9,23 @@
 */
 
 #include "MultiplayerEncode.hxx"
+#include "WorldDataSpec.hxx"
 #define FlightGearObject_cxx
 #include "FlightGearObject.hxx"
 #include "FlightGearViewer.hxx"
 #include <dueca/Ticker.hxx>
 #include <dueca/debug.h>
+#include "FGObjectFactory.hxx"
 
-FlightGearObject::FlightGearObject(const std::string &name,
-                                   const std::string &fgclass,
-                                   const std::string &jsonfile,
-                                   FlightGearViewer *master) :
+
+FlightGearObject::FlightGearObject(const WorldDataSpec& spec) :
   itime(0.0),
-  name(name),
-  fgclass(fgclass),
-  master(master)
+  name(spec.name),
+  fgclass(spec.filename.size() > 0 ? spec.filename[0]: std::string()),
+  master(NULL)
 {
-  if (jsonfile.size()) {
-    coder.reset(new PropertyEncoderJSON(jsonfile));
+  if (spec.filename.size() > 1 && spec.filename[1].size()) {
+    coder.reset(new PropertyEncoderJSON(spec.filename[1]));
   }
 }
 
@@ -85,3 +85,7 @@ void FlightGearObject::connect(const GlobalId &master_id, const NameSet &cname,
     master_id, cname, BaseObjectMotion::classname, entry_id, time_aspect,
     Channel::OneOrMoreEntries, Channel::JumpToMatchTime));
 }
+
+static auto FlightGearObject_maker = new
+  SubContractor<FGObjectTypeKey,FlightGearObject>
+  ("base", "Moving FlightGear object, position controlled, property added");

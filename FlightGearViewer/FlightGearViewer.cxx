@@ -12,6 +12,7 @@
 #include "Dstring.hxx"
 #include "FlightGearCommand.hxx"
 #include "FlightGearObject.hxx"
+#include "FGObjectFactory.hxx"
 #include "WorldDataSpec.hxx"
 #include "../WorldView/WorldView.hxx"
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -359,7 +360,7 @@ void FlightGearViewer::MultiplayerClient::update(
          sizeof(dest));
 }
 
-void FlightGearViewer::sendPositionReport()
+void FlightGearViewer::sendPositionReport() const
 {
   // print message for debug purposes
   if (debugdump) {
@@ -407,8 +408,11 @@ bool FlightGearViewer::createControllable(
     WorldDataSpec obj =
       retrieveFactorySpec(data_class, entry_label, creation_id);
 
-    FlightGearObject *op =
-      new FlightGearObject(obj.name, obj.type, obj.filename[0], this);
+    auto op = FGObjectFactory::instance().create(obj.type, obj);
+    op->setViewer(this);
+    //FlightGearObject *op =
+    //  new FlightGearObject(obj.name, obj.type, obj.filename[0], this);
+
     op->connect(master_id, cname, entry_id, time_aspect);
     boost::intrusive_ptr<FlightGearObject> bop(op);
     active_objects[keypair] = bop;
@@ -426,7 +430,12 @@ bool FlightGearViewer::createControllable(
   return false;
 }
 
-double FlightGearViewer::getFlightTime(double time)
+void FlightGearObject::setViewer(const FlightGearViewer* v)
+{
+  master = v;
+}
+
+double FlightGearViewer::getFlightTime(double time) const
 {
   if (isnan(mp_time0)) {
     using namespace std::chrono;
@@ -487,15 +496,16 @@ FlightGearViewer::FGSpecs::FGSpecs()
 
 bool FlightGearViewer::modelTableEntry(const std::vector<std::string> &s)
 {
-  if (s.size() != 3 || !s[0].size() || !s[1].size()) {
-    cerr << "Need to specify 3 strings, first two non-empty" << endl;
+  if (s.size() != 4 || !s[0].size() || !s[1].size() || !s[2].size()) {
+    cerr << "Need to specify 4 strings, first three non-empty" << endl;
     return false;
   }
 
   WorldDataSpec obj;
   obj.name = s[0];
-  obj.type = s[1]; // flightgear aircraft model
-  obj.filename.push_back(s[2]); // livery
+  obj.type = s[1]; // type of interface, "base" or "fgprops"
+  obj.filename.push_back(s[2]);
+  obj.filename.push_back(s[3]); // livery
   addFactorySpec(s[0], obj);
   return true;
 }

@@ -79,6 +79,11 @@ public:
 
   /** Log print of a received or created buffer. */
   void dump(const char *buffer, size_t bufsize);
+
+  static void propertyEncode(XDR &xdr_data, unsigned propno, float value);
+  static void propertyEncode(XDR &xdr_data, unsigned propno, bool value);
+  static void propertyEncode(XDR &xdr_data, unsigned propno, int64_t value);
+  static void propertyEncode(XDR &xdr_data, unsigned propno, const std::string& value);
 };
 
 /** Encode fixed properties available in a JSON file */
