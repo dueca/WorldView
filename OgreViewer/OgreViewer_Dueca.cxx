@@ -15,12 +15,6 @@
 // include the definition of the helper class
 #include "OgreViewer_Dueca.hxx"
 
-// include the debug writing header, by default, write warning and 
-// error messages
-#define W_MOD
-#define E_MOD
-#include <debug.h>
-
 // include additional files needed for your calculation here
 #include "OgreObjectFactory.hxx"
 #include "OgreObjectCompatible.hxx"
@@ -31,6 +25,13 @@
 #include <MemberCall.hxx>
 #include <MemberCall2Way.hxx>
 #include <CoreCreator.hxx>
+
+// include the debug writing header, by default, write warning and 
+// error messages
+#define W_MOD
+#define E_MOD
+#include <debug.h>
+
 USING_DUECA_NS;
 
 // Parameters to be inserted
