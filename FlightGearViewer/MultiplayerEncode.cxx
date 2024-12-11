@@ -18,6 +18,7 @@
 #include <netinet/in.h>
 #include <rapidjson/document.h>
 #include <sys/socket.h>
+#include <iomanip>
 
 #include <dueca/debug.h>
 
