@@ -1,0 +1,50 @@
+# -*-sh-*-
+# this file creates all links to files in the data directory needed for
+# running the application is a specific machine.
+
+# standard folder with project-wide data
+DATADIR=../../run-data
+
+# create a folder for run log history
+if [ ! -d runlogs ]; then
+   mkdir runlogs
+fi
+
+# convenience link to executable (cmake or legacy)
+if [ -d ../../../build ]; then
+   ln -sf ../../../build/dueca_run.x .
+else
+   ln -sf ../../../dueca_run.x .
+fi
+
+# run the link script in the hmi lab data dir; the -t is for test files
+# ../../../../WorldView/HMILabViewFiles/generate -t
+
+if [ -d /usr/share/vsgExamples ]; then
+    ln -sf /usr/share/vsgExamples/models/lz.vsgt .
+else
+    ln -sf /tmp/share/vsgExamples/models/lz.vsgt .
+fi
+
+ln -sf ${DATADIR}/vsg/exampleworld.xml .
+ln -sf ../../../../WorldView/vsg-viewer/shaders .
+
+if [ -d ${HOME}/gdapps/VisualModels ]; then
+    VISMODELS="orientation/arrows landrover/Defender"
+    for VM in $VISMODELS; do
+	NAME=`basename $VM`
+	if [ \! -f ${NAME}.glb ]; then
+            blender --python \
+		~/gdapps/VisualModels/VisualModels/exporter/bake-a-blend.py \
+		-- ~/gdapps/VisualModels/VisualModels/${VM}.blend glb
+	fi
+	vsgconvd ${NAME}.glb ${NAME}.vsgb
+    done
+fi
+
+if [ -d ${HOME}/cssoft/glTF-Sample-Models ]; then
+    HERE="$(pwd)"
+    pushd ${HOME}/cssoft/glTF-Sample-Models/2.0/FlightHelmet/glTF
+    vsgconvd FlightHelmet.gltf "${HERE}/FlightHelmet.vsgb"
+    popd
+fi

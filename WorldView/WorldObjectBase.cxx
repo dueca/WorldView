@@ -2,12 +2,13 @@
 /*      item            : WorldObjectBase.cxx
         made by         : Rene' van Paassen
         date            : 100122
-	category        : body file 
-        description     : 
+	category        : body file
+        description     :
 	changes         : 100122 first version
         language        : C++
 */
 
+#include "DataTimeSpec.hxx"
 #define WorldObjectBase_cxx
 #include "WorldObjectBase.hxx"
 
@@ -36,7 +37,7 @@ WorldObjectBase::~WorldObjectBase()
 {
 
 }
-#if 0
+
 void WorldObjectBase::connect(const GlobalId& master_id, const NameSet& cname,
                               entryid_type entry_id,
                               Channel::EntryTimeAspect time_aspect)
@@ -44,9 +45,8 @@ void WorldObjectBase::connect(const GlobalId& master_id, const NameSet& cname,
   // no action
 }
 
-void WorldObjectBase::iterate(const TimeSpec& ts,
-			      const BaseObjectMotion& base)
+void WorldObjectBase::iterate(const TimeTickType ts,
+			                        const BaseObjectMotion& base, double late, bool freeze)
 {
   // no action
 }
-#endif

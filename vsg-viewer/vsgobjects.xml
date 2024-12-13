@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<maps xmlns="https://dueca.tudelft.nl"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://dueca.tudelft.nl vsgobjects.xsd">
+
+  <type name="ambient-light">
+    <param offset="0" size="3">color</param>
+    <param offset="3" size="1">
+      intensity
+    </param>
+  </type>
+
+  <type name="directional-light">
+    <param offset="0" size="3">color</param>
+    <param offset="3" size="1">intensity</param>
+    <param offset="4" size="3">direction</param>
+  </type>
+
+  <type name="point-light">
+    <param offset="0" size="3">color</param>
+    <param offset="3" size="1">intensity</param>
+    <param offset="4" size="3">xyz</param>
+    <param offset="7" size="1">span</param>
+  </type>
+
+  <type name="spot-light">
+    <param offset="0" size="3">color</param>
+    <param offset="3" size="1">intensity</param>
+    <param offset="4" size="3">xyz</param>
+    <param offset="7" size="1">span</param>
+    <param offset="10" size="1">innerAngle</param>
+    <param offset="11" size="1">outerAngle</param>
+    <param offset="12" size="3">direction</param>
+  </type>
+
+  <type name="static-absolute-transform">
+    <param offset="0" size="3">xyz</param>
+    <param offset="3" size="3">phithetapsi</param>
+    <param offset="6" size="3">scalexyz</param>
+  </type>
+
+  <type name="static-matrix-transform">
+    <param offset="0" size="3">xyz</param>
+    <param offset="3" size="3">phithetapsi</param>
+    <param offset="6" size="3">scalexyz</param>
+  </type>
+
+  <type name="absolute-transform">
+    <param offset="0" size="3">scalexyz</param>
+  </type>
+
+  <type name="matrix-transform">
+     <param offset="0" size="3">scalexyz</param>
+  </type>
+
+  <type name="model"></type>
+
+  <type name="static-model"></type>
+
+</maps>
+     
