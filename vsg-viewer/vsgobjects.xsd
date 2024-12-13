@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="https://dueca.tudelft.nl"
+           xmlns="https://dueca.tudelft.nl"
+           elementFormDefault="qualified">
+
+  <!-- Main element, mappings from name to coordinate ranges -->
+  <xs:element name="maps">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:complexType name="type" type="type_t"
+			maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+	
+  <xs:complexType name="type_t">
+    <xs:sequence>
+      <xs:complexType name="coordinates" type="type_t"
+                      maxOccurs="unbounded">
+	<xs:attribute name="offset" type="xs:integer" use="required">
+	  <xs:restriction base="xs:integer">
+	    <xs:minInclusive value="0"/>
+	  </xs:restriction>
+	</xs:attribute>
+	<xs:attribute name="size" type="xs:integer" use="required">
+	  <xs:restriction base="xs:integer">
+	    <xs:minInclusive value="1"/>
+	  </xs:restriction>
+	</xs:attribute>
+	<xs:attribute name="name" use="required"/>
+      </xs:complexType>
+    </xs:sequence>
+    <xs:attribute name="name"/>
+  </xs:complexType>
+
+</xs:schema>
+      
+   

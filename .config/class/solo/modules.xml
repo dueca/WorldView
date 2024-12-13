@@ -32,6 +32,7 @@
     <module>ControlView</module>
     <module>ConfigureView</module>
     <module pseudo="true">icy-world</module>
+    <module>vsg-viewer</module>
   </project>
   <project>
     <url>git@gitlab.tudelft.nl:ae-cs-dueca-base/WorldListener.git</url>
