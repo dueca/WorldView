@@ -82,7 +82,7 @@ public:
 
   /** Play, update, recalculate, etc. */
   virtual void iterate(TimeTickType ts, const BaseObjectMotion& base,
-		       double late) override;
+		       double late, bool freeze) override;
 
   /** Initialise the transform with the VSG scene */
   virtual void init(const vsg::ref_ptr<vsg::Group>& root,
@@ -118,7 +118,7 @@ public:
                        Channel::EntryTimeAspect time_aspect);
 
   /** Play, update, recalculate, etc. */
-  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late);
+  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late, bool freeze=false) override;
 
   /** Initialise the transform with the VSG scene */
   virtual void init(const vsg::ref_ptr<vsg::Group>& root,

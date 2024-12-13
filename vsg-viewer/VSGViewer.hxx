@@ -210,7 +210,7 @@ namespace vsgviewer {
         @param base  Motion definition of the base observer/vehicle.
         @param late  Time [s] into current DUECA time tick.
     */
-    void setBase(TimeTickType tick, const BaseObjectMotion& base, double late);
+    void setBase(TimeTickType tick, const BaseObjectMotion& base, double late, bool freeze);
 
     /** Create a controllable object. Object creation depends on class of
         data supplied, further init may rely on fist data entering. */

@@ -54,7 +54,7 @@ public:
       @param ts    Time for this update
       @param base  Position and orientation of the base listener */
   virtual void iterate(TimeTickType ts, const BaseObjectMotion &base,
-                       double late, bool freeze=false) = 0;
+                       double late, bool freeze=false);
 
   /** Connect to a channel entry
       @param master_id ID for opening a channel reader
@@ -62,7 +62,7 @@ public:
       @param entry_id  Entry in the channel */
   virtual void connect(const GlobalId &master_id, const NameSet &cname,
                        entryid_type entry_id,
-                       Channel::EntryTimeAspect time_aspect) = 0;
+                       Channel::EntryTimeAspect time_aspect);
 
   /** Information about the name of this object, might be useful. */
   inline const std::string &getName() const { return name; }

@@ -547,7 +547,7 @@ namespace vsgviewer {
   }
 
   void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion& ownm,
-                          double late)
+                          double late, bool freeze)
   {
     auto camerapnt =
       //    vsg::rotate(0.5*vsg::PI, 1.0, 0.0, 0.0) *

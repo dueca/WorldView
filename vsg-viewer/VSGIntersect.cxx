@@ -81,7 +81,7 @@ namespace vsgviewer {
 
   void VSGIntersect::iterate(TimeTickType ts,
                              const BaseObjectMotion& base,
-                             double late)
+                             double late, bool freeze)
   {
     // set the reverse transform from this vehicle's
     //rev_transform->matrix = transform->
