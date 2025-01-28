@@ -16,8 +16,8 @@
 #include <debug.h>
 
 TextRenderer::TextRenderer(const char *font) :
-  s("../../../../SimpleSimulation/opengl-help/text_vrt.glsl",
-    "../../../../SimpleSimulation/opengl-help/text_frg.glsl"),
+  s("../../../../WorldView/opengl-help/text_vrt.glsl",
+    "../../../../WorldView/opengl-help/text_frg.glsl"),
   vbo(0),
   vao(0),
   projection_link(s.getLink("projection", glm::mat4())),
