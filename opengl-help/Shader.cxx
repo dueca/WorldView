@@ -86,7 +86,7 @@ void Shader::checkCompileErrors(unsigned int shader, ErrorType type, const char*
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
       glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-      D_MOD("Shader compilation error for " << estrings[type] << " file:" << fname );
+      E_MOD("Shader compilation error for " << estrings[type] << " file:" << fname );
       std::cerr << "Shader program log:" << std::endl << infoLog << std::endl;
     }
   }
@@ -94,7 +94,7 @@ void Shader::checkCompileErrors(unsigned int shader, ErrorType type, const char*
     glGetProgramiv(shader, GL_LINK_STATUS, &success);
     if (!success) {
       glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-      D_MOD("Shader linking error, vert file " << fname);
+      E_MOD("Shader linking error, vert file " << fname);
       std::cerr << "Shader link log:" << std::endl << infoLog << std::endl;
     }
   }
