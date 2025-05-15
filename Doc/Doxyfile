@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------------
 PROJECT_NAME           = WorldView
 PROJECT_NUMBER         = 1
-OUTPUT_DIRECTORY       = /home/mmulder2/dapps/WorldView/WorldView/Doc
+OUTPUT_DIRECTORY       = ../Doc
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = YES
@@ -25,7 +25,7 @@ ABBREVIATE_BRIEF       = "The $name class" \
 ALWAYS_DETAILED_SEC    = YES
 INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = YES
-STRIP_FROM_PATH        = /home/mmulder2/dapps
+STRIP_FROM_PATH        = ../../
 STRIP_FROM_INC_PATH    = 
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
@@ -82,7 +82,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = /home/mmulder2/dapps/WorldView
+INPUT                  = ../../WorldView
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
