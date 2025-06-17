@@ -4,8 +4,8 @@
 	from template   : DusimeModuleTemplate.cxx
         template made by: Rene van Paassen
         date            : Fri May 14 15:13:56 2010
-	category        : body file 
-        description     : 
+	category        : body file
+        description     :
 	changes         : Fri May 14 15:13:56 2010 first version
 	template changes: 030401 RvP Added template creation comment
 	                  060512 RvP Modified token checking code
@@ -19,7 +19,7 @@ static const char c_id[] =
 // include the definition of the module class
 #include "ObjectMotionLog.hxx"
 
-// include the debug writing header, by default, write warning and 
+// include the debug writing header, by default, write warning and
 // error messages
 #define W_MOD
 #define E_MOD
@@ -30,17 +30,11 @@ static const char c_id[] =
 #include <time.h>
 #include <sstream>
 #include <iomanip>
-#include "LinearSystem.hxx"
+#include <Eigen/Dense>
 
-#ifdef USING_EIGEN3
 typedef Eigen::Map<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::ColMajor> > MatrixEc;
-#else
-#include <mtl/mtl.h>
-typedef mtl::matrix<double, mtl::rectangle<>, 
-                    mtl::dense<mtl::external>, mtl::row_major>::type MatrixE;
-typedef mtl::matrix<double, mtl::rectangle<>, 
-                    mtl::dense<mtl::external>, mtl::column_major>::type MatrixEc;
-#endif
+typedef Eigen::Map<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> > MatrixE;
+#define USING_EIGEN3
 
 // guess on matio versions here
 #if MATIO_MAJOR_VERSION == 1 && MATIO_MINOR_VERSION < 4
@@ -103,7 +97,7 @@ const char* const ObjectMotionLog::classname = "object-motion-log";
 const IncoTable* ObjectMotionLog::getMyIncoTable()
 {
   static IncoTable inco_table[] = {
-    // enter pairs of IncoVariable and VarProbe pointers (i.e. 
+    // enter pairs of IncoVariable and VarProbe pointers (i.e.
     // objects made with new), in this table.
     // For example
 //    {(new IncoVariable("example", 0.0, 1.0, 0.01))
@@ -111,7 +105,7 @@ const IncoTable* ObjectMotionLog::getMyIncoTable()
 //     ->forMode(Speed, Control),
 //     new VarProbe<ObjectMotionLog,double>
 //       (REF_MEMBER(&ObjectMotionLog::i_example))}
-    
+
     // always close off with:
     { NULL, NULL} };
 
@@ -122,15 +116,15 @@ const IncoTable* ObjectMotionLog::getMyIncoTable()
 const ParameterTable* ObjectMotionLog::getMyParameterTable()
 {
   static const ParameterTable parameter_table[] = {
-    { "set-timing", 
+    { "set-timing",
       new MemberCall<ObjectMotionLog,TimeSpec>
         (&ObjectMotionLog::setTimeSpec), set_timing_description },
 
-    { "check-timing", 
+    { "check-timing",
       new MemberCall<ObjectMotionLog,vector<int> >
       (&ObjectMotionLog::checkTiming), check_timing_description },
 
-    { "base-file-name", 
+    { "base-file-name",
       new VarProbe<ObjectMotionLog,string>
       (&ObjectMotionLog::filebase),
       "base name (without date/extension) for the logging" },
@@ -139,16 +133,16 @@ const ParameterTable* ObjectMotionLog::getMyParameterTable()
       new VarProbe<ObjectMotionLog,int>
       (&ObjectMotionLog::maxpts),
       "maximum size of the vectors in the log file" },
-    
+
     { "readback",
       new VarProbe<ObjectMotionLog,int>
       (&ObjectMotionLog::readback),
       "how many granules should the logger look back in the channel\n"
       "default is 2x timing span, is overwritten by 'set-timing call" },
-    
+
     /* You can extend this table with labels and MemberCall or
        VarProbe pointers to perform calls or insert values into your
-       class objects. Please also add a description (c-style string).  
+       class objects. Please also add a description (c-style string).
 
        Note that for efficiency, set_timing_description and
        check_timing_description are pointers to pre-defined strings,
@@ -165,14 +159,14 @@ const ParameterTable* ObjectMotionLog::getMyParameterTable()
 // constructor
 ObjectMotionLog::ObjectMotionLog(Entity* e, const char* part, const
 		       PrioritySpec& ps) :
-  /* The following line initialises the SimulationModule base class. 
-     You always pass the pointer to the entity, give the classname and the 
+  /* The following line initialises the SimulationModule base class.
+     You always pass the pointer to the entity, give the classname and the
      part arguments.
-     If you give a NULL pointer instead of the inco table, you will not be 
-     called for trim condition calculations, which is normal if you for 
+     If you give a NULL pointer instead of the inco table, you will not be
+     called for trim condition calculations, which is normal if you for
      example implement logging or a display.
-     If you give 0 for the snapshot state, you will not be called to 
-     fill a snapshot, or to restore your state from a snapshot. Only 
+     If you give 0 for the snapshot state, you will not be called to
+     fill a snapshot, or to restore your state from a snapshot. Only
      applicable if you have no state. */
   SimulationModule(e, classname, part, getMyIncoTable(), 0),
 
@@ -192,7 +186,7 @@ ObjectMotionLog::ObjectMotionLog(Entity* e, const char* part, const
 
   // activity initialization
   cb1(this, &ObjectMotionLog::doCalculation),
-  do_calc(getId(), "log objectmotion", &cb1, ps), 
+  do_calc(getId(), "log objectmotion", &cb1, ps),
   alarm()
 {
   // do the actions you need for the simulation
@@ -267,7 +261,7 @@ void ObjectMotionLog::newMatfile()
 {
   time_t tnow = time(NULL);
   struct tm tsplit; gmtime_r(&tnow, &tsplit);
-  
+
   stringstream fname;
   fname << filebase << setfill('0') << setw(2) << tsplit.tm_year
 	<< tsplit.tm_mon << tsplit.tm_mday << '_'
@@ -286,16 +280,12 @@ void ObjectMotionLog::writeMatfile()
 #else
       size_t dims[2] = {size_t(lb->second.count), size_t(12)};
 #endif
-      // hackety hack. Have to transpose the thing 
+      // hackety hack. Have to transpose the thing
       MatrixEc t(t_data, dims[0], dims[1]);
       MatrixE d(lb->second.data, dims[0], dims[1]);
-#ifdef USING_EIGEN3
       t = d;
-#else
-      mtl::copy(d,t);
-#endif
       matvar_t *matvar = Mat_VarCreate
-	(lb->first.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 
+	(lb->first.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE,
 	 2, dims, t_data, 0);
       Mat_VarWrite( file, matvar, MAT_COMPRESSION_NONE);
       lb->second.count = 0;
@@ -319,9 +309,9 @@ void ObjectMotionLog::stopModule(const TimeSpec &time)
 }
 
 // fill a snapshot with state data. You may remove this method (and the
-// declaration) if you specified to the SimulationModule that the size of 
+// declaration) if you specified to the SimulationModule that the size of
 // state snapshots is zero
-void ObjectMotionLog::fillSnapshot(const TimeSpec& ts, 
+void ObjectMotionLog::fillSnapshot(const TimeSpec& ts,
                               Snapshot& snap, bool from_trim)
 {
   // The most efficient way of filling a snapshot is with an AmorphStore
@@ -329,34 +319,34 @@ void ObjectMotionLog::fillSnapshot(const TimeSpec& ts,
   AmorphStore s(snap.accessData(), snap.getDataSize());
 
   if (from_trim) {
-    // use packData(s, trim_state_variable1); ... to pack your state into 
+    // use packData(s, trim_state_variable1); ... to pack your state into
     // the snapshot
   }
   else {
-    // this is a snapshot from the running simulation. Dusime takes care 
+    // this is a snapshot from the running simulation. Dusime takes care
     // that no other snapshot is taken at the same time, so you can safely
-    // pack the data you copied into (or left into) the snapshot state 
+    // pack the data you copied into (or left into) the snapshot state
     // variables in here
     // use packData(s, snapshot_state_variable1); ...
   }
 }
 
 // reload from a snapshot. You may remove this method (and the
-// declaration) if you specified to the SimulationModule that the size of 
+// declaration) if you specified to the SimulationModule that the size of
 // state snapshots is zero
 void ObjectMotionLog::loadSnapshot(const TimeSpec& t, const Snapshot& snap)
 {
   // access the data in the snapshot with an AmorphReStore object
   AmorphReStore s(snap.data, snap.data_size);
 
-  // use unPackData(s, real_state_variable1 ); ... to unpack the data 
-  // from the snapshot. 
-  // You can safely do this, while snapshot loading is going on the 
-  // simulation is in HoldCurrent or the activity is stopped. 
+  // use unPackData(s, real_state_variable1 ); ... to unpack the data
+  // from the snapshot.
+  // You can safely do this, while snapshot loading is going on the
+  // simulation is in HoldCurrent or the activity is stopped.
 }
 
-// this routine contains the main simulation process of your module. You 
-// should read the input channels here, and calculate and write the 
+// this routine contains the main simulation process of your module. You
+// should read the input channels here, and calculate and write the
 // appropriate output
 void ObjectMotionLog::doCalculation(const TimeSpec& ts)
 {
@@ -374,16 +364,16 @@ void ObjectMotionLog::doCalculation(const TimeSpec& ts)
   case SimulationState::Replay:
   case SimulationState::Advance: {
     stopcount = readback;
-    
+
     startcount -= ts.getValiditySpan();
     if (startcount > 0) return;
   }
 
     break;
   default:
-    // other states should never be entered for a SimulationModule, 
+    // other states should never be entered for a SimulationModule,
     // HardwareModules on the other hand have more states. Throw an
-    // exception if we get here, 
+    // exception if we get here,
     throw CannotHandleState(getId(),GlobalId(), "state unhandled");
   }
 
@@ -391,9 +381,9 @@ void ObjectMotionLog::doCalculation(const TimeSpec& ts)
   if (file == NULL) newMatfile();
 
   bool full = false;
-  for (r_motion.selectFirstEntry(); r_motion.haveEntry(); 
+  for (r_motion.selectFirstEntry(); r_motion.haveEntry();
        r_motion.selectNextEntry()) {
-    
+
     MultiStreamReader<ObjectMotion> r(r_motion, ts - readback);
     map<string32,LoggedData>::iterator ii = logbuffer.find(r.data().name);
     if (ii == logbuffer.end()) {
@@ -403,14 +393,14 @@ void ObjectMotionLog::doCalculation(const TimeSpec& ts)
     full = full ||
       ii->second.addLine(r.data(), r.timeSpec(), ts);
   }
-  
+
   // last round in a holdcurrent state, write out the mat file
   // or when the file is full
   if (stopcount <= 0 || full) {
     writeMatfile();
   }
 
-} 
+}
 
 void ObjectMotionLog::trimCalculation(const TimeSpec& ts, const TrimMode& mode)
 {
@@ -421,7 +411,7 @@ void ObjectMotionLog::trimCalculation(const TimeSpec& ts, const TrimMode& mode)
   // using the input, and the data put into your trim variables,
   // calculate the derivative of the state. DO NOT use the state
   // vector of the normal simulation here, because it might be that
-  // this is done while the simulation runs!  
+  // this is done while the simulation runs!
   // Some elements in this state derivative are needed as target, copy
   // these out again into trim variables (see you TrimTable
 
@@ -440,7 +430,7 @@ void ObjectMotionLog::trimCalculation(const TimeSpec& ts, const TrimMode& mode)
   break;
 
   case Ground: {
-    // find an altitude/attitude belonging to standing still on the 
+    // find an altitude/attitude belonging to standing still on the
     // ground, power/speed 0
   }
   break;
@@ -453,7 +443,7 @@ void ObjectMotionLog::trimCalculation(const TimeSpec& ts, const TrimMode& mode)
   // This works just like a normal calculation, only you provide the
   // steady state value (if your system is stable anyhow). So, if you
   // have other modules normally depending on your output, you should
-  // also produce the equivalent output here. 
+  // also produce the equivalent output here.
   // EventWriter<MyOutput> y(output_token, ts);
 
   // write the output into the output channel, using the EventWriter
@@ -472,4 +462,3 @@ void ObjectMotionLog::trimCalculation(const TimeSpec& ts, const TrimMode& mode)
 // will check in with the scheme-interpreting code, and enable the
 // creation of modules of this type
 static TypeCreator<ObjectMotionLog> a(ObjectMotionLog::getMyParameterTable());
-
