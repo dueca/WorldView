@@ -1,6 +1,8 @@
 // https://learnopengl.com/In-Practice/Text-Rendering
 
-#version 330 core
+#version 320 es
+
+precision lowp float;
 in vec2 TexCoords;
 out vec4 color;
 

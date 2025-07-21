@@ -58,12 +58,13 @@ namespace vsgviewer {
     /** A single viewer, matching a single scene */
     vsg::ref_ptr<vsg::Viewer> viewer;
 
-
+    /** Specific pipeline */
     vsg::ref_ptr<vsg::PipelineLayout> layout;
 
   public:
     /** Options object */
     vsg::ref_ptr<vsg::Options> options;
+
   private:
 
     /** counter dynamical creation */

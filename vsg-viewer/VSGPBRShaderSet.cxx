@@ -24,7 +24,7 @@
 namespace vsgviewer {
 
   vsg::ref_ptr<vsg::ShaderSet> vsgPBRShaderSet
-  (vsg::ref_ptr<const vsg::Options> options)
+  (vsg::ref_ptr<const vsg::Options> options, vsg::ref_ptr<FogValue> the_fog)
   {
     auto pbr_vertexShader = vsg::read_cast<vsg::ShaderStage>
       ("shaders/fog_pbr.vert", options);
@@ -116,12 +116,10 @@ namespace vsgviewer {
       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
       vsg::floatArray3D::create(1, 1, 1, vsg::Data::Properties{VK_FORMAT_R32_SFLOAT}));
 
-#if 1
     pbr->addDescriptorBinding
       ("Fog", "", CUSTOM_DESCRIPTOR_SET, 0,
        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-       FogValue::create());
-#endif
+       the_fog);
 
     // additional defines
     pbr->optionalDefines =
@@ -132,10 +130,10 @@ namespace vsgviewer {
 
     pbr->definesArrayStates.push_back
       (vsg::DefinesArrayState{{"VSG_INSTANCE_POSITIONS", "VSG_DISPLACEMENT_MAP"},
-                                vsg::PositionAndDisplacementMapArrayState::create()});
+                                vsg::TranslationAndDisplacementMapArrayState::create()});
     pbr->definesArrayStates.push_back
       (vsg::DefinesArrayState{{"VSG_INSTANCE_POSITIONS"},
-                                vsg::PositionArrayState::create()});
+                                vsg::TranslationArrayState::create()});
     pbr->definesArrayStates.push_back
       (vsg::DefinesArrayState{{"VSG_DISPLACEMENT_MAP"},
        vsg::DisplacementMapArrayState::create()});
