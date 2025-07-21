@@ -8,8 +8,6 @@
         language        : C++
 */
 
-
-
 #include "VSGPBRShaderSet.hxx"
 #define VSGViewer_cxx
 #include "VSGViewer.hxx"
@@ -350,6 +348,7 @@ namespace vsgviewer {
 
     // and the observer/eye group
     observer = vsg::Group::create();
+    observer->setValue("name", std::string("observer"));
     std::list<vsg::ref_ptr<vsg::Group> > observer_path;
     observer_path.push_back(observer);
 
