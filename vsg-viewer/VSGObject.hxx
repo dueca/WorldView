@@ -57,7 +57,11 @@ public:
   /** Returns true if the object needs drawing post-access */
   virtual bool requirePostDrawAccess() { return false; }
 
+  /** Set the visibility */
   virtual void visible(bool vis) override;
+
+  /** Add to active group */
+  virtual bool forceActive();
 };
 
 /** Grouping that offers a culling possibility */

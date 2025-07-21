@@ -8,8 +8,6 @@
         language        : C++
 */
 
-
-
 #include "VSGPBRShaderSet.hxx"
 #define VSGViewer_cxx
 #include "VSGViewer.hxx"
@@ -350,6 +348,8 @@ namespace vsgviewer {
 
     // and the observer/eye group
     observer = vsg::Group::create();
+    observer->setValue("name", std::string("observer"));
+    root->addChild(observer);
     std::list<vsg::ref_ptr<vsg::Group> > observer_path;
     observer_path.push_back(observer);
 
@@ -549,14 +549,19 @@ namespace vsgviewer {
   void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion& ownm,
                           double late, bool freeze)
   {
+    BaseObjectMotion o2(ownm);
+    if (!freeze) {
+      o2.extrapolate(late);
+    }
+
     auto camerapnt =
       //    vsg::rotate(0.5*vsg::PI, 1.0, 0.0, 0.0) *
-      vsg::rotate(Q2phi(ownm.attitude_q), 0.0, 0.0, 1.0) *
-      vsg::rotate(-Q2tht(ownm.attitude_q), 1.0, 0.0, 0.0) *
-      vsg::rotate(Q2psi(ownm.attitude_q), 0.0, 1.0, 0.0) *
+      vsg::rotate(Q2phi(o2.attitude_q), 0.0, 0.0, 1.0) *
+      vsg::rotate(-Q2tht(o2.attitude_q), 1.0, 0.0, 0.0) *
+      vsg::rotate(Q2psi(o2.attitude_q), 0.0, 1.0, 0.0) *
       vsg::rotate(vsg::PI, 0.0, 0.0, 1.0) *
       vsg::rotate(0.5*vsg::PI, 1.0, 0.0, 0.0) *
-      vsg::translate(ownm.xyz[1], ownm.xyz[0], ownm.xyz[2]);
+      vsg::translate(o2.xyz[1], o2.xyz[0], o2.xyz[2]);
 
     // update all cameras, as they are in the viewset list
     for (auto &win: windows) {
@@ -570,7 +575,7 @@ namespace vsgviewer {
     // run through all active objects, and inform about the vehicle
     // position & time
     for (auto &obj : active_objects) {
-      obj.second->iterate(tick, ownm, late);
+      obj.second->iterate(tick, o2, late);
     }
   }
 
@@ -652,7 +657,19 @@ namespace vsgviewer {
         VSGObjectFactory::instance().create(obj.type, obj);
       if (root) { op->init(root, this); }
       boost::intrusive_ptr<VSGObject> bop(op);
-      static_objects.push_back(bop);
+      if (op->forceActive()) {
+        creation_key_t keypair(obj.name, 0);
+        if (active_objects.count(keypair)) {
+          W_MOD("Object name (" << obj.name << ",0) already taken!");
+          static_objects.push_back(bop);
+        }
+        else {
+          active_objects[keypair] = bop;
+        }
+      }
+      else {
+        static_objects.push_back(bop);
+      }
       return true;
     }
     catch (const std::exception& problem) {

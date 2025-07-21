@@ -33,23 +33,20 @@
     <param offset="12" size="3">direction</param>
   </type>
 
-  <type name="static-absolute-transform">
+  <type name="static-transform">
     <param offset="0" size="3">xyz</param>
     <param offset="3" size="3">phithetapsi</param>
     <param offset="6" size="3">scalexyz</param>
   </type>
 
-  <type name="static-matrix-transform">
+  <type name="centered-transform">
     <param offset="0" size="3">xyz</param>
     <param offset="3" size="3">phithetapsi</param>
     <param offset="6" size="3">scalexyz</param>
   </type>
 
-  <type name="absolute-transform">
-    <param offset="0" size="3">scalexyz</param>
-  </type>
 
-  <type name="matrix-transform">
+  <type name="transform">
      <param offset="0" size="3">scalexyz</param>
   </type>
 
@@ -58,4 +55,3 @@
   <type name="static-model"></type>
 
 </maps>
-     

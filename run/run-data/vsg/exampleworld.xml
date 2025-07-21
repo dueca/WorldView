@@ -4,7 +4,7 @@
        xsi:schemaLocation="https://dueca.tudelft.nl vsgworld.xsd">
 
   <!-- base for static objects -->
-  <template id="carbase" parent="root" type="static-matrix-transform">
+  <template id="carbase" parent="root" type="static-transform">
     <param name="xyz">
       0, 10, 3
     </param>
@@ -25,7 +25,7 @@
     <file>Defender.vsgb</file>
   </template>
 
-  
+
   <!-- transform node to the car location -->
   <static name="car1base" template-id="carbase"/>
 
@@ -44,13 +44,13 @@
   </static>
 
   <!-- world orientation -->
-  <static name="world-base" parent="root" type="static-matrix-transform">
+  <static name="world-base" parent="root" type="static-transform">
     <param name="xyz"> 0, 0, 140 </param>
     <param name="phithetapsi">0, 0, 0 </param>
   </static>
 
   <!-- world total -->
-  <static name="arrow-base" parent="root" type="static-matrix-transform">
+  <static name="arrow-base" parent="root" type="static-transform">
     <param name="xyz"> 0, 0, 0 </param>
     <param name="phithetapsi">0, 0, 0 </param>
   </static>
@@ -65,15 +65,15 @@
   </static>
 
   <!-- helmet location -->
-  <static name="helmet-base" parent="root" type="static-matrix-transform">
+  <static name="helmet-base" parent="root" type="static-transform">
     <param name="scalexyz"> 10, 10, 10 </param>
     <param name="xyz">2, 0, 0</param>
   </static>
-  
+
   <static name="helmet" parent="helmet-base" type="static-model">
     <file>FlightHelmet.vsgb</file>
   </static>
-  
+
   <!-- simple ambient light -->
   <static name="ambient" type="ambient-light">
     <param name="color"> 1, 1, 1</param>

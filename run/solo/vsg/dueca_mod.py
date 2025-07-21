@@ -136,7 +136,7 @@ if this_node_id == ecs_node:
 
     mymods.append(dueca.Module(
         "visual-test-drive", "test", admin_priority).param(
-            ('set-timing', sim_timing),
+        ('set-timing', sim_timing),
 	    ('check-timing', (10000, 20000)),
 	    ('add-motion', "myself"),
 	    ('position', (-80, 0, -3)),

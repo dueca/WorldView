@@ -111,47 +111,44 @@ namespace vsgviewer {
         "   basis of the channel entry data type, with the object's label, e.g.\n"
         "   \"BaseObjectMotion:Cessna 550\". If after that, no match is found\n"
         "   matching continues with parent classes of the given entry data type\n"
-        "   then matching is done on the data class only.\n"
+        "   and the object label, then matching is done on the data class only.\n"
         " - <object name>: The object name will be used as name in the VSG\n"
         "   scene graph. If the last character of the name is a '#', the name\n"
         "   will be suffixed with the channel entry creation number. When the\n"
         "   object name consists of two parts with a '/' to separate these, the\n"
         "   first part denotes the parent node in the scene graph, the second\n"
-        "   becomes the name.\n"
+        "   becomes the name. Note that special parent nodes \"root\" and\n"
+        "   \"observer\" are available to fix resp. carry objects.\n"
         " - <factory class>: The type of an added object, currently the\n"
-        "   following are available: 'moving', 'static', 'centered' or 'tiled'\n"
-        "                            'light', 'static-light', 'centered-light\n"
+        "   following are available:\n"
+        "   - static-model   - Object with parent's position/orientation\n"
+        "   - model          - Object that gets external 3D position\n"
+        "   - ambient-light  - Ambient light definition\n"
+        "   - directional-light - Light with direction\n"
+        "   - point-light    - Point-type light\n"
+        "   - spot-light     - Spotlight\n"
+        "   - static-transform - Constant transform (scale, rotate, translate)\n"
+        "   - transform      - Transform with external 3D position\n"
+        "   - centered-transform - Transform with position attached to observer\n"
+        "   Transformations are either absolute (with root as parent), or can be\n"
+        "   made relative by using a moving parent (\"observer\" or other)\n"
         "   Note that the factory is extendable, by adding object files with\n"
         "   factory connections, e.g., to create a HUD overlay\n."
         " - [<additional strings>]: supply, depending on type of object, \n"
         "   additional parameters like filenames etc."
       },
 
-      { "add-object-class-coordinates",
+      { "add-object-class-parameters",
         new MemberCall<_ThisObject_,vector<double> >
         (&_ThisObject_::addCoordinates),
-        "Set coordinates for the object; x, y, z position, and phi, theta, psi\n"
-        "orientation. Note that these may also be used differently, depending\n"
-        "on the specified object-class\n"
-        "- static: the coordinates give the object position and orientation\n"
-        "- centered: non-zero x, y, z give object posn, zero x, y or z means\n"
-        "            the object stays centered on the observer\n"
-        "- tiled: zero x, y, z mean that that coordinate is absolute, fixed in\n"
-        "         the world, negative means that coordinate follows observer\n"
-        "         positive defines the jump with which the object follows the\n"
-        "         observer\n"
-        "- For all three object types you can also add sx, sy, sz factors\n"
-        "For 'light' objects, specify the following with 'object-coordinates:\n"
-        "- ambient, diffuse and specular reflection, 3x4 numbers (RGBA)\n"
-        "- object position, 4 numbers. If the 4th number is 1, this describes\n"
-        "  a light position, the 4th number 0 describes a light direction\n"
-        "- object direction, 3 numbers. If these are 0, a point light results,\n"
-        "  otherwise, gives the direction of a spot (beam)\n"
-        "- constant attenuation (0 .. 1)\n"
-        "- linear attenuation, (0 .. 1)\n"
-        "- quadratic attenuation, (0 .. 1)\n"
-        "- spot exponent, defines sharpness of beam edge\n"
-        "- spot cutoff, defines beam width in degrees"
+        "Set parameters for the object class\n"
+        "transformations: x, y, z, phi, theta, psi, optionally scale (3x)\n"
+        "all lights: color (r, g, b), intensity\n"
+        "directional-light: + light direction dx, dy, dz\n"
+        "point light: + light location x, y, z + radius\n"
+        "spot light: + position (x, y, z), span, inner angle, outer angle\n"
+        "            direction (dx, dy, dz)\n"
+        "To move lights / static-model, give them a transform as parent\n"
       },
 
       { "create-static",
@@ -191,7 +188,7 @@ namespace vsgviewer {
         new MemberCall<_ThisObject_,std::string>(&_ThisObject_::readModelFromXML),
         "Read the graphics models from an XML file definition. See\n"
         "'vsgworld.xsd' for the format. This provides an alternative to using\n"
-        "the add_object_class, add_object_class_coordinates and static_object\n"
+        "the add_object_class, add_object_class_parameters and static_object\n"
         "parameters.\n" },
 
       /* The table is closed off with NULL pointers for the variable
@@ -379,7 +376,17 @@ namespace vsgviewer {
 
     WorldDataSpec obj;
     obj.type = names[2];
-    obj.name = names[1];
+
+    // check if the name is given as parent/name
+    auto slash = names[1].find('/');
+    if (slash != std::string::npos) {
+      obj.parent = names[1].substr(0, slash);
+      obj.name = names[1].substr(slash+1);
+    }
+    else {
+      obj.name = names[1];
+    }
+
     for (size_t ii = 3; ii < names.size(); ii++) {
       obj.filename.push_back(names[ii]);
     }

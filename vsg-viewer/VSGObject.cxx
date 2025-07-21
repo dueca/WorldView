@@ -10,15 +10,7 @@
 
 #include "VSGObject.hxx"
 #include <vsgXchange/all.h>
-#include "AxisTransform.hxx"
-#include <map>
-#include <iostream>
 #include <dueca/debug.h>
-
-#define DEB(A) cout << A << endl;
-
-//using namespace std;
-//using namespace vsg;
 
 namespace vsgviewer {
 
@@ -27,18 +19,19 @@ VSGObject::VSGObject()
   //
 }
 
-
 VSGObject::~VSGObject()
 {
   //
 }
 
-void VSGObject::unInit(const vsg::ref_ptr<vsg::Group>& root)
+void VSGObject::unInit(const vsg::ref_ptr<vsg::Group> &root)
 {
   // not defined
 }
 
-VSGCullGroup::VSGCullGroup(const WorldDataSpec& data) :
+bool VSGObject::forceActive() { return false; }
+
+VSGCullGroup::VSGCullGroup(const WorldDataSpec &data) :
   VSGObject()
 {
   name = data.name;
@@ -46,60 +39,58 @@ VSGCullGroup::VSGCullGroup(const WorldDataSpec& data) :
   D_MOD("Created cull group, name=" << name);
 }
 
-VSGCullGroup::~VSGCullGroup()
+VSGCullGroup::~VSGCullGroup() { D_MOD("Destroying cull group, name=" << name); }
+
+static vsg::ref_ptr<vsg::Group> _findParent(vsg::ref_ptr<vsg::Group> node,
+                                            const std::string &name)
 {
-  D_MOD("Destroying cull group, name=" << name);
+  std::string iname;
+  vsg::ref_ptr<vsg::Group> res;
+
+  if (node->getValue("name", iname) && iname == name) {
+    return node;
+  }
+  for (auto const &i : node->children) {
+    vsg::ref_ptr<vsg::Group> g = i.cast<vsg::Group>();
+    if (g) {
+      res = _findParent(g, name);
+      if (res)
+        return res;
+    }
+  }
+  return res;
 }
 
+vsg::ref_ptr<vsg::Group> findParent(vsg::ref_ptr<vsg::Group> root,
+                                    const std::string &name)
+{
+  std::string iname;
+  vsg::ref_ptr<vsg::Group> res;
 
-  static vsg::ref_ptr<vsg::Group> _findParent(vsg::ref_ptr<vsg::Group> node,
-                                              const std::string& name)
-  {
-    std::string iname;
-    vsg::ref_ptr<vsg::Group> res;
-
-    if (node->getValue("name", iname) && iname == name) {
-      return node;
-    }
-    for (auto const &i: node->children) {
-      vsg::ref_ptr<vsg::Group> g = i.cast<vsg::Group>();
-      if (g) {
-        res = _findParent(g, name);
-        if (res) return res;
-      }
-    }
-    return res;
-  }
-
-  vsg::ref_ptr<vsg::Group> findParent(vsg::ref_ptr<vsg::Group> root,
-                                      const std::string& name)
-  {
-    std::string iname;
-    vsg::ref_ptr<vsg::Group> res;
-
-    if (!name.size()) {
-      D_MOD("Searching for parent with empty name, assume root");
-      return root;
-    }
-    if (root->getValue("name", iname) && iname == name) {
-      return root;
-    }
-
-    for (auto const &i: root->children) {
-      vsg::ref_ptr<vsg::Group> g = i.cast<vsg::Group>();
-      if (g) {
-        res = _findParent(g, name);
-        if (res) return res;
-      }
-    }
-
-    D_MOD("Could not find node '" << name << "', attaching to root");
+  if (!name.size()) {
+    D_MOD("Searching for parent with empty name, assume root");
     return root;
   }
+  if (root->getValue("name", iname) && iname == name) {
+    return root;
+  }
+
+  for (auto const &i : root->children) {
+    vsg::ref_ptr<vsg::Group> g = i.cast<vsg::Group>();
+    if (g) {
+      res = _findParent(g, name);
+      if (res)
+        return res;
+    }
+  }
+
+  D_MOD("Could not find node '" << name << "', attaching to root");
+  return root;
+}
 
 void VSGObject::visible(bool vis)
 {
   // nothing
 }
 
-}; // namespace
+}; // namespace vsgviewer
