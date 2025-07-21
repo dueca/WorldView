@@ -315,7 +315,7 @@ namespace vsgviewer {
     arguments.read(options);
 
     // ensure pbr use my new set of shaders.
-    auto pbr = vsgPBRShaderSet(options);
+    auto pbr = vsgPBRShaderSet(options, the_fog);
     options->shaderSets["pbr"] = pbr;
 
 #if 0
