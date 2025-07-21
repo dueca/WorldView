@@ -33,6 +33,34 @@ public:
 };
 
 
+/** Matrix location centered on observer x, y position (skydomes). */
+class VSGCenteredTransform: public VSGObject
+{
+  /** Base transform */
+  vsg::dmat4 base_transform;
+
+  /** VSG transform */
+  vsg::ref_ptr<vsg::MatrixTransform> transform;
+
+public:
+  /** Constructor */
+  VSGCenteredTransform(const WorldDataSpec& data);
+
+  /** Destructor */
+  ~VSGCenteredTransform();
+
+  /** Initialise the transform with the VSG scene */
+  void init(const vsg::ref_ptr<vsg::Group>& root,
+	    VSGViewer* master) final;
+
+  /** Update on the observer position */
+  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late, bool freeze=false) override;
+
+  /** Force in active list */
+  bool forceActive() final;
+};
+
+
 /** Matrix location change base class. */
 class VSGMatrixTransform: virtual public VSGObject
 {

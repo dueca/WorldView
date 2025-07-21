@@ -120,7 +120,7 @@ namespace vsgviewer {
         "   becomes the name. Note that special parent nodes \"root\" and\n"
         "   \"observer\" are available to fix resp. carry objects.\n"
         " - <factory class>: The type of an added object, currently the\n"
-        "   following are available:\n\n"
+        "   following are available:\n"
         "   - static-model   - Object with parent's position/orientation\n"
         "   - model          - Object that gets external 3D position\n"
         "   - ambient-light  - Ambient light definition\n"
@@ -128,7 +128,8 @@ namespace vsgviewer {
         "   - point-light    - Point-type light\n"
         "   - spot-light     - Spotlight\n"
         "   - static-transform - Constant transform (scale, rotate, translate)\n"
-        "   - transform      - Transform with external 3D position\n\n"
+        "   - transform      - Transform with external 3D position\n"
+        "   - centered-transform - Transform with position attached to observer\n"
         "   Transformations are either absolute (with root as parent), or can be\n"
         "   made relative by using a moving parent (\"observer\" or other)\n"
         "   Note that the factory is extendable, by adding object files with\n"
@@ -147,7 +148,7 @@ namespace vsgviewer {
         "point light: + light location x, y, z + radius\n"
         "spot light: + position (x, y, z), span, inner angle, outer angle\n"
         "            direction (dx, dy, dz)\n"
-        "To move lights / static-model, give them a transform as parent"
+        "To move lights / static-model, give them a transform as parent\n"
       },
 
       { "create-static",

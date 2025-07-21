@@ -39,6 +39,13 @@
     <param offset="6" size="3">scalexyz</param>
   </type>
 
+  <type name="centered-transform">
+    <param offset="0" size="3">xyz</param>
+    <param offset="3" size="3">phithetapsi</param>
+    <param offset="6" size="3">scalexyz</param>
+  </type>
+
+
   <type name="transform">
      <param offset="0" size="3">scalexyz</param>
   </type>
