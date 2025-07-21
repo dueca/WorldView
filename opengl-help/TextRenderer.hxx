@@ -54,7 +54,8 @@ public:
 
       @param font   Font file.
   */
-  TextRenderer(const char *font);
+  TextRenderer(const char *font, const char *shaderpath =
+                                   "../../../../WorldView/opengl-help/es320");
 
   /** Render some text, at location x, y (baseline left) */
   void renderText(const std::string &text, float x, float y, float scale,
