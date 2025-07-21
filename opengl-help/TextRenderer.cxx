@@ -15,9 +15,9 @@
 #include FT_FREETYPE_H
 #include <debug.h>
 
-TextRenderer::TextRenderer(const char *font) :
-  s("../../../../WorldView/opengl-help/text_vrt.glsl",
-    "../../../../WorldView/opengl-help/text_frg.glsl"),
+TextRenderer::TextRenderer(const char *font, const char* shaderpath) :
+  s((std::string(shaderpath) + "/text_vrt.glsl").c_str(),
+    (std::string(shaderpath) + "/text_frg.glsl").c_str()),
   vbo(0),
   vao(0),
   projection_link(s.getLink("projection", glm::mat4())),
