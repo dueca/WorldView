@@ -21,6 +21,13 @@
 #define MATERIAL_DESCRIPTOR_SET 2
 #define CUSTOM_DESCRIPTOR_SET 0
 
+#if VSG_API_VERSION_LESS(1, 1, 11)
+namespace vsg {
+typedef PositionAndDisplacementMapArrayState TranslationAndDisplacementMapArrayState;
+typedef PositionArrayState TranslationArrayState;
+}
+#endif
+
 namespace vsgviewer {
 
   vsg::ref_ptr<vsg::ShaderSet> vsgPBRShaderSet

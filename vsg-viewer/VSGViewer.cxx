@@ -207,8 +207,7 @@ namespace vsgviewer {
     resourcepath(),
     keep_pointer(false),
     bg_color(4, 0.0),
-    the_fog(),
-    // fog_ptr(),
+    the_fog(FogValue::create()),
     enable_simple_fog(false),
     buffer_nsamples(8)
   {
@@ -312,28 +311,15 @@ namespace vsgviewer {
     options->add(vsgXchange::all::create());
     arguments.read(options);
 
-    // root is created upon window init
-    auto _fog_ptr = FogValue::create(the_fog);
-
     // ensure pbr use my new set of shaders.
-    auto pbr = vsgPBRShaderSet(options, _fog_ptr);
+    auto pbr = vsgPBRShaderSet(options, the_fog);
     options->shaderSets["pbr"] = pbr;
-
-#if 0
-    // set initial fog value
-    auto& fogBinding =
-      pbr->getDescriptorBinding("Fog");
-    if (fogBinding.name == "Fog") {
-      fogBinding.data = the_fog;
-    }
-#endif
 
     // create scene graph root
     root = vsg::StateGroup::create();
     root->setValue("name", std::string("root"));
     D_MOD("VSG create root node");
 
-#if 1
     // the "inherit option in customshaderset"
     layout = pbr->createPipelineLayout({}, {0, 2});
 
@@ -341,13 +327,12 @@ namespace vsgviewer {
     root->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, layout, vds_set));
     uint32_t cm_set = 0;
     auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
-    auto cm_db = vsg::DescriptorBuffer::create(_fog_ptr);
+    auto cm_db = vsg::DescriptorBuffer::create(the_fog);
     auto cm_ds = vsg::DescriptorSet::create(cm_dsl, vsg::Descriptors{cm_db});
     auto cm_bds = vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, layout, cm_ds);
     root->add(cm_bds);
 
     options->inheritedState = root->stateCommands;
-#endif
 
     // and the observer/eye group
     observer = vsg::Group::create();

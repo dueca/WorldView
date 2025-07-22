@@ -252,11 +252,8 @@ namespace vsgviewer {
     /** background/clear color */
     std::vector<float> bg_color;
 
-    /** Fog object itself */
-    Fog the_fog;
-
     /** Fog object pointer */
-    // vsg::ref_ptr<vsg::Value<Fog> > fog_ptr;
+    vsg::ref_ptr<vsg::Value<Fog> > the_fog;
 
     /** Enable simple fog. */
     bool enable_simple_fog;
