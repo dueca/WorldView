@@ -213,7 +213,6 @@ namespace vsgviewer {
   {
     bg_color[3] = 1.0;
     bg_color[2] = 0.45;
-    // root is created upon window init
   }
 
 
@@ -316,21 +315,11 @@ namespace vsgviewer {
     auto pbr = vsgPBRShaderSet(options, the_fog);
     options->shaderSets["pbr"] = pbr;
 
-#if 0
-    // set initial fog value
-    auto& fogBinding =
-      pbr->getDescriptorBinding("Fog");
-    if (fogBinding.name == "Fog") {
-      fogBinding.data = the_fog;
-    }
-#endif
-
     // create scene graph root
     root = vsg::StateGroup::create();
     root->setValue("name", std::string("root"));
     D_MOD("VSG create root node");
 
-#if 1
     // the "inherit option in customshaderset"
     layout = pbr->createPipelineLayout({}, {0, 2});
 
@@ -344,7 +333,6 @@ namespace vsgviewer {
     root->add(cm_bds);
 
     options->inheritedState = root->stateCommands;
-#endif
 
     // and the observer/eye group
     observer = vsg::Group::create();

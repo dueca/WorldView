@@ -43,8 +43,8 @@ struct VaoVbo
   ~VaoVbo()
   {
     if (vao) {
-      glDeleteVertexArrays(1, &vao);
       glDeleteBuffers(1, &vbo);
+      glDeleteVertexArrays(1, &vao);
     }
   }
 
