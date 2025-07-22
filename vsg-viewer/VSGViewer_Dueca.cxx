@@ -397,21 +397,20 @@ namespace vsgviewer {
 
   bool VSGViewer_Dueca::setFog(const std::vector<double>& fog)
   {
-    auto &thefog = the_fog->value();
     if (fog.size() >= 1) {
-      thefog.density = fog[0];
+      the_fog.density = fog[0];
     }
     else if (fog.size() >= 4) {
-      thefog.color = {float(fog[1]), float(fog[2]), float(fog[3]) };
+      the_fog.color = {float(fog[1]), float(fog[2]), float(fog[3]) };
     }
     else if (fog.size() >= 5) {
-      thefog.start = fog[4];
+      the_fog.start = fog[4];
     }
     else if (fog.size() >= 6) {
-      thefog.start = fog[5];
+      the_fog.start = fog[5];
     }
     else if (fog.size() == 7) {
-      thefog.exponent = fog[6];
+      the_fog.exponent = fog[6];
     }
     else {
       E_CNF("Wrong number of arguments for for fog");

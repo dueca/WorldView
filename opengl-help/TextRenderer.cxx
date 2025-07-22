@@ -95,8 +95,8 @@ TextRenderer::TextRenderer(const char *font, const char* shaderpath) :
 TextRenderer::~TextRenderer()
 {
   if (vao) {
-    glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
   }
 }
 

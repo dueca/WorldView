@@ -207,13 +207,13 @@ namespace vsgviewer {
     resourcepath(),
     keep_pointer(false),
     bg_color(4, 0.0),
-    the_fog(FogValue::create()),
+    the_fog(),
+    // fog_ptr(),
     enable_simple_fog(false),
     buffer_nsamples(8)
   {
     bg_color[3] = 1.0;
     bg_color[2] = 0.45;
-    // root is created upon window init
   }
 
 
@@ -312,8 +312,11 @@ namespace vsgviewer {
     options->add(vsgXchange::all::create());
     arguments.read(options);
 
+    // root is created upon window init
+    auto _fog_ptr = FogValue::create(the_fog);
+
     // ensure pbr use my new set of shaders.
-    auto pbr = vsgPBRShaderSet(options, the_fog);
+    auto pbr = vsgPBRShaderSet(options, _fog_ptr);
     options->shaderSets["pbr"] = pbr;
 
 #if 0
@@ -338,7 +341,7 @@ namespace vsgviewer {
     root->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, layout, vds_set));
     uint32_t cm_set = 0;
     auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
-    auto cm_db = vsg::DescriptorBuffer::create(the_fog);
+    auto cm_db = vsg::DescriptorBuffer::create(_fog_ptr);
     auto cm_ds = vsg::DescriptorSet::create(cm_dsl, vsg::Descriptors{cm_db});
     auto cm_bds = vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, layout, cm_ds);
     root->add(cm_bds);
