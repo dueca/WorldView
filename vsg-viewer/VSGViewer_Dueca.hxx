@@ -220,6 +220,9 @@ namespace vsgviewer {
     /** frustum data */
     bool setFrustum(const std::vector<float>& frustum);
 
+    /** frustum data */
+    bool setMaskImage(const std::string& image);
+
     /** eye offset data */
     bool setEyeOffset(const std::vector<float>& frustum);
 

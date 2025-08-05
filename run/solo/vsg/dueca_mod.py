@@ -5,7 +5,7 @@
 
 ## in general, it is a good idea to clearly document your set up
 ## this is an excellent place.
-claim_graphics_thread = False
+claim_graphics_thread = True
 f = 4
 ## node set-up
 ecs_node = 0   # dutmms1, send order 3
@@ -99,6 +99,7 @@ if this_node_id == ecs_node:
                    -0.479274611399, 0.660621761658)
 #                 (1.0, 10000, 40)             # 40 deg fov
                  ),
+                ('set-mask', 'hmilabmaskfront2.png'),
                 ('eye-offset', ( 0, 0, 0, 0, 0, 0)),
 
                  ## window with side views
