@@ -4,7 +4,7 @@
 # projection with a blurred transition zone
 #
 # for adjusting the gap between the masks, use the mask files without the
-# -blur suffix. 
+# -blur suffix.
 #
 # for also adjusting the vertical alignment, make the top layer in the
 # svg files visible. This adds blue/yellow stripes, that should
@@ -22,8 +22,8 @@ else
     MASKOPTS="--export-area-page"
 fi
 
-BASEDIR=$(dirname $0)
-# echo $BASEDIR
+BASEDIR=$(realpath $(dirname $0))
+RUNDIR=$(pwd)
 
 FILES=$(cd $BASEDIR && ls *.svg)
 # echo $FILES
@@ -32,19 +32,21 @@ FILES=$(cd $BASEDIR && ls *.svg)
 for f in $FILES; do
     # real file
     of=$(basename $f .svg).png
-    inkscape --export-type="png" \
-	     $MASKOPTS  $BASEDIR/$f
+    inkscape --export-filename=${RUNDIR}/${of} \
+	     ${MASKOPTS}  ${BASEDIR}/${f}
 done
 
-if [ -x /usr/bin/convert ]; then
+if [ -x /usr/bin/magick ]; then
+    CONVERT=/usr/bin/magick
+elif [ -x /usr/bin/convert ]; then
     CONVERT=/usr/bin/convert
 else
     echo "Install ImageMagick"
     exit 1
 fi
-   
 
-# create blurred versions of the crisp masks above, also apply gamma reverse 
+
+# create blurred versions of the crisp masks above, also apply gamma reverse
 # correction
 for f in $BLURFILES; do
     $CONVERT $f -channel RGBA -blur 0x5 -gamma 0.45 png32:`basename $f .png`-blur.png
@@ -65,7 +67,7 @@ $CONVERT hmilabmaskright-blur.png -crop 100x1080+0x0 \
         +repage png32:hmilabmaskright-blurl.png
 
 # additionally create a full size mask for masking purposes, check size with
-# frustumcalculator 
+# frustumcalculator
 $CONVERT -size 1858x1080 canvas:black -alpha off png32:hmilabmaskblack.png
 $CONVERT -size 1858x1080 canvas:black -alpha transparent png32:hmilabmaskempty.png
 
@@ -82,11 +84,10 @@ $CONVERT hmilabmaskfront.png -channel rgba \
 
 # create warp masking files for flightgear
 for f in $BLURFILES; do
-    python3 $BASEDIR/fggenerate.py `basename $f .png`-blur.png 
+    python3 $BASEDIR/fggenerate.py `basename $f .png`-blur.png
 done
 
 # create appropriate links
 for f in $LFILES; do
     ln -sf $BASEDIR/$f $f
 done
-
