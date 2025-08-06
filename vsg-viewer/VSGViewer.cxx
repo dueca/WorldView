@@ -193,11 +193,13 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
     ws.render_graph->addChild(clearAttachments);
 
     // left, right bottom, top, near, far
-    auto orthoproj = vsg::Orthographic::create(-0.5, 0.5, -0.5, 0.5, -1.0, 1.0);
-
+    auto orthoproj = vsg::Orthographic::create(-0.5, 0.5, -0.5, 0.5, 100.0, 0.0);
+    // eye (in front of screen), at (origin), up (y up in this case)
+    auto viewmatrix = vsg::LookAt::create(vsg::dvec3(0.0, 0.0, 1.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 1.0, 0.0));
+    //viewmatrix->set(dmat4());
     // second, ortho camera
     auto maskcamera =
-      vsg::Camera::create(orthoproj, vsg::LookAt::create(), viewportstate);
+      vsg::Camera::create(orthoproj, viewmatrix, viewportstate);
 
     // read the image data
     auto image = vsg::read_cast<vsg::Data>(spec.overlay, options);
@@ -207,8 +209,13 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
     vsg::StateInfo state;
     state.image = image;
     state.lighting = false;
+    //state.two_sided = true;
+    state.blending = true;
+    //state.billboard = true;
     vsg::GeometryInfo geom;
-    geom.position[2] = 0.9;
+    geom.position.set(0.0f, 0.0f, 0.0f);  // center
+    geom.dy.set(0.0f, 1.0f, 0.0f);        // height
+    //geom.dz.set(0.0f, -1.0f, 0.0f);
     auto ovscene = builder->createQuad(geom, state);
 
     // overlay view
@@ -238,8 +245,8 @@ VSGViewer::VSGViewer() :
   enable_simple_fog(false),
   buffer_nsamples(8)
 {
-  bg_color[3] = 1.0;
-  bg_color[2] = 0.45;
+  //bg_color[3] = 1.0;
+  //bg_color[2] = 0.45;
 }
 
 VSGViewer::~VSGViewer() {}
@@ -367,10 +374,10 @@ void VSGViewer::init(bool waitswap)
 
   auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
 
-    // create viewer
+  // create viewer
   viewer = vsg::Viewer::create();
 
-    // If no window specified, give a dummy default specification
+  // If no window specified, give a dummy default specification
   if (winspec.empty()) {
     WinSpec window;
     window.name = "DUECA/VSG default window";
