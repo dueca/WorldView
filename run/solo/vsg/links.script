@@ -3,7 +3,7 @@
 # running the application is a specific machine.
 
 # standard folder with project-wide data
-DATADIR=../../run-data
+DATADIR=$(realpath ../../run-data)
 
 # create a folder for run log history
 if [ ! -d runlogs ]; then
@@ -18,7 +18,7 @@ else
 fi
 
 # run the link script in the hmi lab data dir; the -t is for test files
-# ../../../../WorldView/HMILabViewFiles/generate -t
+../../../../WorldView/HMILabViewFiles/generate
 
 if [ -d /usr/share/vsgExamples ]; then
     ln -sf /usr/share/vsgExamples/models/lz.vsgt .
