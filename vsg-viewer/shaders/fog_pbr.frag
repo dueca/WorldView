@@ -58,6 +58,7 @@ layout(set = VIEW_DESCRIPTOR_SET, binding = 2) uniform sampler2DArrayShadow shad
 
 // Custom state
 layout(set = CUSTOM_DESCRIPTOR_SET, binding = 0) uniform Fog
+//layout(set = VIEW_DESCRIPTOR_SET, binding = 3) uniform Fog
 {
     vec3 color;
     float density;

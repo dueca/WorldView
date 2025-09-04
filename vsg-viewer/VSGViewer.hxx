@@ -36,46 +36,58 @@
 
 namespace vsgviewer {
 
-  /** This is a wrapper that can load and display VSG scenes, optionally
+/** This is a wrapper that can load and display VSG scenes, optionally
     in multiple windows and viewports. It is intended for
     encapsulation in a DUECA module. */
 class VSGViewer : public WorldViewerBase
 {
-    // Advance definition, collection of data for a window.
+  // Advance definition, collection of data for a window.
   struct WindowSet;
 
-    // Advance definition, collection of data for a viewport
+  // Advance definition, collection of data for a viewport
   struct Private;
 
   std::list<WinSpec> winspec;
 
-    /** scene manager */
+  /** scene manager */
   vsg::ref_ptr<vsg::StateGroup> root;
 
-    /** observer is a node in the scene */
+  /** observer is a node in the scene */
   vsg::ref_ptr<vsg::Group> observer;
 
-    /** A single viewer, matching a single scene */
+  /** A single viewer, matching a single scene */
   vsg::ref_ptr<vsg::Viewer> viewer;
 
-    /** Specific pipeline */
+  /** Specific pipeline */
   vsg::ref_ptr<vsg::PipelineLayout> layout;
 
 public:
-    /** Options object */
+  /** Options object */
   vsg::ref_ptr<vsg::Options> options;
 
 private:
-    /** counter dynamical creation */
+  /** counter dynamical creation */
   unsigned config_dynamic_created;
 
 protected:
-    /** Accept unknown/unconfigured objects */
+  /** Accept unknown/unconfigured objects */
   bool allow_unknown;
+
+  /** Enable vulkan debug layer */
+  bool debug_layer;
+
+  /** Enable debug utils layer */
+  bool debug_utils;
+
+  /** Enable vulkan API dump */
+  bool api_dump_layer;
+
+  /** Enable Khronos synchronization layer */
+  bool synchronization_layer;
 
 private:
     /** This class can generate multiple views on the same world. A
-      ViewSet encapsulates the stuff needed for a single view. */
+ViewSet encapsulates the stuff needed for a single view. */
   struct ViewSet
   {
 
@@ -92,7 +104,7 @@ private:
     vsg::ref_ptr<vsg::LookAt> view_matrix;
 
       /** The camera's offset from the base vehicle point (angle,
-        distance or both) */
+distance or both) */
     vsg::t_mat4<double> eye_offset;
 
 #ifdef RG_PER_VIEWSET
@@ -105,14 +117,14 @@ private:
 
       /** Initialise a view in a window
 
-        @param vs     Specification for the view; viewport coordinates and
-        perspective/frustum, eye position+orientation
-        @param viewer Overall scene viewer
-        @param root   Scene root
-        @param viewmatrix ?? How now
-        @param bg_col Background color (4 element)
+@param vs     Specification for the view; viewport coordinates and
+perspective/frustum, eye position+orientation
+@param viewer Overall scene viewer
+@param root   Scene root
+@param viewmatrix ?? How now
+@param bg_col Background color (4 element)
 
-    */
+*/
     void init(const ViewSpec &vs, WindowSet &window,
               vsg::ref_ptr<vsg::Viewer> viewer, vsg::ref_ptr<vsg::Group> root,
               const std::vector<float> &bg_col,
@@ -122,67 +134,69 @@ private:
     void complete();
   };
 
-    /** Each render window needs a specification and possibly a set of
+  /** Each render window needs a specification and possibly a set of
       views */
   struct WindowSet
   {
 
-      /** Descriptive name */
+    /** Descriptive name */
     std::string name;
 
-      /** Display on which it is presented */
+    /** Display on which it is presented */
     std::string display;
 
-      /** The actual window */
+    /** The actual window */
     vsg::ref_ptr<vsg::Window> window;
 
-      /** Traits of the window */
+    /** Traits of the window */
     vsg::ref_ptr<vsg::WindowTraits> traits;
 
 #ifndef RG_PER_VIEWSET
-      /** And a rendergraph?*/
+    /** And a rendergraph?*/
     vsg::ref_ptr<vsg::RenderGraph> render_graph;
 #endif
 
-      /** Each window has a command graph */
+    /** Each window has a command graph */
     vsg::ref_ptr<vsg::CommandGraph> command_graph;
 
-      /** A list of view sets; these represent the different render
+    /** A list of view sets; these represent the different render
         areas within the window */
     std::map<std::string, ViewSet> viewset;
 
-      /** Constructor */
+    /** Constructor */
     WindowSet(const WinSpec &ws, vsg::ref_ptr<vsg::Group> root,
               const std::map<std::string, WindowSet> &windows,
-              std::vector<float> bg_color, unsigned buffer_nsamples);
+              std::vector<float> bg_color, unsigned buffer_nsamples,
+              bool debug_layer, bool debug_utils, bool api_dump_layer,
+              bool synchronization_layer);
   };
 
-    /** Map of windows */
+  /** Map of windows */
   typedef std::map<std::string, WindowSet> WindowsMap;
 
-    /** map with windows. */
+  /** map with windows. */
   WindowsMap windows;
 
-    /** Object list type */
+  /** Object list type */
   typedef std::list<boost::intrusive_ptr<VSGObject>> ObjectListType;
 
-    /** Map with created (due to presence in the world channel)
+  /** Map with created (due to presence in the world channel)
       objects. They are indexed with a creation key combining channel
       name and channel entry index, and removed from the map when the
       entry is removed from the channel. */
   typedef std::map<creation_key_t, boost::intrusive_ptr<VSGObject>>
     created_objects_t;
 
-    /** Objects creates automatically */
+  /** Objects creates automatically */
   created_objects_t active_objects;
 
-    /** Objects that are static, just get calls about new positioning */
+  /** Objects that are static, just get calls about new positioning */
   ObjectListType static_objects;
 
-    /** Objects that need post-draw access */
+  /** Objects that need post-draw access */
   ObjectListType post_draw;
 
-    /** List of specifications for the wiews, will be applied later */
+  /** List of specifications for the wiews, will be applied later */
   std::list<ViewSpec> viewspec;
 
 private:
@@ -190,22 +204,22 @@ private:
   void setupResources();
 
 public:
-    /** Constructor */
+  /** Constructor */
   VSGViewer();
 
-    /** Destructor */
+  /** Destructor */
   ~VSGViewer();
 
-    /** Open the window(s) */
+  /** Open the window(s) */
   void init(bool waitswap);
 
-    /** Add a window */
+  /** Add a window */
   void addViewport(const ViewSpec &vp);
 
-    /** Add a window */
+  /** Add a window */
   void addWindow(const WinSpec &window) { winspec.push_back(window); }
 
-    /** Pass the base camera position to the views.
+  /** Pass the base camera position to the views.
 
       @param tick  Current DUECA time.
       @param base  Motion definition of the base observer/vehicle.
@@ -214,7 +228,7 @@ public:
   void setBase(TimeTickType tick, const BaseObjectMotion &base, double late,
                bool freeze);
 
-    /** Create a controllable object. Object creation depends on class of
+  /** Create a controllable object. Object creation depends on class of
       data supplied, further init may rely on fist data entering. */
   bool createControllable(const GlobalId &master_id, const NameSet &cname,
                           entryid_type entry_id, uint32_t creation_id,
@@ -222,44 +236,44 @@ public:
                           const std::string &entry_label,
                           Channel::EntryTimeAspect time_aspect);
 
-    /** Remove a controllable */
+  /** Remove a controllable */
   void removeControllable(const dueca::NameSet &cname, uint32_t creation_id);
 
-    /** Create a static (not controlled) controllable object. */
+  /** Create a static (not controlled) controllable object. */
   bool createStatic(const std::vector<std::string> &classname);
 
-    /** Create a static (not controlled) controllable object. */
+  /** Create a static (not controlled) controllable object. */
   bool createStatic(const WorldDataSpec &spec);
 
-    /** Do a re-draw
-      \param wait   If true, do now swap the buffers. The application
-      must later wait and swap with the waitSwap function. */
+  /** Do a re-draw
+      @param wait   If true, do now swap the buffers. The application
+                    must later wait and swap with the waitSwap function. */
   void redraw(bool wait = false, bool reset_context = false) final;
 
-    /** Wait for the swap. */
+  /** Wait for the swap. */
   void waitSwap();
 
-    /** Change the configuration of the scene graph, returns true if
+  /** Change the configuration of the scene graph, returns true if
       successful */
   bool adaptSceneGraph(const WorldViewConfig &adapt);
 
 protected:
-    /** Path to the resources */
+  /** Path to the resources */
   std::string resourcepath;
 
-    /** Keep the cursor or not? */
+  /** Keep the cursor or not? */
   bool keep_pointer;
 
-    /** background/clear color */
+  /** background/clear color */
   std::vector<float> bg_color;
 
-    /** Fog object pointer */
+  /** Fog object pointer */
   vsg::ref_ptr<vsg::Value<Fog>> the_fog;
 
-    /** Enable simple fog. */
+  /** Enable simple fog. */
   bool enable_simple_fog;
 
-    /** Multi-sampling */
+  /** Multi-sampling */
   unsigned buffer_nsamples;
 };
 }; // namespace vsgviewer

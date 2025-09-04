@@ -193,13 +193,15 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
     ws.render_graph->addChild(clearAttachments);
 
     // left, right bottom, top, near, far
-    auto orthoproj = vsg::Orthographic::create(-0.5, 0.5, -0.5, 0.5, 100.0, 0.0);
+    auto orthoproj =
+      vsg::Orthographic::create(-0.5, 0.5, -0.5, 0.5, 100.0, 0.0);
     // eye (in front of screen), at (origin), up (y up in this case)
-    auto viewmatrix = vsg::LookAt::create(vsg::dvec3(0.0, 0.0, 1.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 1.0, 0.0));
-    //viewmatrix->set(dmat4());
-    // second, ortho camera
-    auto maskcamera =
-      vsg::Camera::create(orthoproj, viewmatrix, viewportstate);
+    auto viewmatrix =
+      vsg::LookAt::create(vsg::dvec3(0.0, 0.0, 1.0), vsg::dvec3(0.0, 0.0, 0.0),
+                          vsg::dvec3(0.0, 1.0, 0.0));
+    // viewmatrix->set(dmat4());
+    //  second, ortho camera
+    auto maskcamera = vsg::Camera::create(orthoproj, viewmatrix, viewportstate);
 
     // read the image data
     auto image = vsg::read_cast<vsg::Data>(spec.overlay, options);
@@ -209,13 +211,13 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
     vsg::StateInfo state;
     state.image = image;
     state.lighting = false;
-    //state.two_sided = true;
+    // state.two_sided = true;
     state.blending = true;
-    //state.billboard = true;
+    // state.billboard = true;
     vsg::GeometryInfo geom;
     geom.position.set(0.0f, 0.0f, 0.0f);  // center
     geom.dy.set(0.0f, 1.0f, 0.0f);        // height
-    //geom.dz.set(0.0f, -1.0f, 0.0f);
+    // geom.dz.set(0.0f, -1.0f, 0.0f);
     auto ovscene = builder->createQuad(geom, state);
 
     // overlay view
@@ -233,6 +235,10 @@ VSGViewer::VSGViewer() :
   options(),
   config_dynamic_created(0),
   allow_unknown(false),
+  debug_layer(false),
+  debug_utils(false),
+  api_dump_layer(false),
+  synchronization_layer(true),
   windows(),
   active_objects(),
   static_objects(),
@@ -245,8 +251,8 @@ VSGViewer::VSGViewer() :
   enable_simple_fog(false),
   buffer_nsamples(8)
 {
-  //bg_color[3] = 1.0;
-  //bg_color[2] = 0.45;
+  // bg_color[3] = 1.0;
+  // bg_color[2] = 0.45;
 }
 
 VSGViewer::~VSGViewer() {}
@@ -263,7 +269,9 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
                                 vsg::ref_ptr<vsg::Group> root,
                                 const std::map<std::string, WindowSet> &windows,
                                 std::vector<float> bg_color,
-                                unsigned buffer_nsamples) :
+                                unsigned buffer_nsamples, bool debug_layer,
+                                bool debug_utils, bool api_dump_layer,
+                                bool synchronization_layer) :
   name(ws.name),
   display(ws.display),
   window(),
@@ -274,7 +282,12 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
 #endif
   viewset()
 {
-    // get screen size
+  // set trait options
+  traits->debugLayer = debug_layer;
+  traits->apiDumpLayer = api_dump_layer;
+  traits->debugUtils = debug_utils;
+
+  // get screen size
   traits->windowTitle = ws.name;
 
     // do we share a device?
@@ -303,7 +316,7 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
 
     // double buffer
   traits->swapchainPreferences.imageCount = 2;
-  traits->synchronizationLayer = true;
+  traits->synchronizationLayer = synchronization_layer;
 
     // multi sampling options
   for (unsigned sbits = 0; sbits < buffer_nsamples; sbits++) {
@@ -349,13 +362,13 @@ void VSGViewer::init(bool waitswap)
   root->setValue("name", std::string("root"));
   D_MOD("VSG create root node");
 
-    // the "inherit option in customshaderset"
-  layout = pbr->createPipelineLayout({}, { 0, 2 });
+  // the "inherit option in customshaderset"
+  layout = pbr->createPipelineLayout({}, { 0, 2  });
 
   uint32_t vds_set = 1;
   root->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                layout, vds_set));
-  uint32_t cm_set = 0;
+                                                      layout, vds_set));
+  uint32_t cm_set = 3;
   auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
   auto cm_db = vsg::DescriptorBuffer::create(the_fog);
   auto cm_ds = vsg::DescriptorSet::create(cm_dsl, vsg::Descriptors{ cm_db });
@@ -401,7 +414,8 @@ void VSGViewer::init(bool waitswap)
       auto newwin = windows.emplace(
         std::piecewise_construct, std::forward_as_tuple(winspec.front().name),
         std::forward_as_tuple(winspec.front(), root, windows, bg_color,
-                              buffer_nsamples));
+                              buffer_nsamples, debug_layer, debug_utils,
+                              api_dump_layer, synchronization_layer));
       if (newwin.second == false) {
         throw(DuecaVSGConfigError());
       }
@@ -485,10 +499,7 @@ void VSGViewer::redraw(bool wait, bool reset_context)
   }
 }
 
-void VSGViewer::waitSwap()
-{
-  viewer->advanceToNextFrame();
-}
+void VSGViewer::waitSwap() { viewer->advanceToNextFrame(); }
 
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 {
