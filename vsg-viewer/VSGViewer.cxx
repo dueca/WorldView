@@ -368,7 +368,7 @@ void VSGViewer::init(bool waitswap)
   uint32_t vds_set = 1;
   root->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                       layout, vds_set));
-  uint32_t cm_set = 3;
+  uint32_t cm_set = 0;
   auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
   auto cm_db = vsg::DescriptorBuffer::create(the_fog);
   auto cm_ds = vsg::DescriptorSet::create(cm_dsl, vsg::Descriptors{ cm_db });

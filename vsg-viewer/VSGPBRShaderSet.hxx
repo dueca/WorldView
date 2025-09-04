@@ -65,3 +65,9 @@ using FogValue = vsg::Value<Fog>;
 vsg::ref_ptr<vsg::ShaderSet>
 vsgPBRShaderSet(vsg::ref_ptr<const vsg::Options> opt, vsg::ref_ptr<FogValue> the_fog);
 } // namespace vsgviewer
+
+template<>
+constexpr bool vsg::has_read_write<vsgviewer::Fog>()
+{
+    return true;
+}
