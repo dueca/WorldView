@@ -1,9 +1,9 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
-#pragma import_defines (VSG_TEXTURECOORD_0, VSG_TEXTURECOORD_1, VSG_TEXTURECOORD_2, VSG_TEXTURECOORD_3, , VSG_POINT_SPRITE, VSG_DIFFUSE_MAP, VSG_GREYSCALE_DIFFUSE_MAP, VSG_DETAIL_MAP, VSG_EMISSIVE_MAP, VSG_LIGHTMAP_MAP, VSG_NORMAL_MAP, VSG_METALLROUGHNESS_MAP, VSG_SPECULAR_MAP, VSG_TWO_SIDED_LIGHTING, VSG_WORKFLOW_SPECGLOSS, VSG_SHADOWS_PCSS, VSG_SHADOWS_SOFT, VSG_SHADOWS_HARD, SHADOWMAP_DEBUG, VSG_ALPHA_TEST)
+#pragma import_defines (VSG_TEXTURECOORD_0, VSG_TEXTURECOORD_1, VSG_TEXTURECOORD_2, VSG_TEXTURECOORD_3, VSG_POINT_SPRITE, VSG_DIFFUSE_MAP, VSG_GREYSCALE_DIFFUSE_MAP, VSG_DETAIL_MAP, VSG_EMISSIVE_MAP, VSG_LIGHTMAP_MAP, VSG_NORMAL_MAP, VSG_METALLROUGHNESS_MAP, VSG_SPECULAR_MAP, VSG_TWO_SIDED_LIGHTING, VSG_WORKFLOW_SPECGLOSS, VSG_SHADOWS_PCSS, VSG_SHADOWS_SOFT, VSG_SHADOWS_HARD, SHADOWMAP_DEBUG, VSG_ALPHA_TEST)
 
 // define by default for backwards compatibility
-#define VSG_SHADOWS_HARD
+//#define VSG_SHADOWS_HARD
 
 #define VIEW_DESCRIPTOR_SET 1
 #define MATERIAL_DESCRIPTOR_SET 2
@@ -135,6 +135,20 @@ float pow5(const in float value)
 {
     return value * value * value * value * value;
 }
+
+vec4 SRGBtoLINEAR(vec4 srgbIn)
+{
+    vec3 linOut = pow(srgbIn.xyz, vec3(2.2));
+    return vec4(linOut,srgbIn.w);
+}
+
+vec4 LINEARtoSRGB(vec4 srgbIn)
+{
+    vec3 linOut = pow(srgbIn.xyz, vec3(1.0 / 2.2));
+    return vec4(linOut, srgbIn.w);
+}
+
+
 
 // include the calculateShadowCoverageForDirectionalLight(..) implementation
 #include "shadows.glsl"
@@ -600,5 +614,6 @@ void main()
         }
     }
 
+    //outColor = LINEARtoSRGB(vec4(color, baseColor.a));
     outColor = vec4(color, baseColor.a);
 }

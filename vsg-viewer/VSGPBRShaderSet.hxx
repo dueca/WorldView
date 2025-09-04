@@ -19,7 +19,7 @@ namespace vsgviewer {
 /** Object to pass simple fog data to shaders */
 struct Fog
 {
-  /// Color of the fog, RGBA
+  /// Color of the fog, RGB
   vsg::vec3 color = { 1.0, 1.0, 1.0 };
 
   /// Density, determines depth.

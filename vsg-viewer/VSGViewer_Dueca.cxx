@@ -188,15 +188,15 @@ const ParameterTable *VSGViewer_Dueca::getParameterTable()
       "Enable Khronos debug layer" },
 
     { "debug-utils",
-      new VarProbe<_ThisObject_, bool>(&_ThisObject_::debug_layer),
+      new VarProbe<_ThisObject_, bool>(&_ThisObject_::debug_utils),
       "Enable debug utilities." },
 
     { "api-dump-layer",
-      new VarProbe<_ThisObject_, bool>(&_ThisObject_::debug_layer),
+      new VarProbe<_ThisObject_, bool>(&_ThisObject_::api_dump_layer),
       "Enable API dump." },
 
     { "synchronization-layer",
-      new VarProbe<_ThisObject_, bool>(&_ThisObject_::debug_layer),
+      new VarProbe<_ThisObject_, bool>(&_ThisObject_::synchronization_layer),
       "Enable synchronization (default True)." },
 
       /* The table is closed off with NULL pointers for the variable
@@ -413,19 +413,19 @@ bool VSGViewer_Dueca::setFog(const std::vector<double> &fog)
   if (fog.size() >= 1) {
     thefog.density = fog[0];
   }
-  else if (fog.size() >= 4) {
+  if (fog.size() >= 4) {
     thefog.color = { float(fog[1]), float(fog[2]), float(fog[3]) };
   }
-  else if (fog.size() >= 5) {
+  if (fog.size() >= 5) {
     thefog.start = fog[4];
   }
-  else if (fog.size() >= 6) {
-    thefog.start = fog[5];
+  if (fog.size() >= 6) {
+    thefog.end = fog[5];
   }
-  else if (fog.size() == 7) {
+  if (fog.size() == 7) {
     thefog.exponent = fog[6];
   }
-  else {
+  else if (fog.size() > 7 || fog.size() == 0 || fog.size() == 2 || fog.size() == 3) {
     E_CNF("Wrong number of arguments for for fog");
     return false;
   }
