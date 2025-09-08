@@ -88,6 +88,9 @@ if this_node_id == ecs_node:
             claim_thread = claim_graphics_thread,
             set_viewer =
             dueca.VSGViewer().param(
+                ('debug-layer', True),
+                ('debug-utils', True),
+                ('api-dump-layer', True),
                 ('add-window', "front"),
                 ('window-size+pos', (int(1920/f), int(1080/f), 0, 0)),
                 ('add-viewport', "front"),
@@ -130,7 +133,7 @@ if this_node_id == ecs_node:
                 ('set-xml-definitions',
                  '../../../../WorldView/vsg-viewer/vsgobjects.xml'),
                 ('read-xml-definitions', 'exampleworld.xml'),
-                ('set-fog', (0.02, 0.5, 0.5, 1.0))
+                ('set-fog', (0.2, 1.0, 1.0, 1.0, 4.0, 200.0, 0.0))
             ).complete(),
             initial_camera = ( 0, 0, -30, 0, 0, 0)
         ))
