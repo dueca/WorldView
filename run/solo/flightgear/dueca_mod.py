@@ -133,7 +133,7 @@ if this_node_id == ecs_node:
         ('add-fg-motion', "pc12|phlab"),
         ('fg-motion-parameters',
           (-110, 0, -3, 0, 0, 0,
-          0.0, 0, 0, 0, 0, 0.5))
+          0.0, 0, 0, 0, 0, 0.5, 8.0))
 	    #('add-motion', "c172|houseX"),
 	    #('position', (-70, 0, -3)),
 	    #('rotation', (1, 0, 0)),

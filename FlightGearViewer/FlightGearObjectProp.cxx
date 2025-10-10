@@ -9,8 +9,9 @@
 */
 
 #include "FlightGearObjectProp.ixx"
+#include "FGObjectFactory.hxx"
 #include "comm-objects.h"
 
 static auto FlightGearObjectProp_maker =
   new SubContractor<FGObjectTypeKey, FlightGearObjectProp<FGObjectMotion>>(
-    "fgprops", "Moving FlighGear object, position controlled, property added");
+    "fgprops", "Moving FlightGear object, position controlled, property added");

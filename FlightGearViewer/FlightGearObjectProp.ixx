@@ -9,7 +9,6 @@
 */
 
 #include "MultiplayerEncode.hxx"
-#include "FGObjectFactory.hxx"
 #include "FlightGearObjectProp.hxx"
 #include "FlightGearViewer.hxx"
 #include <dueca/Ticker.hxx>

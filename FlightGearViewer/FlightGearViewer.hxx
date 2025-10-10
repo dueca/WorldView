@@ -47,7 +47,7 @@ protected:
   /** Port number for the data packets. */
   int port;
 
-  /** Port for communication, if left zero, port_any */
+  /** Port for return communication, if left zero not used. */
   int receive_port;
 
   /** Destination for the packets. */
