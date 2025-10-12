@@ -52,6 +52,9 @@ class VSGViewer : public WorldViewerBase
   /** scene manager */
   vsg::ref_ptr<vsg::StateGroup> root;
 
+  /** observer transform will be updated with the ego motion */
+  vsg::ref_ptr<vsg::AbsoluteTransform> observer_transform;
+
   /** observer is a node in the scene */
   vsg::ref_ptr<vsg::Group> observer;
 

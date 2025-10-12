@@ -26,6 +26,14 @@ else
     ln -sf /tmp/share/vsgExamples/models/lz.vsgt .
 fi
 
+if [ -d ../../../../WorldView/icy-world ]; then
+    IWP=$(realpath ../../../../WorldView/icy-world)
+    if [ \! -f skydome.glb ]; then
+        blender --python \
+            $IWP/bake-a-blend.py -- $IWP/skydome.blend glb
+    fi
+fi
+
 ln -sf ${DATADIR}/vsg/exampleworld.xml .
 ln -sf ../../../../WorldView/vsg-viewer/shaders .
 

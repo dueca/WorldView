@@ -9,14 +9,15 @@
         copyright       : (c) 23 TUDelft-AE-C&S
 */
 
-#include "VSGTransform.hxx"
 #include "AxisTransform.hxx"
+#include "VSGObjectFactory.hxx"
+#include "VSGTransform.hxx"
 #include <dueca/ChannelReadToken.hxx>
 #include <dueca/debug.h>
-#include "VSGObjectFactory.hxx"
 
 namespace vsgviewer {
 
+// ----------------- static transformation, non-moving objects ----------
 VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
   transform(vsg::MatrixTransform::create())
 {
@@ -61,6 +62,7 @@ static auto VSGStaticMatrixTransform_maker =
   new SubContractor<VSGObjectTypeKey, VSGStaticMatrixTransform>(
     "static-transform", "Constant matrix transform");
 
+// ---------------------- centered on observer ----------------------
 VSGCenteredTransform::VSGCenteredTransform(const WorldDataSpec &data) :
   transform(vsg::MatrixTransform::create())
 {
@@ -118,6 +120,85 @@ static auto VSGCenteredTransform_maker =
   new SubContractor<VSGObjectTypeKey, VSGCenteredTransform>(
     "centered-transform", "matrix transform centered on observer");
 
+// ---------------------- tiled, following observer ---------------------
+VSGTiledTransform::VSGTiledTransform(const WorldDataSpec &data) :
+  transform(vsg::MatrixTransform::create())
+{
+  name = data.name;
+  parent = data.parent;
+
+  // coordinates 4-12 are prientation, scale and offset position
+  if (data.coordinates.size() >= 12) {
+    base_transform = vsg::scale(data.coordinates[9], data.coordinates[10],
+                                data.coordinates[11]);
+  }
+  else {
+    base_transform = vsg::scale(1.0, 1.0, 1.0);
+  }
+
+  if (data.coordinates.size() >= 9) {
+    base_transform = vsgRotation(vsg::radians(data.coordinates[6]),
+                                 vsg::radians(data.coordinates[7]),
+                                 vsg::radians(data.coordinates[8])) *
+                     base_transform;
+  }
+  if (data.coordinates.size() >= 6) {
+    base_transform =
+      vsg::translate(
+        vsgPos(data.coordinates[3], data.coordinates[4], data.coordinates[5])) *
+      base_transform;
+  }
+  if (data.coordinates.size() >= 3) {
+    tile_size =
+      vsg::dvec3(data.coordinates[0], data.coordinates[1], data.coordinates[2]);
+  }
+  else {
+    tile_size = vsg::dvec3(1.0, 1.0, 1.0);
+  }
+  D_MOD("Created Tiled matrix transform, name=" << name);
+}
+
+VSGTiledTransform::~VSGTiledTransform()
+{
+  D_MOD("Destroying Tiled matrix transform, name=" << name);
+}
+
+void VSGTiledTransform::init(const vsg::ref_ptr<vsg::Group> &root,
+                             VSGViewer *master)
+{
+  transform->setValue("name", name);
+  auto par = findParent(root, parent);
+  if (!par) {
+    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+                                 << ", attaching to root");
+    par = root;
+  }
+  par->addChild(transform);
+  D_MOD("VSG create Tiled transform, name=" << name);
+}
+
+void VSGTiledTransform::iterate(TimeTickType ts, const BaseObjectMotion &base,
+                                double late, bool freeze)
+{
+  // apply the base transform to the observer position
+  transform->matrix = vsg::translate(vsgPos(base.xyz)) * base_transform;
+
+  // modulo operation on the transformation coordinates in the matrix
+  if (tile_size[0])
+    transform->matrix(3, 0) = fmod(transform->matrix(3, 0), tile_size[0]);
+  if (tile_size[1])
+    transform->matrix(3, 1) = fmod(transform->matrix(3, 1), tile_size[1]);
+  if (tile_size[2])
+    transform->matrix(3, 2) = fmod(transform->matrix(3, 2), tile_size[2]);
+}
+
+bool VSGTiledTransform::forceActive() { return true; }
+
+static auto VSGTiledTransform_maker =
+  new SubContractor<VSGObjectTypeKey, VSGTiledTransform>(
+    "tiled-transform", "matrix transform tiled on observer");
+
+// -------- dynamic, entity-controlled transformation -------------------
 VSGMatrixTransform::VSGMatrixTransform(const WorldDataSpec &data) :
   transform(vsg::MatrixTransform::create()),
   scale()

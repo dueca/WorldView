@@ -65,6 +65,7 @@
   </static>
 
   <!-- helmet location -->
+  <!--
   <static name="helmet-base" parent="root" type="static-transform">
     <param name="scalexyz"> 10, 10, 10 </param>
     <param name="xyz">2, 0, 0</param>
@@ -73,18 +74,19 @@
   <static name="helmet" parent="helmet-base" type="static-model">
     <file>FlightHelmet.vsgb</file>
   </static>
+  -->
 
   <!-- simple ambient light -->
   <static name="ambient" type="ambient-light">
     <param name="color"> 1, 1, 1</param>
-    <param name="intensity"> 0.2 </param>
+    <param name="intensity"> 0.4 </param>
   </static>
 
   <static name="road-base" parent="root" type="static-transform">
     <param name="xyz">0, 0, 1</param>
   </static>
 
-  <static name="road" type="static-model">
+  <static name="road" type="static-model" parent="road-base">
     <file>myroad.glb</file>
   </static>
 
@@ -93,7 +95,16 @@
   <static name="sun" type="directional-light">
     <param name="color"> 1, 1, 1</param>
     <param name="intensity"> 0.8 </param>
-    <param name="direction"> 0.2, -0.7, 0.0 </param>
+    <param name="direction"> 0.2, -0.0, 0.7 </param>
   </static>
+
+  <static name="skydomeloc" parent="root" type="static-transform">
+    <param name="scale">500, 500, 500</param>
+  </static>
+
+  <static name="skydome" parent="skydomeloc" type="static-model">
+    <file>skydome.glb</file>
+  </static>
+
 
 </world>

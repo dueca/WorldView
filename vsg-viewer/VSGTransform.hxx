@@ -14,7 +14,9 @@
 
 namespace vsgviewer {
 
-/** Matrix location change base class. */
+/** Fixed, static transform, can be child of any node. When child
+of the "root" node, this designates a fixed location and orientation, when
+child of the "eye" */
 class VSGStaticMatrixTransform: public VSGObject
 {
   /** VSG transform */
@@ -33,7 +35,11 @@ public:
 };
 
 
-/** Matrix location centered on observer x, y position (skydomes). */
+/** Matrix location centered on observer x, y position (skydomes).
+
+    These objects are child of the root, follow the observer,
+    but keep their orientation fixed
+*/
 class VSGCenteredTransform: public VSGObject
 {
   /** Base transform */
@@ -61,7 +67,43 @@ public:
 };
 
 
-/** Matrix location change base class. */
+/** Matrix location roughly centered on observer x, y position (floor tiles).
+
+    These objects are by default child of the root location, keep their
+    position fixed but jump by a tile size when the observer moves out
+    of the tile scope.
+*/
+class VSGTiledTransform: public VSGObject
+{
+  /** Base transform */
+  vsg::dmat4 base_transform;
+
+  /** VSG transform */
+  vsg::ref_ptr<vsg::MatrixTransform> transform;
+
+  /** Tile size */
+  vsg::dvec3 tile_size;
+
+public:
+  /** Constructor */
+  VSGTiledTransform(const WorldDataSpec& data);
+
+  /** Destructor */
+  ~VSGTiledTransform();
+
+  /** Initialise the transform with the VSG scene */
+  void init(const vsg::ref_ptr<vsg::Group>& root,
+	    VSGViewer* master) final;
+
+  /** Update on the observer position */
+  void iterate(TimeTickType ts, const BaseObjectMotion& base, double late, bool freeze=false) override;
+
+  /** Force in active list */
+  bool forceActive() final;
+};
+
+
+/** Move and orient a transform according to (world) channel data. */
 class VSGMatrixTransform: virtual public VSGObject
 {
 protected:

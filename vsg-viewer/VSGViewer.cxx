@@ -378,14 +378,17 @@ void VSGViewer::init(bool waitswap)
 
   options->inheritedState = root->stateCommands;
 
-    // and the observer/eye group
+  // and the observer/eye group
+  observer_transform = vsg::AbsoluteTransform::create();
   observer = vsg::Group::create();
   observer->setValue("name", std::string("observer"));
-  root->addChild(observer);
-  std::list<vsg::ref_ptr<vsg::Group>> observer_path;
-  observer_path.push_back(observer);
+  observer_transform->addChild(observer);
+  root->addChild(observer_transform);
 
-  auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
+  //std::list<vsg::ref_ptr<vsg::Group>> observer_path;
+  //observer_path.push_back(observer);
+
+  //auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
 
   // create viewer
   viewer = vsg::Viewer::create();
@@ -573,7 +576,10 @@ void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion &ownm,
     vsg::rotate(0.5 * vsg::PI, 1.0, 0.0, 0.0) *
     vsg::translate(o2.xyz[1], o2.xyz[0], o2.xyz[2]);
 
-    // update all cameras, as they are in the viewset list
+  // update the observer position
+  observer_transform->transform(camerapnt);
+
+  // update all cameras, as they are in the viewset list
   for (auto &win : windows) {
     for (auto &view : win.second.viewset) {
       auto world2orig = vsg::inverse(view.second.eye_offset * camerapnt);
