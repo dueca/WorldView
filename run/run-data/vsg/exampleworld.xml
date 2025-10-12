@@ -40,7 +40,7 @@
 
   <!-- second instance of car -->
   <static name="car2" parent="car2base" type="static-model">
-    <file>Defender.glb</file>
+    <file>skydome.glb</file>
   </static>
 
   <!-- world orientation -->
@@ -91,20 +91,20 @@
   </static>
 
 
-  <!-- directed light -->
-  <static name="sun" type="directional-light">
-    <param name="color"> 1, 1, 1</param>
-    <param name="intensity"> 0.8 </param>
-    <param name="direction"> 0.2, -0.0, 0.7 </param>
-  </static>
-
   <static name="skydomeloc" parent="root" type="static-transform">
-    <param name="scale">500, 500, 500</param>
+    <param name="scalexyz">100, 100, 100</param>
+    <param name="xyz">0, 0, 10</param>
   </static>
 
   <static name="skydome" parent="skydomeloc" type="static-model">
     <file>skydome.glb</file>
   </static>
 
+  <!-- directed light -->
+  <static name="sun" type="directional-light">
+    <param name="color"> 1, 1, 1</param>
+    <param name="intensity"> 0.8 </param>
+    <param name="direction"> 0.2, -0.0, 0.7 </param>
+  </static>
 
 </world>
