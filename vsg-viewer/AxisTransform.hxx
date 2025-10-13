@@ -118,7 +118,7 @@ namespace vsgviewer {
       centered reference frame, x north, y east, z down,
       to the vsg world. */
   template <typename T>
-   inline vsg::t_vec3<typename T::value_type> vsgPos(const T xyz)
+   inline vsg::t_vec3<typename T::value_type> vsgPos(const T &xyz)
   {
     return vsg::t_vec3<typename T::value_type>(-xyz[1], -xyz[0], -xyz[2]);
   }
@@ -132,7 +132,7 @@ namespace vsgviewer {
 
   /** Switch the scaling to the proper dimensions */
   template <typename T>
-   inline vsg::t_vec3<typename T::value_type> vsgScale(const T xyz)
+   inline vsg::t_vec3<typename T::value_type> vsgScale(const T &xyz)
   {
     return vsg::t_vec3<typename T::value_type>(xyz[1], xyz[0], xyz[2]);
   }
@@ -148,4 +148,3 @@ namespace vsgviewer {
   }
 
 };
-

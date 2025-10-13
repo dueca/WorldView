@@ -58,6 +58,22 @@ void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create static matrix transform, name=" << name);
 }
 
+// should be? https://github.com/vsg-dev/VulkanSceneGraph/discussions/1050
+void VSGStaticMatrixTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
+{
+  auto par = findParent(root, parent);
+  if (!par) {
+    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+                                 << ", detaching from root");
+    par = root;
+  }
+
+  auto it = std::find(par->children.begin(), par->children.end(), transform);
+  if (it != par->children.end()) {
+    par->children.erase(it);
+  }
+}
+
 static auto VSGStaticMatrixTransform_maker =
   new SubContractor<VSGObjectTypeKey, VSGStaticMatrixTransform>(
     "static-transform", "Constant matrix transform");
@@ -106,6 +122,22 @@ void VSGCenteredTransform::init(const vsg::ref_ptr<vsg::Group> &root,
   par->addChild(transform);
   D_MOD("VSG create centered transform, name=" << name);
 }
+
+void VSGCenteredTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
+{
+  auto par = findParent(root, parent);
+  if (!par) {
+    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+                                 << ", detaching from root");
+    par = root;
+  }
+
+  auto it = std::find(par->children.begin(), par->children.end(), transform);
+  if (it != par->children.end()) {
+    par->children.erase(it);
+  }
+}
+
 
 void VSGCenteredTransform::iterate(TimeTickType ts,
                                    const BaseObjectMotion &base, double late,
@@ -177,19 +209,32 @@ void VSGTiledTransform::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create Tiled transform, name=" << name);
 }
 
+void VSGTiledTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
+{
+  auto par = findParent(root, parent);
+  if (!par) {
+    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+                                 << ", detaching from root");
+    par = root;
+  }
+
+  auto it = std::find(par->children.begin(), par->children.end(), transform);
+  if (it != par->children.end()) {
+    par->children.erase(it);
+  }
+}
+
+
 void VSGTiledTransform::iterate(TimeTickType ts, const BaseObjectMotion &base,
                                 double late, bool freeze)
 {
-  // apply the base transform to the observer position
-  transform->matrix = vsg::translate(vsgPos(base.xyz)) * base_transform;
+  dueca::fixvector<3, double> delta = {
+    tile_size[0] ? std::floor(base.xyz[0] / tile_size[0]) * tile_size[0] : 0.0,
+    tile_size[1] ? std::floor(base.xyz[1] / tile_size[1]) * tile_size[1] : 0.0,
+    tile_size[2] ? std::floor(base.xyz[2] / tile_size[2]) * tile_size[2] : 0.0 };
 
-  // modulo operation on the transformation coordinates in the matrix
-  if (tile_size[0])
-    transform->matrix(3, 0) = fmod(transform->matrix(3, 0), tile_size[0]);
-  if (tile_size[1])
-    transform->matrix(3, 1) = fmod(transform->matrix(3, 1), tile_size[1]);
-  if (tile_size[2])
-    transform->matrix(3, 2) = fmod(transform->matrix(3, 2), tile_size[2]);
+  // apply the base transform to the observer position
+  transform->matrix = vsg::translate(vsgPos(delta)) * base_transform;
 }
 
 bool VSGTiledTransform::forceActive() { return true; }

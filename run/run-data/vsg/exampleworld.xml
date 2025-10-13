@@ -44,9 +44,11 @@
   </static>
 
   <!-- world orientation -->
-  <static name="world-base" parent="root" type="static-transform">
-    <param name="xyz"> 0, 0, 140 </param>
+  <static name="world-base" parent="root" type="tiled-transform">
+    <param name="tilesizexyz">20.0, 20.0, 0.0</param>
+    <param name="xyz"> 0, 0, 0.05 </param>
     <param name="phithetapsi">0, 0, 0 </param>
+    <param name="scalexyz">100, 100, 100</param>
   </static>
 
   <!-- world total -->
@@ -55,8 +57,12 @@
     <param name="phithetapsi">0, 0, 0 </param>
   </static>
 
-  <static name="world" parent="world-base" type="static-model">
+  <!-- <static name="world" parent="world-base" type="static-model">
     <file>lz.vsgt</file>
+  </static>
+  -->
+  <static name="grass" parent="world-base" type="static-model">
+	  <file>grass.glb</file>
   </static>
 
   <!-- arrow orientation -->
@@ -83,15 +89,14 @@
   </static>
 
   <static name="road-base" parent="root" type="static-transform">
-    <param name="xyz">0, 0, 1</param>
+    <param name="xyz">0, 0, 0</param>
   </static>
 
   <static name="road" type="static-model" parent="road-base">
     <file>myroad.glb</file>
   </static>
 
-
-  <static name="skydomeloc" parent="root" type="static-transform">
+  <static name="skydomeloc" parent="root" type="centered-transform">
     <param name="scalexyz">100, 100, 100</param>
     <param name="xyz">0, 0, 10</param>
   </static>

@@ -433,38 +433,6 @@ bool VSGViewer_Dueca::setFog(const std::vector<double> &fog)
   return true;
 }
 
-bool VSGViewer_Dueca::setXMLReader(const std::string &definitions)
-{
-  if (xml_reader) {
-    E_MOD("Error, second attempt to use set_xml_definitions or use of this "
-          " call after using read_xml_defintions");
-    return false;
-  }
-  try {
-    xml_reader.reset(new VSGXMLReader(definitions));
-  }
-  catch (const std::exception &e) {
-    E_MOD("Error in initialising XML reader: " << e.what());
-    return false;
-  }
-  return true;
-}
-
-bool VSGViewer_Dueca::readModelFromXML(const std::string &file)
-{
-  try {
-    if (!xml_reader) {
-      I_MOD("Creating default xml reader");
-      xml_reader.reset(
-        new VSGXMLReader("../../../../WorldView/vsg-viewer/vsgobjects.xml"));
-    }
-    return xml_reader->readWorld(file, *this);
-  }
-  catch (const std::exception &e) {
-    E_MOD("Error in reading xml definitions from " << file);
-    return false;
-  }
-}
 
 } // namespace vsgviewer
 

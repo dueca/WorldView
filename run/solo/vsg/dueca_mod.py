@@ -162,6 +162,12 @@ if this_node_id == ecs_node:
         "control-view", "", admin_priority).param(
             ('set-timing', sim_timing)))
 
+    mymods.append(dueca.Module(
+        "configure-view", "", admin_priority).param(
+            ('set-timing', sim_timing)
+        )
+    )
+
     # add a filer in this node for replay support
     # filer = dueca.ReplayFiler("PLHLAB")
 

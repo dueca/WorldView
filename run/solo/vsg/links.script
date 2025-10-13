@@ -46,7 +46,9 @@ if [ -d ${HOME}/gdapps/VisualModels ]; then
 		~/gdapps/VisualModels/VisualModels/exporter/bake-a-blend.py \
 		-- ~/gdapps/VisualModels/VisualModels/${VM}.blend glb
 	fi
-	vsgconvd ${NAME}.glb ${NAME}.vsgb
+    # There is no use in conversion to vsgb, since it will convert with
+    # default shaders, which are not compatible with fog option!
+    # vsgconvd ${NAME}.glb ${NAME}.vsgb
     done
 fi
 

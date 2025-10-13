@@ -25,6 +25,7 @@
 #include <WorldViewerBase.hxx>
 #include "VSGObjectFactory.hxx"
 #include "VSGPBRShaderSet.hxx"
+#include "VSGXMLReader.hxx"
 
 // #define RG_PER_VIEWSET
 
@@ -63,6 +64,9 @@ class VSGViewer : public WorldViewerBase
 
   /** Specific pipeline */
   vsg::ref_ptr<vsg::PipelineLayout> layout;
+
+  /** Reader for xml definitions */
+  boost::scoped_ptr<VSGXMLReader> xml_reader;
 
 public:
   /** Options object */
@@ -190,10 +194,13 @@ perspective/frustum, eye position+orientation
   typedef std::map<creation_key_t, boost::intrusive_ptr<VSGObject>>
     created_objects_t;
 
-  /** Objects creates automatically */
-  created_objects_t active_objects;
+  /** Objects linked to a channel entry */
+  created_objects_t controlled_objects;
 
   /** Objects that are static, just get calls about new positioning */
+  ObjectListType active_objects;
+
+  /** Objects that are static, dont get calls about new positioning */
   ObjectListType static_objects;
 
   /** Objects that need post-draw access */
@@ -259,6 +266,12 @@ public:
   /** Change the configuration of the scene graph, returns true if
       successful */
   bool adaptSceneGraph(const WorldViewConfig &adapt);
+
+  /** Create the XML reader */
+  bool setXMLReader(const std::string &definitions);
+
+  /** Read an XML file with object data */
+  bool readModelFromXML(const std::string &file);
 
 protected:
   /** Path to the resources */

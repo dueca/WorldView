@@ -240,6 +240,7 @@ VSGViewer::VSGViewer() :
   api_dump_layer(false),
   synchronization_layer(true),
   windows(),
+  controlled_objects(),
   active_objects(),
   static_objects(),
   post_draw(),
@@ -363,11 +364,11 @@ void VSGViewer::init(bool waitswap)
   D_MOD("VSG create root node");
 
   // the "inherit option in customshaderset"
-  layout = pbr->createPipelineLayout({}, { 0, 2  });
+  layout = pbr->createPipelineLayout({}, { 0, 2 });
 
   uint32_t vds_set = 1;
   root->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                      layout, vds_set));
+                                                layout, vds_set));
   uint32_t cm_set = 0;
   auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
   auto cm_db = vsg::DescriptorBuffer::create(the_fog);
@@ -385,10 +386,10 @@ void VSGViewer::init(bool waitswap)
   observer_transform->addChild(observer);
   root->addChild(observer_transform);
 
-  //std::list<vsg::ref_ptr<vsg::Group>> observer_path;
-  //observer_path.push_back(observer);
+  // std::list<vsg::ref_ptr<vsg::Group>> observer_path;
+  // observer_path.push_back(observer);
 
-  //auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
+  // auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
 
   // create viewer
   viewer = vsg::Viewer::create();
@@ -461,7 +462,7 @@ void VSGViewer::init(bool waitswap)
   }
 
     // if applicable, initialize static objects and dynamic objects
-  for (auto &ao : active_objects) {
+  for (auto &ao : controlled_objects) {
     try {
       ao.second->init(root, this);
     }
@@ -469,6 +470,9 @@ void VSGViewer::init(bool waitswap)
       E_MOD("Trying to create object '" << ao.first
                                         << "' vsg error: " << ve.message);
     }
+  }
+  for (auto &so : active_objects) {
+    so->init(root, this);
   }
   for (auto &so : static_objects) {
     so->init(root, this);
@@ -504,51 +508,85 @@ void VSGViewer::redraw(bool wait, bool reset_context)
 
 void VSGViewer::waitSwap() { viewer->advanceToNextFrame(); }
 
+bool VSGViewer::setXMLReader(const std::string &definitions)
+{
+  if (xml_reader) {
+    E_MOD("Error, second attempt to use set_xml_definitions or use of this "
+          " call after using read_xml_defintions");
+    return false;
+  }
+  try {
+    xml_reader.reset(new VSGXMLReader(definitions));
+  }
+  catch (const std::exception &e) {
+    E_MOD("Error in initialising XML reader: " << e.what());
+    return false;
+  }
+  return true;
+}
+
+bool VSGViewer::readModelFromXML(const std::string &file)
+{
+  try {
+    if (!xml_reader) {
+      I_MOD("Creating default xml reader");
+      xml_reader.reset(
+        new VSGXMLReader("../../../../WorldView/vsg-viewer/vsgobjects.xml"));
+    }
+    return xml_reader->readWorld(file, *this);
+  }
+  catch (const std::exception &e) {
+    E_MOD("Error in reading xml definitions from " << file);
+    return false;
+  }
+}
+
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 {
   try {
 
     switch (adapt.command) {
 
+    case WorldViewConfig::ReadScene:
     case WorldViewConfig::ClearModels: {
 
-        // to be updated, only remove static objects
+      // only removes non-controlled objects
+      static_objects.reverse();
       for (auto &so : static_objects) {
         so->unInit(root);
       }
+      active_objects.reverse();
+      for (auto &so : active_objects) {
+        so->unInit(root);
+      }
       static_objects.clear();
+      active_objects.clear();
+      viewer->compile();
+
+      // read additional/replacing scene data
+      if (adapt.command == WorldViewConfig::ReadScene) {
+        for (const auto &fn : adapt.config.filename) {
+          readModelFromXML(fn);
+        }
+      }
+
+      // initialize these objects again
+      for (auto &so : active_objects) {
+        so->init(root, this);
+      }
+      for (auto &so : static_objects) {
+        so->init(root, this);
+      }
+      viewer->compile();
+
     } break;
 
     case WorldViewConfig::RemoveNode:
-        // TODO
-      break;
-
-    case WorldViewConfig::LoadObject: {
-
-        // creates and adds a specific configuration
-      std::string dclass =
-        "on-the-fly-object_" +
-        boost::lexical_cast<std::string>(++config_dynamic_created);
-      this->addFactorySpec(dclass, adapt.config);
-
-        // run the createStatic call to create the object
-      std::vector<std::string> createconf;
-      createconf.push_back(dclass);
-      this->createStatic(createconf);
-    } break;
-
-    case WorldViewConfig::MoveObject: {
-        // TODO
-        /*for (int ii = root->getNumChildren(); ii--; ) {
-if (root->getChild(ii)->getName() == adapt.config.name) {
-updateTransform(root->getChild(ii), adapt.config.coordinates);
-}
-}*/
-    } break;
+    case WorldViewConfig::LoadObject:
+    case WorldViewConfig::MoveObject:
     case WorldViewConfig::ListNodes:
     case WorldViewConfig::LoadOverlay:
     case WorldViewConfig::RemoveOverlay:
-    case WorldViewConfig::ReadScene:
       W_MOD("VSGViewer " << adapt.command << " is not implemented");
     }
   }
@@ -590,8 +628,11 @@ void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion &ownm,
 
   // run through all active objects, and inform about the vehicle
   // position & time
-  for (auto &obj : active_objects) {
+  for (auto &obj : controlled_objects) {
     obj.second->iterate(tick, o2, late);
+  }
+  for (auto &obj : active_objects) {
+    obj->iterate(tick, o2, late);
   }
 }
 
@@ -605,7 +646,7 @@ bool VSGViewer::createControllable(const GlobalId &master_id,
   creation_key_t keypair(cname.name, creation_id);
 
   // check we don't have this one yet
-  assert(active_objects.count(keypair) == 0);
+  assert(controlled_objects.count(keypair) == 0);
 
   // not found, create entry on the basis of data class and entry label
   VSGObject *op = NULL;
@@ -621,7 +662,7 @@ bool VSGViewer::createControllable(const GlobalId &master_id,
       viewer->compile();
     }
     boost::intrusive_ptr<VSGObject> bop(op);
-    active_objects[keypair] = bop;
+    controlled_objects[keypair] = bop;
     return true;
   }
   catch (const CFCannotMake &problem) {
@@ -658,7 +699,8 @@ bool VSGViewer::createStatic(const std::vector<std::string> &name)
     return false;
   }
 
-  auto obj = retrieveFactorySpec(name[0], "", static_objects.size(), true);
+  auto obj = retrieveFactorySpec(
+    name[0], "", static_objects.size() + active_objects.size(), true);
   if (obj.type.size() == 0) {
     E_MOD("Cannot find object type \"" << name[0] << "\" in the factory");
     return false;
@@ -679,14 +721,7 @@ bool VSGViewer::createStatic(const WorldDataSpec &obj)
     }
     boost::intrusive_ptr<VSGObject> bop(op);
     if (op->forceActive()) {
-      creation_key_t keypair(obj.name, 0);
-      if (active_objects.count(keypair)) {
-        W_MOD("Object name (" << obj.name << ",0) already taken!");
-        static_objects.push_back(bop);
-      }
-      else {
-        active_objects[keypair] = bop;
-      }
+      active_objects.push_back(bop);
     }
     else {
       static_objects.push_back(bop);
@@ -699,9 +734,10 @@ bool VSGViewer::createStatic(const WorldDataSpec &obj)
   }
   return false;
 }
+
 void VSGViewer::removeControllable(const NameSet &cname, uint32_t creation_id)
 {
-  active_objects[std::make_pair(cname.name, creation_id)].reset();
+  controlled_objects[std::make_pair(cname.name, creation_id)].reset();
 }
 
 }; // namespace vsgviewer

@@ -14,14 +14,29 @@
 
 namespace vsgviewer {
 
-/** Fixed, static transform, can be child of any node. When child
-of the "root" node, this designates a fixed location and orientation, when
-child of the "eye" */
-class VSGStaticMatrixTransform: public VSGObject
+/** Transform base class */
+class VSGBaseTransform: public VSGObject
 {
+protected:
   /** VSG transform */
   vsg::ref_ptr<vsg::MatrixTransform> transform;
 
+public:
+  /** Constructor */
+  VSGBaseTransform();
+
+  /** Destructor */
+  ~VSGBaseTransform();
+
+  /** Undo the initialisation */
+  void unInit(const vsg::ref_ptr<vsg::Group>& root) final;
+};
+
+/** Fixed, static transform, can be child of any node. When child
+of the "root" node, this designates a fixed location and orientation, when
+child of the "eye" */
+class VSGStaticMatrixTransform: public VSGBaseTransform
+{
 public:
   /** Constructor */
   VSGStaticMatrixTransform(const WorldDataSpec& data);
@@ -40,13 +55,10 @@ public:
     These objects are child of the root, follow the observer,
     but keep their orientation fixed
 */
-class VSGCenteredTransform: public VSGObject
+class VSGCenteredTransform: public VSGBaseTransform
 {
   /** Base transform */
   vsg::dmat4 base_transform;
-
-  /** VSG transform */
-  vsg::ref_ptr<vsg::MatrixTransform> transform;
 
 public:
   /** Constructor */
@@ -78,9 +90,6 @@ class VSGTiledTransform: public VSGObject
   /** Base transform */
   vsg::dmat4 base_transform;
 
-  /** VSG transform */
-  vsg::ref_ptr<vsg::MatrixTransform> transform;
-
   /** Tile size */
   vsg::dvec3 tile_size;
 
@@ -95,6 +104,9 @@ public:
   void init(const vsg::ref_ptr<vsg::Group>& root,
 	    VSGViewer* master) final;
 
+  /** Undo the initialisation */
+  void unInit(const vsg::ref_ptr<vsg::Group>& root) final;
+
   /** Update on the observer position */
   void iterate(TimeTickType ts, const BaseObjectMotion& base, double late, bool freeze=false) override;
 
@@ -104,11 +116,9 @@ public:
 
 
 /** Move and orient a transform according to (world) channel data. */
-class VSGMatrixTransform: virtual public VSGObject
+class VSGMatrixTransform: virtual public VSGBaseTransform
 {
 protected:
-  /** VSG transform */
-  vsg::ref_ptr<vsg::MatrixTransform> transform;
 
   /** Scale */
   vsg::t_mat4<double>                scale;

@@ -52,7 +52,7 @@ public:
                     VSGViewer* master) = 0;
 
   /** Undo the initialisation */
-  virtual void unInit(const vsg::ref_ptr<vsg::Group>& root);
+  virtual void unInit(const vsg::ref_ptr<vsg::Group>& root) = 0;
 
   /** Returns true if the object needs drawing post-access. */
   virtual bool requirePostDrawAccess() { return false; }

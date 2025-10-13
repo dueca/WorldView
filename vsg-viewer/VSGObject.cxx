@@ -24,11 +24,6 @@ VSGObject::~VSGObject()
   //
 }
 
-void VSGObject::unInit(const vsg::ref_ptr<vsg::Group> &root)
-{
-  // not defined
-}
-
 bool VSGObject::forceActive() { return false; }
 
 VSGCullGroup::VSGCullGroup(const WorldDataSpec &data) :
