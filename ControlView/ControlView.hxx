@@ -1,13 +1,13 @@
 /* ------------------------------------------------------------------   */
 /*      item            : ControlView.hxx
         made by         : rvanpaassen
-	from template   : DuecaModuleTemplate.hxx
+        from template   : DuecaModuleTemplate.hxx
         template made by: Rene van Paassen
         date            : Fri Jan 29 13:51:31 2010
-	category        : header file 
-        description     : 
-	changes         : Fri Jan 29 13:51:31 2010 first version
-	template changes: 030401 RvP Added template creation comment
+        category        : header file
+        description     :
+        changes         : Fri Jan 29 13:51:31 2010 first version
+        template changes: 030401 RvP Added template creation comment
         language        : C++
 */
 
@@ -29,67 +29,68 @@ USING_DUECA_NS;
 
 /** This is a test module for the WorldView class. It generate an
     "own" aircraft controllable by a GTK interface, as well as a
-    variable number of other aircraft driven by their initial speed. 
+    variable number of other aircraft driven by their initial speed.
 
     In addition, reading and printing the stream of interface events
     (implemented currently only for the plib interface) is added to
     this class.
-    
+
     The instructions to create an module of this class from the Scheme
     script are:
 
     \verbinclude control-view.scm
  */
-class ControlView: public Module
+class ControlView : public Module
 {
 private: // simulation data
   /** Position and orientation */
-  double                            current[6];
+  double current[6];
 
   /** Object sent over channels */
-  ObjectMotion                      object;
+  ObjectMotion object;
 
   /** Window with controls */
-  GtkGladeWindow                    viewcontrol;
+  GtkGladeWindow viewcontrol;
 
 private: // channel access
-  StreamChannelWriteToken<ObjectMotion>  w_entity;
-  EventChannelWriteToken<WorldViewConfig>  w_config;
-  
+  StreamChannelWriteToken<ObjectMotion> w_entity;
+  EventChannelWriteToken<WorldViewConfig> w_config;
+
   /** struct to keep window event tokens */
-  struct WindowEventSet {
+  struct WindowEventSet
+  {
     /** Nameset of the read token */
-    std::vector<std::string>    name;
+    std::vector<std::string> name;
     /** Read token itself */
-    EventChannelReadToken<WorldViewerEvent>   *r_event;
+    EventChannelReadToken<WorldViewerEvent> *r_event;
 
     /** Constructor */
-    WindowEventSet(const GlobalId& master_id, std::vector<std::string> names);
+    WindowEventSet(const GlobalId &master_id, std::vector<std::string> names);
   };
 
   /** List of event tokens for reading stuff from windows. */
-  std::list<WindowEventSet>                   wvwindow_events;
+  std::list<WindowEventSet> wvwindow_events;
 
 private: // activity allocation
   /** Periodic clock */
-  PeriodicAlarm                               myclock;
-  
+  PeriodicAlarm myclock;
+
   /** Callback object for simulation calculation. */
-  Callback<ControlView>  cb1;
+  Callback<ControlView> cb1;
 
   /** Activity for simulation calculation. */
-  ActivityCallback      do_calc;
+  ActivityCallback do_calc;
 
 public: // class name and trim/parameter tables
   /** Name of the module. */
-  static const char* const           classname;
+  static const char *const classname;
 
   /** Return the parameter table. */
-  static const ParameterTable*       getMyParameterTable();
-  
+  static const ParameterTable *getMyParameterTable();
+
 public: // construction and further specification
   /** Constructor. Is normally called from scheme/the creation script. */
-  ControlView(Entity* e, const char* part, const PrioritySpec& ts);
+  ControlView(Entity *e, const char *part, const PrioritySpec &ts);
 
   /** Continued construction. This is called after all script
       parameters have been read and filled in, according to the
@@ -103,25 +104,25 @@ public: // construction and further specification
   /** Destructor. */
   ~ControlView();
 
-  // add here the member functions you want to be called with further 
+  // add here the member functions you want to be called with further
   // parameters. These are then also added in the parameter table
-  // The most common one (addition of time spec) is given here. 
+  // The most common one (addition of time spec) is given here.
   // Delete if not needed!
 
   /** Specify a time specification for the simulation activity. */
-  bool setTimeSpec(const TimeSpec& ts);
+  bool setTimeSpec(const TimeSpec &ts);
 
   /** Request check on the timing. */
-  bool checkTiming(const vector<int>& i);
+  bool checkTiming(const vector<int> &i);
 
   /** Parameter callback, adds an initial position */
-  bool setPosition(const std::vector<float>& x);
+  bool setPosition(const std::vector<float> &x);
 
   /** Viewer events reading */
-  bool addWindowEventReader(const std::vector<std::string>& n);
+  bool addWindowEventReader(const std::vector<std::string> &n);
 
   /** Parameter callback, sets orientation */
-  bool setOrientation(const std::vector<float>& x);
+  bool setOrientation(const std::vector<float> &x);
 
 public: // member functions for cooperation with DUECA
   /** indicate that everything is ready. */
@@ -129,7 +130,7 @@ public: // member functions for cooperation with DUECA
 
   /** start responsiveness to input data. */
   void startModule(const TimeSpec &time);
-  
+
   /** stop responsiveness to input data. */
   void stopModule(const TimeSpec &time);
 
@@ -138,7 +139,7 @@ public: // member functions for cooperation with DUECA
 
 public: // the member functions that are called for activities
   /** the method that implements the main calculation. */
-  void doCalculation(const TimeSpec& ts);
+  void doCalculation(const TimeSpec &ts);
 };
 
 #endif

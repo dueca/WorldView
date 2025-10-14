@@ -41,8 +41,8 @@ const ParameterTable *VSGViewer_Dueca::getParameterTable()
   static const ParameterTable parameter_table[] = {
 
       /* You can extend this table with labels and MemberCall or
-   VarProbe pointers to perform calls or insert values into your
-   class objects. Please also add a description (c-style string). */
+VarProbe pointers to perform calls or insert values into your
+class objects. Please also add a description (c-style string). */
     { "set-resourcepath",
       new VarProbe<_ThisObject_, string>(&_ThisObject_::resourcepath),
       "set the path to the resources" },
@@ -199,9 +199,21 @@ const ParameterTable *VSGViewer_Dueca::getParameterTable()
       new VarProbe<_ThisObject_, bool>(&_ThisObject_::synchronization_layer),
       "Enable synchronization (default True)." },
 
-      /* The table is closed off with NULL pointers for the variable
-   name and MemberCall/VarProbe object. The description is used to
-   give an overall description of the module. */
+    { "num-shadow-maps",
+      new VarProbe<_ThisObject_, int>(&_ThisObject_::shadowMapCount),
+      "Number of shadow maps to use." },
+
+    { "max-shadow-distance",
+      new VarProbe<_ThisObject_, float>(&_ThisObject_::maxShadowDistance),
+      "Maximum distance for shadow map calculation" },
+
+    { "penumbra-radius",
+      new VarProbe<_ThisObject_, float>(&_ThisObject_::penumbraRadius),
+      "If zero, use PCSS shadows, otherwise soft shadows" },
+
+    /* The table is closed off with NULL pointers for the variable
+       name and MemberCall/VarProbe object. The description is used to
+       give an overall description of the module. */
     { NULL, NULL,
       "Helper object that implements a view (or more) with the use of VSG\n"
       "as scene manager. To be used by a world-view module" }
@@ -218,7 +230,7 @@ VSGViewer_Dueca::VSGViewer_Dueca() :
 bool VSGViewer_Dueca::complete()
 {
     /* All your parameters have been set. You may do extended
- initialisation here. Return false if something is wrong. */
+initialisation here. Return false if something is wrong. */
   if (bg_color.size() != 3 && bg_color.size() != 4) {
     E_CNF("Need 3 or 4 components for background color");
     return false;
@@ -425,14 +437,14 @@ bool VSGViewer_Dueca::setFog(const std::vector<double> &fog)
   if (fog.size() == 7) {
     thefog.exponent = fog[6];
   }
-  else if (fog.size() > 7 || fog.size() == 0 || fog.size() == 2 || fog.size() == 3) {
+  else if (fog.size() > 7 || fog.size() == 0 || fog.size() == 2 ||
+           fog.size() == 3) {
     E_CNF("Wrong number of arguments for for fog");
     return false;
   }
   enable_simple_fog = true;
   return true;
 }
-
 
 } // namespace vsgviewer
 

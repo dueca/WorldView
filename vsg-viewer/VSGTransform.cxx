@@ -17,9 +17,34 @@
 
 namespace vsgviewer {
 
+VSGBaseTransform::VSGBaseTransform() :
+  transform(vsg::MatrixTransform::create())
+{
+  //
+}
+
+VSGBaseTransform::~VSGBaseTransform() {}
+
+// should be? https://github.com/vsg-dev/VulkanSceneGraph/discussions/1050
+void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
+{
+  auto par = findParent(root, parent);
+  if (!par) {
+    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+                                 << ", detaching from root");
+    par = root;
+  }
+
+  auto it = std::find(par->children.begin(), par->children.end(), transform);
+  if (it != par->children.end()) {
+    par->children.erase(it);
+  }
+}
+
+
 // ----------------- static transformation, non-moving objects ----------
 VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
-  transform(vsg::MatrixTransform::create())
+  VSGBaseTransform()
 {
   name = data.name;
   parent = data.parent;
@@ -58,21 +83,6 @@ void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create static matrix transform, name=" << name);
 }
 
-// should be? https://github.com/vsg-dev/VulkanSceneGraph/discussions/1050
-void VSGStaticMatrixTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
-{
-  auto par = findParent(root, parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
-                                 << ", detaching from root");
-    par = root;
-  }
-
-  auto it = std::find(par->children.begin(), par->children.end(), transform);
-  if (it != par->children.end()) {
-    par->children.erase(it);
-  }
-}
 
 static auto VSGStaticMatrixTransform_maker =
   new SubContractor<VSGObjectTypeKey, VSGStaticMatrixTransform>(
@@ -80,7 +90,7 @@ static auto VSGStaticMatrixTransform_maker =
 
 // ---------------------- centered on observer ----------------------
 VSGCenteredTransform::VSGCenteredTransform(const WorldDataSpec &data) :
-  transform(vsg::MatrixTransform::create())
+   VSGBaseTransform()
 {
   name = data.name;
   parent = data.parent;
@@ -123,21 +133,6 @@ void VSGCenteredTransform::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create centered transform, name=" << name);
 }
 
-void VSGCenteredTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
-{
-  auto par = findParent(root, parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
-                                 << ", detaching from root");
-    par = root;
-  }
-
-  auto it = std::find(par->children.begin(), par->children.end(), transform);
-  if (it != par->children.end()) {
-    par->children.erase(it);
-  }
-}
-
 
 void VSGCenteredTransform::iterate(TimeTickType ts,
                                    const BaseObjectMotion &base, double late,
@@ -154,7 +149,7 @@ static auto VSGCenteredTransform_maker =
 
 // ---------------------- tiled, following observer ---------------------
 VSGTiledTransform::VSGTiledTransform(const WorldDataSpec &data) :
-  transform(vsg::MatrixTransform::create())
+  VSGBaseTransform()
 {
   name = data.name;
   parent = data.parent;
@@ -209,29 +204,14 @@ void VSGTiledTransform::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create Tiled transform, name=" << name);
 }
 
-void VSGTiledTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
-{
-  auto par = findParent(root, parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
-                                 << ", detaching from root");
-    par = root;
-  }
-
-  auto it = std::find(par->children.begin(), par->children.end(), transform);
-  if (it != par->children.end()) {
-    par->children.erase(it);
-  }
-}
-
-
 void VSGTiledTransform::iterate(TimeTickType ts, const BaseObjectMotion &base,
                                 double late, bool freeze)
 {
   dueca::fixvector<3, double> delta = {
     tile_size[0] ? std::floor(base.xyz[0] / tile_size[0]) * tile_size[0] : 0.0,
     tile_size[1] ? std::floor(base.xyz[1] / tile_size[1]) * tile_size[1] : 0.0,
-    tile_size[2] ? std::floor(base.xyz[2] / tile_size[2]) * tile_size[2] : 0.0 };
+    tile_size[2] ? std::floor(base.xyz[2] / tile_size[2]) * tile_size[2] : 0.0
+  };
 
   // apply the base transform to the observer position
   transform->matrix = vsg::translate(vsgPos(delta)) * base_transform;
@@ -245,7 +225,7 @@ static auto VSGTiledTransform_maker =
 
 // -------- dynamic, entity-controlled transformation -------------------
 VSGMatrixTransform::VSGMatrixTransform(const WorldDataSpec &data) :
-  transform(vsg::MatrixTransform::create()),
+  VSGBaseTransform(),
   scale()
 {
   if (data.coordinates.size() >= 3) {

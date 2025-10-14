@@ -29,7 +29,7 @@ public:
   ~VSGBaseTransform();
 
   /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group>& root) final;
+  void unInit(const vsg::ref_ptr<vsg::Group>& root) override;
 };
 
 /** Fixed, static transform, can be child of any node. When child
@@ -85,7 +85,7 @@ public:
     position fixed but jump by a tile size when the observer moves out
     of the tile scope.
 */
-class VSGTiledTransform: public VSGObject
+class VSGTiledTransform: public VSGBaseTransform
 {
   /** Base transform */
   vsg::dmat4 base_transform;
@@ -103,9 +103,6 @@ public:
   /** Initialise the transform with the VSG scene */
   void init(const vsg::ref_ptr<vsg::Group>& root,
 	    VSGViewer* master) final;
-
-  /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group>& root) final;
 
   /** Update on the observer position */
   void iterate(TimeTickType ts, const BaseObjectMotion& base, double late, bool freeze=false) override;
@@ -139,7 +136,7 @@ public:
       @param entry_id  Entry in the channel */
   virtual void connect(const GlobalId& master_id, const NameSet& cname,
                        entryid_type entry_id,
-                       Channel::EntryTimeAspect time_aspect);
+                       Channel::EntryTimeAspect time_aspect) override;
 
   /** Play, update, recalculate, etc. */
   void iterate(TimeTickType ts, const BaseObjectMotion& base, double late, bool freeze=false) override;

@@ -44,16 +44,16 @@ const ParameterTable *ConfigureView::getMyParameterTable()
       check_timing_description },
 
                 /* You can extend this table with labels and MemberCall or
-       VarProbe pointers to perform calls or insert values into your
-       class objects. Please also add a description (c-style string).
+VarProbe pointers to perform calls or insert values into your
+class objects. Please also add a description (c-style string).
 
-       Note that for efficiency, set_timing_description and
-       check_timing_description are pointers to pre-defined strings,
-       you can simply enter the descriptive strings in the table. */
+Note that for efficiency, set_timing_description and
+check_timing_description are pointers to pre-defined strings,
+you can simply enter the descriptive strings in the table. */
 
-                /* The table is closed off with NULL pointers for the variable
-       name and MemberCall/VarProbe object. The description is used to
-       give an overall description of the module. */
+    /* The table is closed off with NULL pointers for the variable
+name and MemberCall/VarProbe object. The description is used to
+give an overall description of the module. */
     { NULL, NULL, "please give a description of this module" }
   };
 
@@ -63,15 +63,15 @@ const ParameterTable *ConfigureView::getMyParameterTable()
 // constructor
 ConfigureView::ConfigureView(Entity *e, const char *part,
                              const PrioritySpec &ps) :
-                /* The following line initialises the SimulationModule base class.
-     You always pass the pointer to the entity, give the classname and the
-     part arguments.
-     If you give a NULL pointer instead of the inco table, you will not be
-     called for trim condition calculations, which is normal if you for
-     example implement logging or a display.
-     If you give 0 for the snapshot state, you will not be called to
-     fill a snapshot, or to restore your state from a snapshot. Only
-     applicable if you have no state. */
+  /* The following line initialises the SimulationModule base class.
+You always pass the pointer to the entity, give the classname and the
+part arguments.
+If you give a NULL pointer instead of the inco table, you will not be
+called for trim condition calculations, which is normal if you for
+example implement logging or a display.
+If you give 0 for the snapshot state, you will not be called to
+fill a snapshot, or to restore your state from a snapshot. Only
+applicable if you have no state. */
   Module(e, classname, part),
 
   // initialize the data you need in your simulation
@@ -99,15 +99,18 @@ bool ConfigureView::complete()
   static GladeCallbackTable controls[] = {
     { "_add", "clicked", gtk_callback(&ConfigureView::doAction),
       gpointer(WorldViewConfig::LoadObject) },
-    { "_move", "clicked", gtk_callback(&ConfigureView::doAction), gpointer(4) },
+    { "_move", "clicked", gtk_callback(&ConfigureView::doAction),
+      gpointer(WorldViewConfig::MoveObject) },
     { "_delete", "clicked", gtk_callback(&ConfigureView::doAction),
-      gpointer(1) },
+      gpointer(WorldViewConfig::RemoveNode) },
     { "_scene", "clicked", gtk_callback(&ConfigureView::doAction),
-      gpointer(2) },
+      gpointer(WorldViewConfig::ReadScene) },
     { "_clear", "clicked", gtk_callback(&ConfigureView::doAction),
-      gpointer(0) },
+      gpointer(WorldViewConfig::ClearModels) },
     { "_overlay", "clicked", gtk_callback(&ConfigureView::doAction),
-      gpointer(3) },
+      gpointer(WorldViewConfig::LoadOverlay) },
+    { "_fog", "clicked", gtk_callback(&ConfigureView::doAction),
+      gpointer(WorldViewConfig::SetFog) },
     { NULL, NULL, NULL, NULL }
   };
 
@@ -130,23 +133,23 @@ bool ConfigureView::complete()
 // destructor
 ConfigureView::~ConfigureView()
 {
-        //
+  //
 }
 
 // as an example, the setTimeSpec function
 bool ConfigureView::setTimeSpec(const TimeSpec &ts)
 {
-        // a time span of 0 is not acceptable
+  // a time span of 0 is not acceptable
   if (ts.getValiditySpan() == 0)
     return false;
 
-        // specify the timespec to the activity
+  // specify the timespec to the activity
   do_calc.setTimeSpec(ts);
 
-        // do whatever else you need to process this in your model
-        // hint: ts.getDtInSeconds()
+  // do whatever else you need to process this in your model
+  // hint: ts.getDtInSeconds()
 
-        // return true if everything is acceptable
+  // return true if everything is acceptable
   return true;
 }
 
@@ -172,7 +175,7 @@ bool ConfigureView::isPrepared()
 
   CHECK_TOKEN(w_config);
 
-	// return result of checks
+  // return result of checks
   return res;
 }
 
@@ -193,33 +196,33 @@ void ConfigureView::stopModule(const TimeSpec &time)
 // appropriate output
 void ConfigureView::doCalculation(const TimeSpec &ts)
 {
-        // access the input
-        // example:
-        // try {
-        //   StreamReader<MyInput> u(input_token, ts);
-        //   throttle = u.data().throttle;
-        //   de = u.data().de; ....
-        // }
-        // catch(Exception& e) {
-        //   // strange, there is no input. Should I try to continue or not?
-        // }
-        /* The above piece of code shows a block in which you try to catch
-     error conditions (exceptions) to handle the case in which the input
-     data is lost. This is not always necessary, if you normally do not
-     foresee such a condition, and you don t mind being stopped when
-     it happens, forget about the try/catch blocks. */
+  // access the input
+  // example:
+  // try {
+  //   StreamReader<MyInput> u(input_token, ts);
+  //   throttle = u.data().throttle;
+  //   de = u.data().de; ....
+  // }
+  // catch(Exception& e) {
+  //   // strange, there is no input. Should I try to continue or not?
+  // }
+  /* The above piece of code shows a block in which you try to catch
+error conditions (exceptions) to handle the case in which the input
+data is lost. This is not always necessary, if you normally do not
+foresee such a condition, and you don t mind being stopped when
+it happens, forget about the try/catch blocks. */
 
-        // do the simulation or other calculations, one step
+  // do the simulation or other calculations, one step
 
-        // DUECA applications are data-driven. From the time a module is switched
-        // on, it should produce data, so that modules "downstreams" are
-        // activated
-        // access your output channel(s)
-        // example
-        // StreamWriter<MyOutput> y(output_token, ts);
+  // DUECA applications are data-driven. From the time a module is switched
+  // on, it should produce data, so that modules "downstreams" are
+  // activated
+  // access your output channel(s)
+  // example
+  // StreamWriter<MyOutput> y(output_token, ts);
 
-        // write the output into the output channel, using the stream writer
-        // y.data().var1 = something; ...
+  // write the output into the output channel, using the stream writer
+  // y.data().var1 = something; ...
 }
 
 #if GTK_MAJOR_VERSION < 3
@@ -233,7 +236,7 @@ void ConfigureView::doAction(GtkToolButton *button, gpointer gp)
     long idx;
   } conv = { gp };
 
-        // read out controls
+  // read out controls
   static const char *spins[] = { "xpos", "ypos",   "zpos",   "phi",   "theta",
                                  "psi",  "scaleX", "scaleY", "scaleZ" };
   for (int ii = 9; ii--;) {
@@ -241,7 +244,7 @@ void ConfigureView::doAction(GtkToolButton *button, gpointer gp)
       gtk_spin_button_get_value(GTK_SPIN_BUTTON(viewcontrol[spins[ii]]));
   }
 
-        // get text
+  // get text
   config.name = gtk_entry_get_text(GTK_ENTRY(viewcontrol["object_name"]));
   config.type = gtk_entry_get_text(GTK_ENTRY(viewcontrol["object_type"]));
   config.filename[0] = gtk_entry_get_text(GTK_ENTRY(viewcontrol["files"]));
@@ -250,11 +253,11 @@ void ConfigureView::doAction(GtkToolButton *button, gpointer gp)
   viewspec.name = config.type;
   viewspec.overlay = config.filename[0];
 
-        // map command
+  // map command
   WorldViewConfig::ConfigCommand cmd =
     WorldViewConfig::ConfigCommand(uint8_t(conv.idx));
 
-        // write event
+  // write event
   EventWriter<WorldViewConfig> e(w_config, TimeSpec(SimTime::getTimeTick()));
   e.data().command = cmd;
   e.data().config = config;

@@ -109,6 +109,7 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
                               vsg::ref_ptr<vsg::Viewer> viewer,
                               vsg::ref_ptr<vsg::Group> root,
                               const std::vector<float> &bg_color,
+                              float maxShadowDistance,
                               vsg::ref_ptr<vsg::Options> options)
 {
   cout << "Creating camera " << spec.name << endl;
@@ -157,12 +158,14 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
       vsg::rotate(double(vsg::radians(spec.eye_pos[5])), 0.0, 1.0, 0.0) *
       eye_offset;
   }
-    // initial position and angle
+
+  // initial position and angle
   view_matrix->set(eye_offset);
 
-    // create camera and view
+  // create camera and view
   camera = vsg::Camera::create(perspective, view_matrix, viewportstate);
   view = vsg::View::create(camera, root);
+  view->viewDependentState->maxShadowDistance = maxShadowDistance;
 
     // render graph seems to be the command structure that is called when
     // window needs to refres views
@@ -250,7 +253,10 @@ VSGViewer::VSGViewer() :
   bg_color(4, 0.0),
   the_fog(FogValue::create()),
   enable_simple_fog(false),
-  buffer_nsamples(8)
+  buffer_nsamples(8),
+  shadowMapCount(0),
+  maxShadowDistance(1000.0f),
+  penumbraRadius(0.0f)
 {
   // bg_color[3] = 1.0;
   // bg_color[2] = 0.45;
@@ -339,26 +345,36 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
 
 void VSGViewer::init(bool waitswap)
 {
-    // based on vsgcustomshaderset
+  // based on vsgcustomshaderset
 
-    // process what is in the commandline
+  // process what is in the commandline
   vsg::CommandLine arguments(p_argc, *p_argv);
 
-    // create root
+  // create root
   options = vsg::Options::create();
   options->fileCache = vsg::getEnv("VSG_FILE_CACHE");
   options->paths = vsg::getEnvPaths("VSG_FILE_PATH");
   options->sharedObjects = vsg::SharedObjects::create();
 
-    // add vsgXchange reading and writing of 3rd party file formats
+  // shadow settings for the lights
+  if (penumbraRadius) {
+    shadowSettings = vsg::SoftShadows::create(shadowMapCount, penumbraRadius);
+  }
+  else {
+    shadowSettings = vsg::PercentageCloserSoftShadows::create(shadowMapCount);
+  }
+
+  // add vsgXchange reading and writing of 3rd party file formats
   options->add(vsgXchange::all::create());
   arguments.read(options);
 
-    // ensure pbr use my new set of shaders.
+  // ensure pbr use my new set of shaders.
+  // https://github.com/vsg-dev/VulkanSceneGraph/discussions/604
+  the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
   auto pbr = vsgPBRShaderSet(options, the_fog);
   options->shaderSets["pbr"] = pbr;
 
-    // create scene graph root
+  // create scene graph root
   root = vsg::StateGroup::create();
   root->setValue("name", std::string("root"));
   D_MOD("VSG create root node");
@@ -451,7 +467,8 @@ void VSGViewer::init(bool waitswap)
 
           // init view
         ii->second.viewset[viewspec.front().name].init(
-          viewspec.front(), ii->second, viewer, root, bg_color, options);
+          viewspec.front(), ii->second, viewer, root, bg_color,
+          maxShadowDistance, options);
       }
       catch (const vsg::Exception &ve) {
         E_MOD("Trying to create view '" << viewspec.front().name
@@ -580,6 +597,16 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       viewer->compile();
 
     } break;
+    case WorldViewConfig::SetFog:
+      the_fog->value().density = adapt.config.coordinates[0];
+      the_fog->value().color = { float(adapt.config.coordinates[6]),
+                                 float(adapt.config.coordinates[7]),
+                                 float(adapt.config.coordinates[8]) };
+      the_fog->value().start = adapt.config.coordinates[3];
+      the_fog->value().end = adapt.config.coordinates[4];
+      the_fog->value().exponent = adapt.config.coordinates[5];
+      the_fog->dirty();
+      break;
 
     case WorldViewConfig::RemoveNode:
     case WorldViewConfig::LoadObject:

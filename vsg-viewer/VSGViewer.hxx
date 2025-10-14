@@ -68,6 +68,9 @@ class VSGViewer : public WorldViewerBase
   /** Reader for xml definitions */
   boost::scoped_ptr<VSGXMLReader> xml_reader;
 
+  /** Shadow settings, needed for the lights */
+  vsg::ref_ptr<vsg::ShadowSettings> shadowSettings;
+
 public:
   /** Options object */
   vsg::ref_ptr<vsg::Options> options;
@@ -93,51 +96,52 @@ protected:
   bool synchronization_layer;
 
 private:
-    /** This class can generate multiple views on the same world. A
-ViewSet encapsulates the stuff needed for a single view. */
+  /** This class can generate multiple views on the same world. A
+      ViewSet encapsulates the stuff needed for a single view. */
   struct ViewSet
   {
 
-      /** Name, for debugging purposes. */
+    /** Name, for debugging purposes. */
     std::string name;
 
-      /** The render camera set-up */
+    /** The render camera set-up */
     vsg::ref_ptr<vsg::Camera> camera;
 
-      /** The view of this camera */
+    /** The view of this camera */
     vsg::ref_ptr<vsg::View> view;
 
-      /** The view matrix for the camera */
+    /** The view matrix for the camera */
     vsg::ref_ptr<vsg::LookAt> view_matrix;
 
-      /** The camera's offset from the base vehicle point (angle,
-distance or both) */
+    /** The camera's offset from the base vehicle point (angle,
+        distance or both) */
     vsg::t_mat4<double> eye_offset;
 
 #ifdef RG_PER_VIEWSET
-      /** And a rendergraph?*/
+    /** And a rendergraph?*/
     vsg::ref_ptr<vsg::RenderGraph> render_graph;
 #endif
 
-      /** Constructor */
+    /** Constructor */
     ViewSet();
 
-      /** Initialise a view in a window
+    /** Initialise a view in a window
 
-@param vs     Specification for the view; viewport coordinates and
-perspective/frustum, eye position+orientation
-@param viewer Overall scene viewer
-@param root   Scene root
-@param viewmatrix ?? How now
-@param bg_col Background color (4 element)
-
-*/
+        @param vs     Specification for the view; viewport coordinates and
+                      perspective/frustum, eye position+orientation
+        @param window Window specification
+        @param viewer Overall scene viewer
+        @param root   Scene root
+        @param bg_col Background color (4 element)
+        @param maxShadowDistance Tuning distance for shadow map size
+        @param options Current VSG options
+    */
     void init(const ViewSpec &vs, WindowSet &window,
               vsg::ref_ptr<vsg::Viewer> viewer, vsg::ref_ptr<vsg::Group> root,
-              const std::vector<float> &bg_col,
+              const std::vector<float> &bg_col, float maxShadowDistance,
               vsg::ref_ptr<vsg::Options> options);
 
-      /** create the camera and window. */
+    /** create the camera and window. */
     void complete();
   };
 
@@ -210,7 +214,7 @@ perspective/frustum, eye position+orientation
   std::list<ViewSpec> viewspec;
 
 private:
-    /** Helper function, loads resources from resources.cfg */
+  /** Helper function, loads resources from resources.cfg */
   void setupResources();
 
 public:
@@ -257,7 +261,8 @@ public:
 
   /** Do a re-draw
       @param wait   If true, do now swap the buffers. The application
-                    must later wait and swap with the waitSwap function. */
+                    must later wait and swap with the waitSwap function.
+    */
   void redraw(bool wait = false, bool reset_context = false) final;
 
   /** Wait for the swap. */
@@ -272,6 +277,9 @@ public:
 
   /** Read an XML file with object data */
   bool readModelFromXML(const std::string &file);
+
+  /** Shadow maps? */
+  inline vsg::ref_ptr<vsg::ShadowSettings> getShadowSettings() const { return shadowSettings; }
 
 protected:
   /** Path to the resources */
@@ -291,7 +299,17 @@ protected:
 
   /** Multi-sampling */
   unsigned buffer_nsamples;
+
+  /** Shadow radius, fading */
+  float penumbraRadius;
+
+  /** Shadow maps */
+  int shadowMapCount;
+
+  /** Shadow max distance */
+  float maxShadowDistance;
 };
+
 }; // namespace vsgviewer
 
 #endif
