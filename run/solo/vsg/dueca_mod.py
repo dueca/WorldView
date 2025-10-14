@@ -95,6 +95,7 @@ if this_node_id == ecs_node:
                 ('num-shadow-maps', 1),
                 ('add-window', "front"),
                 ('window-size+pos', (int(1920/f), int(1080/f), 0, 0)),
+                ('eye-offset', ( 10, 0, 0, 0, 0, 0)),
                 ('add-viewport', "front"),
                 ('viewport-window', "front"),
                 ('viewport-pos+size', (int(62/f), 0, int(1796/f), int(1080/f))),
@@ -105,7 +106,6 @@ if this_node_id == ecs_node:
 #                 (1.0, 10000, 40)             # 40 deg fov
                  ),
                 ('set-mask', 'hmilabmaskfront2.png'),
-                ('eye-offset', ( 0, 0, 0, 0, 0, 0)),
 
                  ## window with side views
                 ('add-window', "sides"),

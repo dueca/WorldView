@@ -100,6 +100,25 @@ template <class T> inline T deg2rad(const T d) { return M_PI / 180.0 * d; }
 using namespace vsg;
 using namespace std;
 
+/** Calculate an eye offset matrix */
+template <typename T>
+static vsg::t_mat4<double> eyeOffsetMatrix(const T &eye_pos)
+{
+  vsg::t_mat4<double> eye_offset;
+
+  if (eye_pos.size() >= 3) {
+    eye_offset = vsg::translate(-double(eye_pos[1]), double(eye_pos[2]),
+                                double(eye_pos[0]));
+  }
+  if (eye_pos.size() >= 6) {
+    eye_offset = vsg::rotate(double(vsg::radians(eye_pos[3])), 0.0, 0.0, 1.0) *
+                 vsg::rotate(-double(vsg::radians(eye_pos[4])), 1.0, 0.0, 0.0) *
+                 vsg::rotate(double(vsg::radians(eye_pos[5])), 0.0, 1.0, 0.0) *
+                 eye_offset;
+  }
+  return eye_offset;
+}
+
 VSGViewer::ViewSet::ViewSet()
 {
     //
@@ -144,20 +163,7 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
     // the view matrix transforms to the camera position. At this stage,
     // assume starting at origin, only component is the eye offset
   view_matrix = vsg::LookAt::create();
-  if (spec.eye_pos.size() == 0) {
-      // no eye offset, this creates a diagonal/unit matrix
-    eye_offset = vsg::t_mat4<double>();
-  }
-  else if (spec.eye_pos.size() >= 3) {
-    eye_offset = vsg::translate(vsgPos(vrange(spec.eye_pos, 0, 3)));
-  }
-  if (spec.eye_pos.size() == 6) {
-    eye_offset =
-      vsg::rotate(double(vsg::radians(spec.eye_pos[3])), 0.0, 0.0, 1.0) *
-      vsg::rotate(-double(vsg::radians(spec.eye_pos[4])), 1.0, 0.0, 0.0) *
-      vsg::rotate(double(vsg::radians(spec.eye_pos[5])), 0.0, 1.0, 0.0) *
-      eye_offset;
-  }
+  eye_offset = eyeOffsetMatrix(spec.eye_pos);
 
   // initial position and angle
   view_matrix->set(eye_offset);
@@ -606,6 +612,18 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       the_fog->value().end = adapt.config.coordinates[4];
       the_fog->value().exponent = adapt.config.coordinates[5];
       the_fog->dirty();
+      break;
+
+    case WorldViewConfig::EyeOffset:
+      for (auto &ws : windows) {
+        for (auto &vs : ws.second.viewset) {
+          if (vs.first == adapt.config.name) {
+            vs.second.eye_offset = eyeOffsetMatrix(adapt.config.coordinates);
+            break;
+          }
+        }
+      }
+      W_MOD("Could not find view to adapt eye offset: " << adapt.config.name);
       break;
 
     case WorldViewConfig::RemoveNode:

@@ -21,7 +21,10 @@
       ; list available nodes
       ListNodes = 7
       ; set fog values
-      SetFog = 8)
+      SetFog = 8
+      ; change eye offset
+      EyeOffset = 9
+)
 
 ; An event for runtime configuration of the WorldViewer view.
 (Event WorldViewConfig

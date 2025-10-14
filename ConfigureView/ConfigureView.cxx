@@ -111,6 +111,8 @@ bool ConfigureView::complete()
       gpointer(WorldViewConfig::LoadOverlay) },
     { "_fog", "clicked", gtk_callback(&ConfigureView::doAction),
       gpointer(WorldViewConfig::SetFog) },
+    { "_eye", "clicked", gtk_callback(&ConfigureView::doAction),
+      gpointer(WorldViewConfig::EyeOffset) },
     { NULL, NULL, NULL, NULL }
   };
 
