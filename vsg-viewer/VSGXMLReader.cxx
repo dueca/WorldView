@@ -9,6 +9,7 @@
         copyright       : (c) 23 TUDelft-AE-C&S
 */
 
+#include "VSGViewer.hxx"
 #include "VSGXMLReader.hxx"
 #include <pugixml.hpp>
 #include <dueca/debug.h>

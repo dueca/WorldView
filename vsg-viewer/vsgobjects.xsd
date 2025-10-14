@@ -1,39 +1,48 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="https://dueca.tudelft.nl"
-           xmlns="https://dueca.tudelft.nl"
-           elementFormDefault="qualified">
+  targetNamespace="https://dueca.tudelft.nl"
+  xmlns="https://dueca.tudelft.nl"
+  elementFormDefault="qualified">
 
-  <!-- Main element, mappings from name to coordinate ranges -->
+  <!-- Definition of a simple interface to vsg object mapping,
+       Can be read to automatically create interpretation of current
+       and new vsg factory types -->
   <xs:element name="maps">
     <xs:complexType>
       <xs:sequence>
-        <xs:complexType name="type" type="type_t"
-			maxOccurs="unbounded"/>
+        <xs:element name="type" type="type_t"
+          maxOccurs="unbounded" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-	
+
   <xs:complexType name="type_t">
     <xs:sequence>
-      <xs:complexType name="coordinates" type="type_t"
-                      maxOccurs="unbounded">
-	<xs:attribute name="offset" type="xs:integer" use="required">
-	  <xs:restriction base="xs:integer">
-	    <xs:minInclusive value="0"/>
-	  </xs:restriction>
-	</xs:attribute>
-	<xs:attribute name="size" type="xs:integer" use="required">
-	  <xs:restriction base="xs:integer">
-	    <xs:minInclusive value="1"/>
-	  </xs:restriction>
-	</xs:attribute>
-	<xs:attribute name="name" use="required"/>
-      </xs:complexType>
+      <xs:element name="param" type="param_t"
+        maxOccurs="unbounded" minOccurs="0"/>
     </xs:sequence>
-    <xs:attribute name="name"/>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:simpleType name="offset_t">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="size_t">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="param_t">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="offset" type="offset_t" use="required" />
+        <xs:attribute name="size" type="size_t" use="required" />
+      </xs:extension>
+    </xs:simpleContent>
   </xs:complexType>
 
 </xs:schema>
-      
-   

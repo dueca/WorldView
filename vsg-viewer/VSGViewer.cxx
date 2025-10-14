@@ -109,6 +109,7 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
                               vsg::ref_ptr<vsg::Viewer> viewer,
                               vsg::ref_ptr<vsg::Group> root,
                               const std::vector<float> &bg_color,
+                              float maxShadowDistance,
                               vsg::ref_ptr<vsg::Options> options)
 {
   cout << "Creating camera " << spec.name << endl;
@@ -157,12 +158,14 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
       vsg::rotate(double(vsg::radians(spec.eye_pos[5])), 0.0, 1.0, 0.0) *
       eye_offset;
   }
-    // initial position and angle
+
+  // initial position and angle
   view_matrix->set(eye_offset);
 
-    // create camera and view
+  // create camera and view
   camera = vsg::Camera::create(perspective, view_matrix, viewportstate);
   view = vsg::View::create(camera, root);
+  view->viewDependentState->maxShadowDistance = maxShadowDistance;
 
     // render graph seems to be the command structure that is called when
     // window needs to refres views
@@ -240,6 +243,7 @@ VSGViewer::VSGViewer() :
   api_dump_layer(false),
   synchronization_layer(true),
   windows(),
+  controlled_objects(),
   active_objects(),
   static_objects(),
   post_draw(),
@@ -249,7 +253,10 @@ VSGViewer::VSGViewer() :
   bg_color(4, 0.0),
   the_fog(FogValue::create()),
   enable_simple_fog(false),
-  buffer_nsamples(8)
+  buffer_nsamples(8),
+  shadowMapCount(0),
+  maxShadowDistance(1000.0f),
+  penumbraRadius(0.0f)
 {
   // bg_color[3] = 1.0;
   // bg_color[2] = 0.45;
@@ -338,36 +345,46 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
 
 void VSGViewer::init(bool waitswap)
 {
-    // based on vsgcustomshaderset
+  // based on vsgcustomshaderset
 
-    // process what is in the commandline
+  // process what is in the commandline
   vsg::CommandLine arguments(p_argc, *p_argv);
 
-    // create root
+  // create root
   options = vsg::Options::create();
   options->fileCache = vsg::getEnv("VSG_FILE_CACHE");
   options->paths = vsg::getEnvPaths("VSG_FILE_PATH");
   options->sharedObjects = vsg::SharedObjects::create();
 
-    // add vsgXchange reading and writing of 3rd party file formats
+  // shadow settings for the lights
+  if (penumbraRadius) {
+    shadowSettings = vsg::SoftShadows::create(shadowMapCount, penumbraRadius);
+  }
+  else {
+    shadowSettings = vsg::PercentageCloserSoftShadows::create(shadowMapCount);
+  }
+
+  // add vsgXchange reading and writing of 3rd party file formats
   options->add(vsgXchange::all::create());
   arguments.read(options);
 
-    // ensure pbr use my new set of shaders.
+  // ensure pbr use my new set of shaders.
+  // https://github.com/vsg-dev/VulkanSceneGraph/discussions/604
+  the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
   auto pbr = vsgPBRShaderSet(options, the_fog);
   options->shaderSets["pbr"] = pbr;
 
-    // create scene graph root
+  // create scene graph root
   root = vsg::StateGroup::create();
   root->setValue("name", std::string("root"));
   D_MOD("VSG create root node");
 
   // the "inherit option in customshaderset"
-  layout = pbr->createPipelineLayout({}, { 0, 2  });
+  layout = pbr->createPipelineLayout({}, { 0, 2 });
 
   uint32_t vds_set = 1;
   root->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                      layout, vds_set));
+                                                layout, vds_set));
   uint32_t cm_set = 0;
   auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
   auto cm_db = vsg::DescriptorBuffer::create(the_fog);
@@ -378,14 +395,17 @@ void VSGViewer::init(bool waitswap)
 
   options->inheritedState = root->stateCommands;
 
-    // and the observer/eye group
+  // and the observer/eye group
+  observer_transform = vsg::AbsoluteTransform::create();
   observer = vsg::Group::create();
   observer->setValue("name", std::string("observer"));
-  root->addChild(observer);
-  std::list<vsg::ref_ptr<vsg::Group>> observer_path;
-  observer_path.push_back(observer);
+  observer_transform->addChild(observer);
+  root->addChild(observer_transform);
 
-  auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
+  // std::list<vsg::ref_ptr<vsg::Group>> observer_path;
+  // observer_path.push_back(observer);
+
+  // auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
 
   // create viewer
   viewer = vsg::Viewer::create();
@@ -447,7 +467,8 @@ void VSGViewer::init(bool waitswap)
 
           // init view
         ii->second.viewset[viewspec.front().name].init(
-          viewspec.front(), ii->second, viewer, root, bg_color, options);
+          viewspec.front(), ii->second, viewer, root, bg_color,
+          maxShadowDistance, options);
       }
       catch (const vsg::Exception &ve) {
         E_MOD("Trying to create view '" << viewspec.front().name
@@ -458,7 +479,7 @@ void VSGViewer::init(bool waitswap)
   }
 
     // if applicable, initialize static objects and dynamic objects
-  for (auto &ao : active_objects) {
+  for (auto &ao : controlled_objects) {
     try {
       ao.second->init(root, this);
     }
@@ -466,6 +487,9 @@ void VSGViewer::init(bool waitswap)
       E_MOD("Trying to create object '" << ao.first
                                         << "' vsg error: " << ve.message);
     }
+  }
+  for (auto &so : active_objects) {
+    so->init(root, this);
   }
   for (auto &so : static_objects) {
     so->init(root, this);
@@ -501,51 +525,95 @@ void VSGViewer::redraw(bool wait, bool reset_context)
 
 void VSGViewer::waitSwap() { viewer->advanceToNextFrame(); }
 
+bool VSGViewer::setXMLReader(const std::string &definitions)
+{
+  if (xml_reader) {
+    E_MOD("Error, second attempt to use set_xml_definitions or use of this "
+          " call after using read_xml_defintions");
+    return false;
+  }
+  try {
+    xml_reader.reset(new VSGXMLReader(definitions));
+  }
+  catch (const std::exception &e) {
+    E_MOD("Error in initialising XML reader: " << e.what());
+    return false;
+  }
+  return true;
+}
+
+bool VSGViewer::readModelFromXML(const std::string &file)
+{
+  try {
+    if (!xml_reader) {
+      I_MOD("Creating default xml reader");
+      xml_reader.reset(
+        new VSGXMLReader("../../../../WorldView/vsg-viewer/vsgobjects.xml"));
+    }
+    return xml_reader->readWorld(file, *this);
+  }
+  catch (const std::exception &e) {
+    E_MOD("Error in reading xml definitions from " << file);
+    return false;
+  }
+}
+
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 {
   try {
 
     switch (adapt.command) {
 
+    case WorldViewConfig::ReadScene:
     case WorldViewConfig::ClearModels: {
 
-        // to be updated, only remove static objects
+      // only removes non-controlled objects
+      static_objects.reverse();
       for (auto &so : static_objects) {
         so->unInit(root);
       }
+      active_objects.reverse();
+      for (auto &so : active_objects) {
+        so->unInit(root);
+      }
       static_objects.clear();
-    } break;
+      active_objects.clear();
+      viewer->compile();
 
-    case WorldViewConfig::RemoveNode:
-        // TODO
+      // read additional/replacing scene data
+      if (adapt.command == WorldViewConfig::ReadScene) {
+        for (const auto &fn : adapt.config.filename) {
+          readModelFromXML(fn);
+        }
+      }
+
+      // initialize these objects again
+      for (auto &so : active_objects) {
+        so->init(root, this);
+      }
+      for (auto &so : static_objects) {
+        so->init(root, this);
+      }
+      viewer->compile();
+
+    } break;
+    case WorldViewConfig::SetFog:
+      the_fog->value().density = adapt.config.coordinates[0];
+      the_fog->value().color = { float(adapt.config.coordinates[6]),
+                                 float(adapt.config.coordinates[7]),
+                                 float(adapt.config.coordinates[8]) };
+      the_fog->value().start = adapt.config.coordinates[3];
+      the_fog->value().end = adapt.config.coordinates[4];
+      the_fog->value().exponent = adapt.config.coordinates[5];
+      the_fog->dirty();
       break;
 
-    case WorldViewConfig::LoadObject: {
-
-        // creates and adds a specific configuration
-      std::string dclass =
-        "on-the-fly-object_" +
-        boost::lexical_cast<std::string>(++config_dynamic_created);
-      this->addFactorySpec(dclass, adapt.config);
-
-        // run the createStatic call to create the object
-      std::vector<std::string> createconf;
-      createconf.push_back(dclass);
-      this->createStatic(createconf);
-    } break;
-
-    case WorldViewConfig::MoveObject: {
-        // TODO
-        /*for (int ii = root->getNumChildren(); ii--; ) {
-if (root->getChild(ii)->getName() == adapt.config.name) {
-updateTransform(root->getChild(ii), adapt.config.coordinates);
-}
-}*/
-    } break;
+    case WorldViewConfig::RemoveNode:
+    case WorldViewConfig::LoadObject:
+    case WorldViewConfig::MoveObject:
     case WorldViewConfig::ListNodes:
     case WorldViewConfig::LoadOverlay:
     case WorldViewConfig::RemoveOverlay:
-    case WorldViewConfig::ReadScene:
       W_MOD("VSGViewer " << adapt.command << " is not implemented");
     }
   }
@@ -573,7 +641,10 @@ void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion &ownm,
     vsg::rotate(0.5 * vsg::PI, 1.0, 0.0, 0.0) *
     vsg::translate(o2.xyz[1], o2.xyz[0], o2.xyz[2]);
 
-    // update all cameras, as they are in the viewset list
+  // update the observer position
+  observer_transform->transform(camerapnt);
+
+  // update all cameras, as they are in the viewset list
   for (auto &win : windows) {
     for (auto &view : win.second.viewset) {
       auto world2orig = vsg::inverse(view.second.eye_offset * camerapnt);
@@ -584,8 +655,11 @@ void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion &ownm,
 
   // run through all active objects, and inform about the vehicle
   // position & time
-  for (auto &obj : active_objects) {
+  for (auto &obj : controlled_objects) {
     obj.second->iterate(tick, o2, late);
+  }
+  for (auto &obj : active_objects) {
+    obj->iterate(tick, o2, late);
   }
 }
 
@@ -599,7 +673,7 @@ bool VSGViewer::createControllable(const GlobalId &master_id,
   creation_key_t keypair(cname.name, creation_id);
 
   // check we don't have this one yet
-  assert(active_objects.count(keypair) == 0);
+  assert(controlled_objects.count(keypair) == 0);
 
   // not found, create entry on the basis of data class and entry label
   VSGObject *op = NULL;
@@ -615,7 +689,7 @@ bool VSGViewer::createControllable(const GlobalId &master_id,
       viewer->compile();
     }
     boost::intrusive_ptr<VSGObject> bop(op);
-    active_objects[keypair] = bop;
+    controlled_objects[keypair] = bop;
     return true;
   }
   catch (const CFCannotMake &problem) {
@@ -652,7 +726,8 @@ bool VSGViewer::createStatic(const std::vector<std::string> &name)
     return false;
   }
 
-  auto obj = retrieveFactorySpec(name[0], "", static_objects.size(), true);
+  auto obj = retrieveFactorySpec(
+    name[0], "", static_objects.size() + active_objects.size(), true);
   if (obj.type.size() == 0) {
     E_MOD("Cannot find object type \"" << name[0] << "\" in the factory");
     return false;
@@ -673,14 +748,7 @@ bool VSGViewer::createStatic(const WorldDataSpec &obj)
     }
     boost::intrusive_ptr<VSGObject> bop(op);
     if (op->forceActive()) {
-      creation_key_t keypair(obj.name, 0);
-      if (active_objects.count(keypair)) {
-        W_MOD("Object name (" << obj.name << ",0) already taken!");
-        static_objects.push_back(bop);
-      }
-      else {
-        active_objects[keypair] = bop;
-      }
+      active_objects.push_back(bop);
     }
     else {
       static_objects.push_back(bop);
@@ -693,9 +761,10 @@ bool VSGViewer::createStatic(const WorldDataSpec &obj)
   }
   return false;
 }
+
 void VSGViewer::removeControllable(const NameSet &cname, uint32_t creation_id)
 {
-  active_objects[std::make_pair(cname.name, creation_id)].reset();
+  controlled_objects[std::make_pair(cname.name, creation_id)].reset();
 }
 
 }; // namespace vsgviewer

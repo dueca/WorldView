@@ -17,47 +17,57 @@
 
 namespace vsgviewer {
 
-  class VSGViewer;
+class VSGViewer;
 
-  class VSGStaticModel: virtual public VSGObject
-  {
-  protected:
-    /** Single 3D model */
-    vsg::ref_ptr<vsg::Node> model;
+class VSGStaticModel : virtual public VSGObject
+{
+protected:
+  /** Single 3D model */
+  vsg::ref_ptr<vsg::Node> model;
 
-    /** Filename */
-    std::string modelfile;
+  /** Filename */
+  std::string modelfile;
 
-  public:
-    /** Constructor
+public:
+  /** Constructor
 
-        @param data:
-        * data.name        - model name
-        * data.parent      - if filled, used to look up parent node
-        * data.filename[0] - name for the visual model
-    */
-    VSGStaticModel(const WorldDataSpec& data);
-
-    /** Destructor */
-    ~VSGStaticModel();
-
-    /** Initialise the model with the VSG scene */
-    void init(const vsg::ref_ptr<vsg::Group>& root,
-              VSGViewer* master) override;
-  };
-
-  class VSGModel: public VSGStaticModel, public VSGMatrixTransform
-  {
-  public:
-    /** Constructor */
-    VSGModel(const WorldDataSpec& data);
+      @param data:
+      * data.name        - model name
+      * data.parent      - if filled, used to look up parent node
+      * data.filename[0] - name for the visual model
+  */
+  VSGStaticModel(const WorldDataSpec &data);
 
     /** Destructor */
-    ~VSGModel();
+  ~VSGStaticModel();
 
-    /** Initialise the model with the VSG scene */
-    void init(const vsg::ref_ptr<vsg::Group>& root,
-              VSGViewer* master) final;
-  };
+  /** Initialise the model with the VSG scene */
+  void init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master) override;
 
-}; // namespace
+  /** Undo the initialisation */
+  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+};
+
+class VSGModel : public VSGMatrixTransform
+{
+  /** Single 3D model */
+  vsg::ref_ptr<vsg::Node> model;
+
+  /** Filename */
+  std::string modelfile;
+
+  public:
+  /** Constructor */
+  VSGModel(const WorldDataSpec &data);
+
+  /** Destructor */
+  ~VSGModel();
+
+  /** Initialise the model with the VSG scene */
+  void init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master) final;
+
+  /** Undo the initialisation */
+  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+};
+
+}; // namespace vsgviewer

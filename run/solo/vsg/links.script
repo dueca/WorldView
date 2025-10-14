@@ -26,11 +26,19 @@ else
     ln -sf /tmp/share/vsgExamples/models/lz.vsgt .
 fi
 
+if [ -d ../../../../WorldView/icy-world ]; then
+    IWP=$(realpath ../../../../WorldView/icy-world)
+    if [ \! -f skydome.glb ]; then
+        blender --python \
+            $IWP/bake-a-blend.py -- $IWP/skydome.blend glb
+    fi
+fi
+
 ln -sf ${DATADIR}/vsg/exampleworld.xml .
 ln -sf ../../../../WorldView/vsg-viewer/shaders .
 
 if [ -d ${HOME}/gdapps/VisualModels ]; then
-    VISMODELS="orientation/arrows landrover/Defender"
+    VISMODELS="orientation/arrows landrover/Defender skydome/skydome skydome/grass"
     for VM in $VISMODELS; do
 	NAME=`basename $VM`
 	if [ \! -f ${NAME}.glb ]; then
@@ -38,9 +46,21 @@ if [ -d ${HOME}/gdapps/VisualModels ]; then
 		~/gdapps/VisualModels/VisualModels/exporter/bake-a-blend.py \
 		-- ~/gdapps/VisualModels/VisualModels/${VM}.blend glb
 	fi
-	vsgconvd ${NAME}.glb ${NAME}.vsgb
+    # There is no use in conversion to vsgb, since it will convert with
+    # default shaders, which are not compatible with fog option!
+    # vsgconvd ${NAME}.glb ${NAME}.vsgb
     done
 fi
+
+if [ -d ${HOME}/cssoft/roadgen ]; then
+    python ${HOME}/cssoft/roadgen/road.py \
+        ${HOME}/cssoft/roadgen/btest/Fofu_DOMLt_zf1.xml \
+        myroad.glb \
+        5.2 \
+        ${HOME}/cssoft/roadgen/btest/road_twolane.png \
+        ${HOME}/cssoft/roadgen/btest/normals_twolane.png
+fi
+
 
 if [ -d ${HOME}/cssoft/glTF-Sample-Models ]; then
     HERE="$(pwd)"

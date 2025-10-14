@@ -91,6 +91,8 @@ if this_node_id == ecs_node:
                 ('debug-layer', True),
                 ('debug-utils', True),
                 ('api-dump-layer', True),
+                ('max-shadow-distance', 200),
+                ('num-shadow-maps', 1),
                 ('add-window', "front"),
                 ('window-size+pos', (int(1920/f), int(1080/f), 0, 0)),
                 ('add-viewport', "front"),
@@ -133,7 +135,7 @@ if this_node_id == ecs_node:
                 ('set-xml-definitions',
                  '../../../../WorldView/vsg-viewer/vsgobjects.xml'),
                 ('read-xml-definitions', 'exampleworld.xml'),
-                ('set-fog', (0.2, 1.0, 1.0, 1.0, 4.0, 200.0, 0.0))
+                ('set-fog', (0.2, 1.0, 1.0, 1.0, 2.0, 50.0, 0.0))
             ).complete(),
             initial_camera = ( 0, 0, -30, 0, 0, 0)
         ))
@@ -161,6 +163,12 @@ if this_node_id == ecs_node:
     mymods.append(dueca.Module(
         "control-view", "", admin_priority).param(
             ('set-timing', sim_timing)))
+
+    mymods.append(dueca.Module(
+        "configure-view", "", admin_priority).param(
+            ('set-timing', sim_timing)
+        )
+    )
 
     # add a filer in this node for replay support
     # filer = dueca.ReplayFiler("PLHLAB")

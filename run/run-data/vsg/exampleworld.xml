@@ -40,13 +40,15 @@
 
   <!-- second instance of car -->
   <static name="car2" parent="car2base" type="static-model">
-    <file>Defender.glb</file>
+    <file>skydome.glb</file>
   </static>
 
   <!-- world orientation -->
-  <static name="world-base" parent="root" type="static-transform">
-    <param name="xyz"> 0, 0, 140 </param>
+  <static name="world-base" parent="root" type="tiled-transform">
+    <param name="tilesizexyz">20.0, 20.0, 0.0</param>
+    <param name="xyz"> 0, 0, 0.05 </param>
     <param name="phithetapsi">0, 0, 0 </param>
+    <param name="scalexyz">100, 100, 100</param>
   </static>
 
   <!-- world total -->
@@ -55,8 +57,12 @@
     <param name="phithetapsi">0, 0, 0 </param>
   </static>
 
-  <static name="world" parent="world-base" type="static-model">
+  <!-- <static name="world" parent="world-base" type="static-model">
     <file>lz.vsgt</file>
+  </static>
+  -->
+  <static name="grass" parent="world-base" type="static-model">
+	  <file>grass.glb</file>
   </static>
 
   <!-- arrow orientation -->
@@ -65,6 +71,7 @@
   </static>
 
   <!-- helmet location -->
+  <!--
   <static name="helmet-base" parent="root" type="static-transform">
     <param name="scalexyz"> 10, 10, 10 </param>
     <param name="xyz">2, 0, 0</param>
@@ -73,27 +80,36 @@
   <static name="helmet" parent="helmet-base" type="static-model">
     <file>FlightHelmet.vsgb</file>
   </static>
+  -->
 
   <!-- simple ambient light -->
   <static name="ambient" type="ambient-light">
     <param name="color"> 1, 1, 1</param>
-    <param name="intensity"> 0.2 </param>
+    <param name="intensity"> 0.4 </param>
   </static>
 
   <static name="road-base" parent="root" type="static-transform">
-    <param name="xyz">0, 0, 1</param>
+    <param name="xyz">0, 0, 0</param>
   </static>
 
-  <static name="road" type="static-model">
+  <static name="road" type="static-model" parent="road-base">
     <file>myroad.glb</file>
   </static>
 
+  <static name="skydomeloc" parent="root" type="centered-transform">
+    <param name="scalexyz">100, 100, 100</param>
+    <param name="xyz">0, 0, 10</param>
+  </static>
+
+  <static name="skydome" parent="skydomeloc" type="static-model">
+    <file>skydome.glb</file>
+  </static>
 
   <!-- directed light -->
   <static name="sun" type="directional-light">
     <param name="color"> 1, 1, 1</param>
     <param name="intensity"> 0.8 </param>
-    <param name="direction"> 0.2, -0.7, 0.0 </param>
+    <param name="direction"> 0.2, -0.0, 0.7 </param>
   </static>
 
 </world>

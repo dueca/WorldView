@@ -5,21 +5,23 @@
 
 (Enum ConfigCommand uint8_t
       ; clear all current models
-      ClearModels
+      ClearModels = 0
       ; remove a node or branch (if possible)
-      RemoveNode
+      RemoveNode = 1
       ; read scene files (OGRE, for now), file names in the filename list
-      ReadScene
+      ReadScene = 2
       ; read a new overlay (OGRE, for now)
-      LoadOverlay
+      LoadOverlay = 3
       ; remove an overlay from displaying on a viewport
-      RemoveOverlay
+      RemoveOverlay = 4
       ; load a single object (specified by the WorldDataSpec)
-      LoadObject
-      ; modify an object, only adapts location	
-      MoveObject
-      ; list available nodes	
-      ListNodes)
+      LoadObject = 5
+      ; modify an object, only adapts location
+      MoveObject = 6
+      ; list available nodes
+      ListNodes = 7
+      ; set fog values
+      SetFog = 8)
 
 ; An event for runtime configuration of the WorldViewer view.
 (Event WorldViewConfig

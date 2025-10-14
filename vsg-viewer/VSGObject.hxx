@@ -52,15 +52,19 @@ public:
                     VSGViewer* master) = 0;
 
   /** Undo the initialisation */
-  virtual void unInit(const vsg::ref_ptr<vsg::Group>& root);
+  virtual void unInit(const vsg::ref_ptr<vsg::Group>& root) = 0;
 
-  /** Returns true if the object needs drawing post-access */
+  /** Returns true if the object needs drawing post-access. */
   virtual bool requirePostDrawAccess() { return false; }
 
-  /** Set the visibility */
+  /** Set the visibility. Overrides the ObjectBase.
+
+      @param vis    Visibility true or false.
+  */
   virtual void visible(bool vis) override;
 
-  /** Add to active group */
+  /** Add to active group; these object will receive updates on the
+      Observer/view position. */
   virtual bool forceActive();
 };
 

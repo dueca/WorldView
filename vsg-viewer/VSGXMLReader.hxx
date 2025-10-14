@@ -12,9 +12,11 @@
 #pragma once
 
 #include <string>
-#include "VSGViewer.hxx"
+#include <map>
 
 namespace vsgviewer {
+
+class VSGViewer;
 
 /** Reads an XML file with type definitions and optionally static
     object instatiations. An xml file may be queried to provide a
@@ -27,7 +29,7 @@ class VSGXMLReader
 
     /** First element in the vector */
     const unsigned offset;
-    
+
     /** Number of elements */
     const unsigned size;
 
