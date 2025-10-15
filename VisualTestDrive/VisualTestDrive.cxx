@@ -103,7 +103,7 @@ const ParameterTable *VisualTestDrive::getMyParameterTable()
       .probe = new MemberCall<_ThisModule_, std::vector<double>>(
         &_ThisModule_::supplyFGMotion),
       "Add coordinates for flightgear object, xyz, phi, theta, psi, uvw, "
-      "omega" },
+      "omega, movement duration" },
 
     /* You can extend this table with labels and MemberCall or
        VarProbe pointers to perform calls or insert values into your
@@ -152,7 +152,9 @@ VisualTestDrive::VisualTestDrive(Entity *e, const char *part,
 {
   // connect the triggers for simulation
   do_calc.setTrigger(myclock);
-  fgspec.coordinates.resize(12, 0.0);
+  fgspec.coordinates.resize(13, 0.0);
+  fgspec.coordinates[12] = 1.0;
+
   // connect the triggers for trim calculation. Leave this out if you
   // don not need input for trim calculation
   // trimCalculationCondition(/* fill in your trim triggering channels */);
@@ -231,7 +233,8 @@ bool VisualTestDrive::addFGMotion(const std::string &name)
   if (fgspec.name.size()) {
     fg_sets.emplace_back(fgspec, this);
     fgspec = WorldDataSpec();
-    fgspec.coordinates.resize(12, 0.0);
+    fgspec.coordinates.resize(13, 0.0);
+    fgspec.coordinates[12] = 1.0;
   }
 
   // copy the label
@@ -241,7 +244,7 @@ bool VisualTestDrive::addFGMotion(const std::string &name)
 
 bool VisualTestDrive::supplyFGMotion(const std::vector<double> &coords)
 {
-  for (unsigned ii = std::max(coords.size(), size_t(12)); ii--;) {
+  for (unsigned ii = std::max(coords.size(), size_t(13)); ii--;) {
     fgspec.coordinates[ii] = coords[ii];
   }
   return true;
@@ -253,6 +256,7 @@ VisualTestDrive::FlightGearTestSet::FlightGearTestSet(const WorldDataSpec &i,
   tmove(0.0),
   initial(),
   moving(),
+  tscale(1.0/i.coordinates[12]),
   w_entry(new ChannelWriteToken(module->getId(),
                                 NameSet("world", "ObjectMotion", ""),
                                 getclassname<FGBaseAircraftMotion>(), i.name,
@@ -301,7 +305,7 @@ void VisualTestDrive::FlightGearTestSet::advance(const DataTimeSpec &ts,
                                                  bool move)
 {
   if (move) {
-    tmove += ts.getDtInSeconds();
+    tmove += tscale * ts.getDtInSeconds();
     if (tmove > 1.0) {
       moving_part++;
       if (moving_part == 16) moving_part = 0;

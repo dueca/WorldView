@@ -74,7 +74,6 @@ fgfs \
     --disable-random-buildings \
     --disable-random-vegetation \
     --disable-sound \
-    --disable-rembrandt \
     --enable-distance-attenuation \
     --fog-nicest \
     --enable-specular-highlight \

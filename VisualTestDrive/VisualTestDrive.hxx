@@ -92,6 +92,9 @@ private: // simulation data
     /** Time counter */
     double tmove;
 
+    /** Time scaler for movement */
+    double tscale;
+
     FGBaseAircraftMotion initial;
 
     /** Moving and flapping aircraft motion */
