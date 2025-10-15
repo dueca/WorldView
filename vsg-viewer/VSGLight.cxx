@@ -20,7 +20,8 @@ namespace vsgviewer {
 
 VSGAmbientLight::VSGAmbientLight(const WorldDataSpec &data) :
   color(data.coordinates[0], data.coordinates[1], data.coordinates[2]),
-  intensity(data.coordinates[3])
+  intensity(data.coordinates[3]),
+  light()
 {
   name = data.name;
   D_MOD("Created ambient light, name=" << name);
@@ -57,7 +58,8 @@ static auto VSGAmbientLight_maker =
 VSGDirectionalLight::VSGDirectionalLight(const WorldDataSpec &data) :
   color(data.coordinates[0], data.coordinates[1], data.coordinates[2]),
   intensity(data.coordinates[3]),
-  direction(data.coordinates[5], data.coordinates[4], data.coordinates[6])
+  direction(data.coordinates[5], data.coordinates[4], data.coordinates[6]),
+  light()
 {
   name = data.name;
   parent = data.parent;
@@ -86,7 +88,7 @@ void VSGDirectionalLight::init(const vsg::ref_ptr<vsg::Group> &root,
     par = root;
   }
   par->addChild(light);
-  D_MOD("VSG create directional light, name=" << name);
+  D_MOD("Init directional light, name=" << name);
 }
 
 void VSGDirectionalLight::unInit(const vsg::ref_ptr<vsg::Group> &root)
@@ -108,7 +110,9 @@ VSGPointLight::VSGPointLight(const WorldDataSpec &data) :
   color(data.coordinates[0], data.coordinates[1], data.coordinates[2]),
   intensity(data.coordinates[3]),
   position(data.coordinates[5], data.coordinates[4], data.coordinates[6]),
-  span(data.coordinates[7])
+  span(data.coordinates[7]),
+  light(),
+  cull()
 {
   name = data.name;
   parent = data.parent;
@@ -168,7 +172,9 @@ VSGSpotLight::VSGSpotLight(const WorldDataSpec &data) :
   span(data.coordinates[7]),
   innerangle(data.coordinates[10]),
   outerangle(data.coordinates[11]),
-  direction(data.coordinates[13], data.coordinates[12], data.coordinates[14])
+  direction(data.coordinates[13], data.coordinates[12], data.coordinates[14]),
+  light(),
+  cull()
 {
   name = data.name;
   parent = data.parent;

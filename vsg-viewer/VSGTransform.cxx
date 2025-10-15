@@ -18,7 +18,7 @@
 namespace vsgviewer {
 
 VSGBaseTransform::VSGBaseTransform() :
-  transform(vsg::MatrixTransform::create())
+  transform()
 {
   //
 }
@@ -41,7 +41,6 @@ void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
   }
 }
 
-
 // ----------------- static transformation, non-moving objects ----------
 VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
   VSGBaseTransform()
@@ -49,17 +48,17 @@ VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
   name = data.name;
   parent = data.parent;
   if (data.coordinates.size() >= 9) {
-    transform->matrix = vsg::scale(vsgScale(vrange(data.coordinates, 6, 3)));
+    base_transform = vsg::scale(vsgScale(vrange(data.coordinates, 6, 3)));
   }
   if (data.coordinates.size() >= 6) {
-    transform->matrix = vsgRotation(vsg::radians(data.coordinates[3]),
-                                    vsg::radians(data.coordinates[4]),
-                                    vsg::radians(data.coordinates[5])) *
-                        transform->matrix;
+    base_transform = vsgRotation(vsg::radians(data.coordinates[3]),
+                                 vsg::radians(data.coordinates[4]),
+                                 vsg::radians(data.coordinates[5])) *
+                     base_transform;
   }
   if (data.coordinates.size() >= 3) {
-    transform->matrix = vsg::translate(vsgPos(vrange(data.coordinates, 0, 3))) *
-                        transform->matrix;
+    base_transform =
+      vsg::translate(vsgPos(vrange(data.coordinates, 0, 3))) * base_transform;
   }
   D_MOD("Created static matrix transform, name=" << name);
 }
@@ -72,6 +71,8 @@ VSGStaticMatrixTransform::~VSGStaticMatrixTransform()
 void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> &root,
                                     VSGViewer *master)
 {
+  transform = vsg::MatrixTransform::create();
+  transform->matrix = base_transform;
   transform->setValue("name", name);
   auto par = findParent(root, parent);
   if (!par) {
@@ -83,14 +84,13 @@ void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create static matrix transform, name=" << name);
 }
 
-
 static auto VSGStaticMatrixTransform_maker =
   new SubContractor<VSGObjectTypeKey, VSGStaticMatrixTransform>(
     "static-transform", "Constant matrix transform");
 
 // ---------------------- centered on observer ----------------------
 VSGCenteredTransform::VSGCenteredTransform(const WorldDataSpec &data) :
-   VSGBaseTransform()
+  VSGBaseTransform()
 {
   name = data.name;
   parent = data.parent;
@@ -122,6 +122,7 @@ VSGCenteredTransform::~VSGCenteredTransform()
 void VSGCenteredTransform::init(const vsg::ref_ptr<vsg::Group> &root,
                                 VSGViewer *master)
 {
+  transform = vsg::MatrixTransform::create();
   transform->setValue("name", name);
   auto par = findParent(root, parent);
   if (!par) {
@@ -132,7 +133,6 @@ void VSGCenteredTransform::init(const vsg::ref_ptr<vsg::Group> &root,
   par->addChild(transform);
   D_MOD("VSG create centered transform, name=" << name);
 }
-
 
 void VSGCenteredTransform::iterate(TimeTickType ts,
                                    const BaseObjectMotion &base, double late,
@@ -193,6 +193,7 @@ VSGTiledTransform::~VSGTiledTransform()
 void VSGTiledTransform::init(const vsg::ref_ptr<vsg::Group> &root,
                              VSGViewer *master)
 {
+  transform = vsg::MatrixTransform::create();
   transform->setValue("name", name);
   auto par = findParent(root, parent);
   if (!par) {
@@ -243,6 +244,7 @@ VSGMatrixTransform::~VSGMatrixTransform()
 void VSGMatrixTransform::init(const vsg::ref_ptr<vsg::Group> &root,
                               VSGViewer *master)
 {
+  transform = vsg::MatrixTransform::create();
   transform->setValue("name", name);
   auto par = findParent(root, parent);
   if (!par) {

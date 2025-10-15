@@ -10,13 +10,13 @@
 
 #include "VSGPBRShaderSet.hxx"
 #define VSGViewer_cxx
+#include "AxisTransform.hxx"
 #include "VSGViewer.hxx"
 #include "WorldObjectBase.hxx"
-#include "AxisTransform.hxx"
 #include <boost/lexical_cast.hpp>
-#include <unistd.h>
 #include <cmath>
 #include <deque>
+#include <unistd.h>
 
 #define W_MOD
 #define E_MOD
@@ -257,7 +257,7 @@ VSGViewer::VSGViewer() :
   resourcepath(),
   keep_pointer(false),
   bg_color(4, 0.0),
-  the_fog(FogValue::create()),
+  the_fog(),
   enable_simple_fog(false),
   buffer_nsamples(8),
   shadowMapCount(0),
@@ -268,7 +268,7 @@ VSGViewer::VSGViewer() :
   // bg_color[2] = 0.45;
 }
 
-VSGViewer::~VSGViewer() {}
+VSGViewer::~VSGViewer() { clearModels(); }
 
   /** Quick exception struct. */
 struct DuecaVSGConfigError : public std::exception
@@ -376,6 +376,8 @@ void VSGViewer::init(bool waitswap)
 
   // ensure pbr use my new set of shaders.
   // https://github.com/vsg-dev/VulkanSceneGraph/discussions/604
+  the_fog = FogValue::create();
+  the_fog->value() = my_fog;
   the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
   auto pbr = vsgPBRShaderSet(options, the_fog);
   options->shaderSets["pbr"] = pbr;
@@ -484,7 +486,7 @@ void VSGViewer::init(bool waitswap)
     viewspec.pop_front();
   }
 
-    // if applicable, initialize static objects and dynamic objects
+  // if applicable, initialize static objects and dynamic objects
   for (auto &ao : controlled_objects) {
     try {
       ao.second->init(root, this);
@@ -564,6 +566,22 @@ bool VSGViewer::readModelFromXML(const std::string &file)
   }
 }
 
+void VSGViewer::clearModels()
+{
+  static_objects.reverse();
+  active_objects.reverse();
+  if (root) {
+    for (auto &so : static_objects) {
+      so->unInit(root);
+    }
+    for (auto &so : active_objects) {
+      so->unInit(root);
+    }
+  }
+  static_objects.clear();
+  active_objects.clear();
+}
+
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 {
   try {
@@ -573,17 +591,10 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
     case WorldViewConfig::ReadScene:
     case WorldViewConfig::ClearModels: {
 
-      // only removes non-controlled objects
-      static_objects.reverse();
-      for (auto &so : static_objects) {
-        so->unInit(root);
-      }
-      active_objects.reverse();
-      for (auto &so : active_objects) {
-        so->unInit(root);
-      }
-      static_objects.clear();
-      active_objects.clear();
+      // removes non-controlled objects
+      clearModels();
+
+      // compile again?
       viewer->compile();
 
       // read additional/replacing scene data

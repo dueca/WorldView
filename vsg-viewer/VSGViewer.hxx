@@ -11,21 +11,21 @@
 #ifndef VSGViewer_hxx
 #define VSGViewer_hxx
 
-#include <string>
-#include <map>
-#include <vector>
 #include "VSGObject.hxx"
+#include <map>
+#include <string>
+#include <vector>
 
+#include "VSGObjectFactory.hxx"
+#include "VSGPBRShaderSet.hxx"
+#include "VSGXMLReader.hxx"
+#include <WorldViewerBase.hxx>
 #include <vsg/all.h>
 #include <vsg/core/Array.h>
 #include <vsg/core/ref_ptr.h>
 #include <vsg/state/BufferInfo.h>
 #include <vsg/state/PipelineLayout.h>
 #include <vsgXchange/all.h>
-#include <WorldViewerBase.hxx>
-#include "VSGObjectFactory.hxx"
-#include "VSGPBRShaderSet.hxx"
-#include "VSGXMLReader.hxx"
 
 // #define RG_PER_VIEWSET
 
@@ -279,7 +279,13 @@ public:
   bool readModelFromXML(const std::string &file);
 
   /** Shadow maps? */
-  inline vsg::ref_ptr<vsg::ShadowSettings> getShadowSettings() const { return shadowSettings; }
+  inline vsg::ref_ptr<vsg::ShadowSettings> getShadowSettings() const
+  {
+    return shadowSettings;
+  }
+
+  /** Clear models */
+  void clearModels();
 
 protected:
   /** Path to the resources */
@@ -290,6 +296,9 @@ protected:
 
   /** background/clear color */
   std::vector<float> bg_color;
+
+  /** Fog initialization value */
+  Fog my_fog;
 
   /** Fog object pointer */
   vsg::ref_ptr<vsg::Value<Fog>> the_fog;
