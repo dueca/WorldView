@@ -660,7 +660,28 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       break;
 
     case WorldViewConfig::RemoveNode:
+      for (auto so = static_objects.begin(); so != static_objects.end(); so++) {
+        if ((*so)->getName() == adapt.config.name) {
+          (*so)->unInit(root);
+          static_objects.erase(so);
+          break;
+        }
+      }
+     for (auto so = active_objects.begin(); so != active_objects.end(); so++) {
+        if ((*so)->getName() == adapt.config.name) {
+          (*so)->unInit(root);
+          static_objects.erase(so);
+          break;
+        }
+      }
+      W_MOD("Could not find node " << adapt.config.name << " to remove");
+
     case WorldViewConfig::LoadObject:
+      if (!createStatic(adapt.config)) {
+        W_MOD("Could not create object " << adapt.config.name);
+      }
+      break;
+
     case WorldViewConfig::MoveObject:
     case WorldViewConfig::ListNodes:
     case WorldViewConfig::LoadOverlay:
