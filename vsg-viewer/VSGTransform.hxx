@@ -29,7 +29,7 @@ public:
   ~VSGBaseTransform();
 
   /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+  void unInit(vsg::ref_ptr<vsg::Group> root) override;
 };
 
 /** Fixed, static transform, can be child of any node. When child
@@ -48,7 +48,7 @@ public:
   ~VSGStaticMatrixTransform();
 
   /** Initialise the transform with the VSG scene */
-  void init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master) final;
+  void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
 };
 
 /** Matrix location centered on observer x, y position (skydomes).
@@ -69,7 +69,7 @@ public:
   ~VSGCenteredTransform();
 
   /** Initialise the transform with the VSG scene */
-  void init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master) final;
+  void init( vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
 
   /** Update on the observer position */
   void iterate(TimeTickType ts, const BaseObjectMotion &base, double late,
@@ -101,7 +101,7 @@ public:
   ~VSGTiledTransform();
 
   /** Initialise the transform with the VSG scene */
-  void init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master) final;
+  void init( vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
 
   /** Update on the observer position */
   void iterate(TimeTickType ts, const BaseObjectMotion &base, double late,
@@ -141,7 +141,7 @@ public:
                bool freeze = false) override;
 
   /** Initialise the transform with the VSG scene */
-  virtual void init(const vsg::ref_ptr<vsg::Group> &root,
+  virtual void init(vsg::ref_ptr<vsg::Group> root,
                     VSGViewer *master) override;
 };
 

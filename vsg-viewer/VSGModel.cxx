@@ -33,8 +33,7 @@ VSGStaticModel::~VSGStaticModel()
   D_MOD("Destroying visual model, name=" << name);
 }
 
-void VSGStaticModel::init(const vsg::ref_ptr<vsg::Group> &root,
-                          VSGViewer *master)
+void VSGStaticModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
   auto model = vsg::read_cast<vsg::Node>(modelfile, master->options);
   if (!model) {
@@ -53,7 +52,7 @@ void VSGStaticModel::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create visual model, name=" << name);
 }
 
-void VSGStaticModel::unInit(const vsg::ref_ptr<vsg::Group> &root)
+void VSGStaticModel::unInit(vsg::ref_ptr<vsg::Group> root)
 {
   auto par = findParent(root, parent);
   if (!par) {
@@ -85,7 +84,7 @@ VSGModel::VSGModel(const WorldDataSpec &data) :
 
 VSGModel::~VSGModel() { D_MOD("Destroying static model, name=" << name); }
 
-void VSGModel::init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master)
+void VSGModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
   model = vsg::read_cast<vsg::Node>(modelfile, master->options);
   VSGMatrixTransform::init(root, master);
@@ -98,15 +97,15 @@ void VSGModel::init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master)
   D_MOD("VSG create visual model, name=" << name);
 }
 
-void VSGModel::unInit(const vsg::ref_ptr<vsg::Group> &root)
+void VSGModel::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto it = std::find(transform->children.begin(), transform->children.end(), model);
+  auto it =
+    std::find(transform->children.begin(), transform->children.end(), model);
   if (it != transform->children.end()) {
     transform->children.erase(it);
   }
   VSGMatrixTransform::unInit(root);
 }
-
 
 static auto VSGModel_maker = new SubContractor<VSGObjectTypeKey, VSGModel>(
   "model", "controlled 3D model from external modeling application");

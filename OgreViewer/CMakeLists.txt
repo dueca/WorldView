@@ -25,7 +25,7 @@ dueca_add_dco()
 # detect any needed libraries here with CMake's mechanisms, such as
 # find_package, pkg_check_modules, or low-level find_path/find_library
 #find_package(OGRE )
-pkg_check_modules(OGRE OGRE-Overlay)
+pkg_check_modules(OGRE OGRE-Overlay OGRE-Bites)
 find_package(X11)
 find_package(OpenGL COMPONENTS GLX)
 pkg_check_modules(TINYXML REQUIRED tinyxml)

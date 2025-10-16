@@ -34,11 +34,11 @@ public:
   ~VSGAmbientLight();
 
   /** Initialise the light with the VSG scene */
-  virtual void init(const vsg::ref_ptr<vsg::Group>& root,
+  virtual void init(vsg::ref_ptr<vsg::Group> root,
                     VSGViewer* master) override;
 
   /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+  void unInit(vsg::ref_ptr<vsg::Group> root) override;
 };
 
 class VSGDirectionalLight: public VSGObject
@@ -62,11 +62,11 @@ public:
   ~VSGDirectionalLight();
 
   /** Initialise the light with the VSG scene */
-  virtual void init(const vsg::ref_ptr<vsg::Group>& root,
+  virtual void init(vsg::ref_ptr<vsg::Group> root,
                     VSGViewer* master) override;
 
   /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+  void unInit(vsg::ref_ptr<vsg::Group> root) override;
 };
 
 class VSGPointLight: public VSGObject
@@ -97,11 +97,11 @@ public:
   ~VSGPointLight();
 
   /** Initialise the light with the VSG scene */
-  virtual void init(const vsg::ref_ptr<vsg::Group>& root,
+  virtual void init(vsg::ref_ptr<vsg::Group> root,
                     VSGViewer* master) override;
 
   /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+  void unInit(vsg::ref_ptr<vsg::Group> root) override;
 };
 
 class VSGSpotLight: public VSGObject
@@ -141,11 +141,11 @@ public:
   ~VSGSpotLight();
 
   /** Initialise the light with the VSG scene */
-  virtual void init(const vsg::ref_ptr<vsg::Group>& root,
+  virtual void init(vsg::ref_ptr<vsg::Group> root,
                     VSGViewer* master) override;
 
   /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+  void unInit(vsg::ref_ptr<vsg::Group> root) override;
 };
 
 }; // namespace

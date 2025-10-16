@@ -268,9 +268,31 @@ VSGViewer::VSGViewer() :
   // bg_color[2] = 0.45;
 }
 
-VSGViewer::~VSGViewer() { clearModels(); }
+VSGViewer::~VSGViewer()
+{
+  if (root)
+    viewer->deviceWaitIdle();
 
-  /** Quick exception struct. */
+  // remove the static models
+  clearModels();
+
+  // remove the dynamic models
+  if (root) {
+    for (auto &co : controlled_objects) {
+      co.second->unInit(root);
+    }
+  }
+  controlled_objects.clear();
+
+  // close the windows
+  for (auto &ws : windows) {
+    // ws.second.traits->device
+    viewer->removeWindow(ws.second.window);
+  }
+  windows.clear();
+}
+
+/** Quick exception struct. */
 struct DuecaVSGConfigError : public std::exception
 {
     /** Say what is the problem */

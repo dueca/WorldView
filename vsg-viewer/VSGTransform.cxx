@@ -26,7 +26,7 @@ VSGBaseTransform::VSGBaseTransform() :
 VSGBaseTransform::~VSGBaseTransform() {}
 
 // should be? https://github.com/vsg-dev/VulkanSceneGraph/discussions/1050
-void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> &root)
+void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> root)
 {
   auto par = findParent(root, parent);
   if (!par) {
@@ -65,10 +65,10 @@ VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
 
 VSGStaticMatrixTransform::~VSGStaticMatrixTransform()
 {
-  D_MOD("Destroying static matrix transform, name=" << name);
+  // D_MOD("Destroying static matrix transform, name=" << name);
 }
 
-void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> &root,
+void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> root,
                                     VSGViewer *master)
 {
   transform = vsg::MatrixTransform::create();
@@ -81,7 +81,7 @@ void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> &root,
     par = root;
   }
   par->addChild(transform);
-  D_MOD("VSG create static matrix transform, name=" << name);
+  // D_MOD("VSG create static matrix transform, name=" << name);
 }
 
 static auto VSGStaticMatrixTransform_maker =
@@ -119,7 +119,7 @@ VSGCenteredTransform::~VSGCenteredTransform()
   D_MOD("Destroying centered matrix transform, name=" << name);
 }
 
-void VSGCenteredTransform::init(const vsg::ref_ptr<vsg::Group> &root,
+void VSGCenteredTransform::init(const vsg::ref_ptr<vsg::Group> root,
                                 VSGViewer *master)
 {
   transform = vsg::MatrixTransform::create();
@@ -190,7 +190,7 @@ VSGTiledTransform::~VSGTiledTransform()
   D_MOD("Destroying Tiled matrix transform, name=" << name);
 }
 
-void VSGTiledTransform::init(const vsg::ref_ptr<vsg::Group> &root,
+void VSGTiledTransform::init(const vsg::ref_ptr<vsg::Group> root,
                              VSGViewer *master)
 {
   transform = vsg::MatrixTransform::create();
@@ -241,7 +241,7 @@ VSGMatrixTransform::~VSGMatrixTransform()
   D_MOD("Destroying matrix transform, name=" << name);
 }
 
-void VSGMatrixTransform::init(const vsg::ref_ptr<vsg::Group> &root,
+void VSGMatrixTransform::init(const vsg::ref_ptr<vsg::Group> root,
                               VSGViewer *master)
 {
   transform = vsg::MatrixTransform::create();

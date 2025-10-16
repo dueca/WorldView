@@ -32,7 +32,7 @@ VSGAmbientLight::~VSGAmbientLight()
   D_MOD("Destroying ambient light, name=" << name);
 }
 
-void VSGAmbientLight::init(const vsg::ref_ptr<vsg::Group> &root,
+void VSGAmbientLight::init(vsg::ref_ptr<vsg::Group> root,
                            VSGViewer *master)
 {
   light = vsg::AmbientLight::create();
@@ -43,7 +43,7 @@ void VSGAmbientLight::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create ambient light, name=" << name);
 }
 
-void VSGAmbientLight::unInit(const vsg::ref_ptr<vsg::Group> &root)
+void VSGAmbientLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
   auto it = std::find(root->children.begin(), root->children.end(), light);
   if (it != root->children.end()) {
@@ -71,7 +71,7 @@ VSGDirectionalLight::~VSGDirectionalLight()
   D_MOD("Destroying directional light, name=" << name);
 }
 
-void VSGDirectionalLight::init(const vsg::ref_ptr<vsg::Group> &root,
+void VSGDirectionalLight::init(vsg::ref_ptr<vsg::Group> root,
                                VSGViewer *master)
 {
   light = vsg::DirectionalLight::create();
@@ -91,7 +91,7 @@ void VSGDirectionalLight::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("Init directional light, name=" << name);
 }
 
-void VSGDirectionalLight::unInit(const vsg::ref_ptr<vsg::Group> &root)
+void VSGDirectionalLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
   auto par = findParent(root, parent);
   if (!par)
@@ -124,7 +124,7 @@ VSGPointLight::~VSGPointLight()
   D_MOD("Destroying point light, name=" << name);
 }
 
-void VSGPointLight::init(const vsg::ref_ptr<vsg::Group> &root,
+void VSGPointLight::init(vsg::ref_ptr<vsg::Group> root,
                          VSGViewer *master)
 {
   light = vsg::PointLight::create();
@@ -148,7 +148,7 @@ void VSGPointLight::init(const vsg::ref_ptr<vsg::Group> &root,
   D_MOD("VSG create point light, name=" << name);
 }
 
-void VSGPointLight::unInit(const vsg::ref_ptr<vsg::Group> &root)
+void VSGPointLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
   auto par = findParent(root, parent);
   if (!par)
@@ -186,7 +186,7 @@ VSGSpotLight::~VSGSpotLight()
     //
 }
 
-void VSGSpotLight::init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master)
+void VSGSpotLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
   light = vsg::SpotLight::create();
   cull = vsg::CullGroup::create();
@@ -212,7 +212,7 @@ void VSGSpotLight::init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master)
   D_MOD("VSG create spot light, name=" << name);
 }
 
-void VSGSpotLight::unInit(const vsg::ref_ptr<vsg::Group> &root)
+void VSGSpotLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
   auto par = findParent(root, parent);
   if (!par)
