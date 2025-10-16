@@ -614,10 +614,8 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
     case WorldViewConfig::ClearModels: {
 
       // removes non-controlled objects
+      viewer->deviceWaitIdle();
       clearModels();
-
-      // compile again?
-      viewer->compile();
 
       // read additional/replacing scene data
       if (adapt.command == WorldViewConfig::ReadScene) {
@@ -647,39 +645,52 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       the_fog->dirty();
       break;
 
-    case WorldViewConfig::EyeOffset:
+    case WorldViewConfig::EyeOffset: {
+      bool doneit = false;
       for (auto &ws : windows) {
         for (auto &vs : ws.second.viewset) {
           if (vs.first == adapt.config.name) {
             vs.second.eye_offset = eyeOffsetMatrix(adapt.config.coordinates);
-            break;
+            doneit = true;
           }
         }
       }
-      W_MOD("Could not find view to adapt eye offset: " << adapt.config.name);
-      break;
+      if (!doneit) {
+        W_MOD("Could not find view to adapt eye offset: " << adapt.config.name);
+      }
+    } break;
 
-    case WorldViewConfig::RemoveNode:
+    case WorldViewConfig::RemoveNode: {
+      bool doneit = false;
+      viewer->deviceWaitIdle();
       for (auto so = static_objects.begin(); so != static_objects.end(); so++) {
         if ((*so)->getName() == adapt.config.name) {
           (*so)->unInit(root);
           static_objects.erase(so);
-          break;
+          doneit = true;
         }
       }
-     for (auto so = active_objects.begin(); so != active_objects.end(); so++) {
+      for (auto so = active_objects.begin(); so != active_objects.end(); so++) {
         if ((*so)->getName() == adapt.config.name) {
           (*so)->unInit(root);
-          static_objects.erase(so);
-          break;
+          active_objects.erase(so);
+          doneit = true;
         }
       }
-      W_MOD("Could not find node " << adapt.config.name << " to remove");
+      if (!doneit) {
+        W_MOD("Could not find node " << adapt.config.name << " to remove");
+      }
+      else {
+        viewer->compile();
+      }
+    } break;
 
     case WorldViewConfig::LoadObject:
+      viewer->deviceWaitIdle();
       if (!createStatic(adapt.config)) {
         W_MOD("Could not create object " << adapt.config.name);
       }
+      viewer->compile();
       break;
 
     case WorldViewConfig::MoveObject:
