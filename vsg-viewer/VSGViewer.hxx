@@ -11,21 +11,21 @@
 #ifndef VSGViewer_hxx
 #define VSGViewer_hxx
 
-#include <string>
-#include <map>
-#include <vector>
 #include "VSGObject.hxx"
+#include <map>
+#include <string>
+#include <vector>
 
+#include "VSGObjectFactory.hxx"
+#include "VSGPBRShaderSet.hxx"
+#include "VSGXMLReader.hxx"
+#include <WorldViewerBase.hxx>
 #include <vsg/all.h>
 #include <vsg/core/Array.h>
 #include <vsg/core/ref_ptr.h>
 #include <vsg/state/BufferInfo.h>
 #include <vsg/state/PipelineLayout.h>
 #include <vsgXchange/all.h>
-#include <WorldViewerBase.hxx>
-#include "VSGObjectFactory.hxx"
-#include "VSGPBRShaderSet.hxx"
-#include "VSGXMLReader.hxx"
 
 // #define RG_PER_VIEWSET
 
@@ -50,8 +50,25 @@ class VSGViewer : public WorldViewerBase
 
   std::list<WinSpec> winspec;
 
+public:
+
+  /** Options object,
+    @note To avoid problems in construction/destruction, vsg object are
+          listed in the order of ::create() use. Check with valgrind */
+  vsg::ref_ptr<vsg::Options> options;
+
+  /** Shadow settings, needed for the lights */
+  vsg::ref_ptr<vsg::ShadowSettings> shadowSettings;
+
+private:
+  /** Fog object pointer */
+  vsg::ref_ptr<vsg::Value<Fog>> the_fog;
+
   /** scene manager */
   vsg::ref_ptr<vsg::StateGroup> root;
+
+  /** Specific pipeline */
+  vsg::ref_ptr<vsg::PipelineLayout> layout;
 
   /** observer transform will be updated with the ego motion */
   vsg::ref_ptr<vsg::AbsoluteTransform> observer_transform;
@@ -62,18 +79,8 @@ class VSGViewer : public WorldViewerBase
   /** A single viewer, matching a single scene */
   vsg::ref_ptr<vsg::Viewer> viewer;
 
-  /** Specific pipeline */
-  vsg::ref_ptr<vsg::PipelineLayout> layout;
-
   /** Reader for xml definitions */
   boost::scoped_ptr<VSGXMLReader> xml_reader;
-
-  /** Shadow settings, needed for the lights */
-  vsg::ref_ptr<vsg::ShadowSettings> shadowSettings;
-
-public:
-  /** Options object */
-  vsg::ref_ptr<vsg::Options> options;
 
 private:
   /** counter dynamical creation */
@@ -104,14 +111,14 @@ private:
     /** Name, for debugging purposes. */
     std::string name;
 
+    /** The view matrix for the camera */
+    vsg::ref_ptr<vsg::LookAt> view_matrix;
+
     /** The render camera set-up */
     vsg::ref_ptr<vsg::Camera> camera;
 
     /** The view of this camera */
     vsg::ref_ptr<vsg::View> view;
-
-    /** The view matrix for the camera */
-    vsg::ref_ptr<vsg::LookAt> view_matrix;
 
     /** The camera's offset from the base vehicle point (angle,
         distance or both) */
@@ -156,19 +163,19 @@ private:
     /** Display on which it is presented */
     std::string display;
 
+    /** Traits of the window */
+    vsg::ref_ptr<vsg::WindowTraits> traits;
+
     /** The actual window */
     vsg::ref_ptr<vsg::Window> window;
 
-    /** Traits of the window */
-    vsg::ref_ptr<vsg::WindowTraits> traits;
+    /** Each window has a command graph */
+    vsg::ref_ptr<vsg::CommandGraph> command_graph;
 
 #ifndef RG_PER_VIEWSET
     /** And a rendergraph?*/
     vsg::ref_ptr<vsg::RenderGraph> render_graph;
 #endif
-
-    /** Each window has a command graph */
-    vsg::ref_ptr<vsg::CommandGraph> command_graph;
 
     /** A list of view sets; these represent the different render
         areas within the window */
@@ -279,7 +286,13 @@ public:
   bool readModelFromXML(const std::string &file);
 
   /** Shadow maps? */
-  inline vsg::ref_ptr<vsg::ShadowSettings> getShadowSettings() const { return shadowSettings; }
+  inline vsg::ref_ptr<vsg::ShadowSettings> getShadowSettings() const
+  {
+    return shadowSettings;
+  }
+
+  /** Clear models */
+  void clearModels();
 
 protected:
   /** Path to the resources */
@@ -291,8 +304,8 @@ protected:
   /** background/clear color */
   std::vector<float> bg_color;
 
-  /** Fog object pointer */
-  vsg::ref_ptr<vsg::Value<Fog>> the_fog;
+  /** Fog initialization value */
+  Fog my_fog;
 
   /** Enable simple fog. */
   bool enable_simple_fog;

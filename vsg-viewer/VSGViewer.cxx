@@ -10,13 +10,13 @@
 
 #include "VSGPBRShaderSet.hxx"
 #define VSGViewer_cxx
+#include "AxisTransform.hxx"
 #include "VSGViewer.hxx"
 #include "WorldObjectBase.hxx"
-#include "AxisTransform.hxx"
 #include <boost/lexical_cast.hpp>
-#include <unistd.h>
 #include <cmath>
 #include <deque>
+#include <unistd.h>
 
 #define W_MOD
 #define E_MOD
@@ -257,7 +257,7 @@ VSGViewer::VSGViewer() :
   resourcepath(),
   keep_pointer(false),
   bg_color(4, 0.0),
-  the_fog(FogValue::create()),
+  the_fog(),
   enable_simple_fog(false),
   buffer_nsamples(8),
   shadowMapCount(0),
@@ -268,9 +268,31 @@ VSGViewer::VSGViewer() :
   // bg_color[2] = 0.45;
 }
 
-VSGViewer::~VSGViewer() {}
+VSGViewer::~VSGViewer()
+{
+  if (root)
+    viewer->deviceWaitIdle();
 
-  /** Quick exception struct. */
+  // remove the static models
+  clearModels();
+
+  // remove the dynamic models
+  if (root) {
+    for (auto &co : controlled_objects) {
+      co.second->unInit(root);
+    }
+  }
+  controlled_objects.clear();
+
+  // close the windows
+  for (auto &ws : windows) {
+    // ws.second.traits->device
+    viewer->removeWindow(ws.second.window);
+  }
+  windows.clear();
+}
+
+/** Quick exception struct. */
 struct DuecaVSGConfigError : public std::exception
 {
     /** Say what is the problem */
@@ -376,6 +398,8 @@ void VSGViewer::init(bool waitswap)
 
   // ensure pbr use my new set of shaders.
   // https://github.com/vsg-dev/VulkanSceneGraph/discussions/604
+  the_fog = FogValue::create();
+  the_fog->value() = my_fog;
   the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
   auto pbr = vsgPBRShaderSet(options, the_fog);
   options->shaderSets["pbr"] = pbr;
@@ -484,7 +508,7 @@ void VSGViewer::init(bool waitswap)
     viewspec.pop_front();
   }
 
-    // if applicable, initialize static objects and dynamic objects
+  // if applicable, initialize static objects and dynamic objects
   for (auto &ao : controlled_objects) {
     try {
       ao.second->init(root, this);
@@ -564,6 +588,22 @@ bool VSGViewer::readModelFromXML(const std::string &file)
   }
 }
 
+void VSGViewer::clearModels()
+{
+  static_objects.reverse();
+  active_objects.reverse();
+  if (root) {
+    for (auto &so : static_objects) {
+      so->unInit(root);
+    }
+    for (auto &so : active_objects) {
+      so->unInit(root);
+    }
+  }
+  static_objects.clear();
+  active_objects.clear();
+}
+
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 {
   try {
@@ -573,18 +613,9 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
     case WorldViewConfig::ReadScene:
     case WorldViewConfig::ClearModels: {
 
-      // only removes non-controlled objects
-      static_objects.reverse();
-      for (auto &so : static_objects) {
-        so->unInit(root);
-      }
-      active_objects.reverse();
-      for (auto &so : active_objects) {
-        so->unInit(root);
-      }
-      static_objects.clear();
-      active_objects.clear();
-      viewer->compile();
+      // removes non-controlled objects
+      viewer->deviceWaitIdle();
+      clearModels();
 
       // read additional/replacing scene data
       if (adapt.command == WorldViewConfig::ReadScene) {
@@ -614,20 +645,54 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       the_fog->dirty();
       break;
 
-    case WorldViewConfig::EyeOffset:
+    case WorldViewConfig::EyeOffset: {
+      bool doneit = false;
       for (auto &ws : windows) {
         for (auto &vs : ws.second.viewset) {
           if (vs.first == adapt.config.name) {
             vs.second.eye_offset = eyeOffsetMatrix(adapt.config.coordinates);
-            break;
+            doneit = true;
           }
         }
       }
-      W_MOD("Could not find view to adapt eye offset: " << adapt.config.name);
+      if (!doneit) {
+        W_MOD("Could not find view to adapt eye offset: " << adapt.config.name);
+      }
+    } break;
+
+    case WorldViewConfig::RemoveNode: {
+      bool doneit = false;
+      viewer->deviceWaitIdle();
+      for (auto so = static_objects.begin(); so != static_objects.end(); so++) {
+        if ((*so)->getName() == adapt.config.name) {
+          (*so)->unInit(root);
+          static_objects.erase(so);
+          doneit = true;
+        }
+      }
+      for (auto so = active_objects.begin(); so != active_objects.end(); so++) {
+        if ((*so)->getName() == adapt.config.name) {
+          (*so)->unInit(root);
+          active_objects.erase(so);
+          doneit = true;
+        }
+      }
+      if (!doneit) {
+        W_MOD("Could not find node " << adapt.config.name << " to remove");
+      }
+      else {
+        viewer->compile();
+      }
+    } break;
+
+    case WorldViewConfig::LoadObject:
+      viewer->deviceWaitIdle();
+      if (!createStatic(adapt.config)) {
+        W_MOD("Could not create object " << adapt.config.name);
+      }
+      viewer->compile();
       break;
 
-    case WorldViewConfig::RemoveNode:
-    case WorldViewConfig::LoadObject:
     case WorldViewConfig::MoveObject:
     case WorldViewConfig::ListNodes:
     case WorldViewConfig::LoadOverlay:

@@ -421,7 +421,7 @@ bool VSGViewer_Dueca::addObjectClassData(const std::vector<std::string> &names)
 
 bool VSGViewer_Dueca::setFog(const std::vector<double> &fog)
 {
-  auto &thefog = the_fog->value();
+  auto &thefog = my_fog;
   if (fog.size() >= 1) {
     thefog.density = fog[0];
   }

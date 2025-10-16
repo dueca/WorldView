@@ -42,10 +42,10 @@ public:
   ~VSGStaticModel();
 
   /** Initialise the model with the VSG scene */
-  void init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master) override;
+  void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) override;
 
   /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+  void unInit(vsg::ref_ptr<vsg::Group> root) override;
 };
 
 class VSGModel : public VSGMatrixTransform
@@ -56,7 +56,7 @@ class VSGModel : public VSGMatrixTransform
   /** Filename */
   std::string modelfile;
 
-  public:
+public:
   /** Constructor */
   VSGModel(const WorldDataSpec &data);
 
@@ -64,10 +64,10 @@ class VSGModel : public VSGMatrixTransform
   ~VSGModel();
 
   /** Initialise the model with the VSG scene */
-  void init(const vsg::ref_ptr<vsg::Group> &root, VSGViewer *master) final;
+  void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
 
   /** Undo the initialisation */
-  void unInit(const vsg::ref_ptr<vsg::Group> &root) override;
+  void unInit(vsg::ref_ptr<vsg::Group> root) override;
 };
 
 }; // namespace vsgviewer

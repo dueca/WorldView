@@ -48,11 +48,11 @@ public:
       @param root   Root node of the scene graph
       @param master Pointer to the viewer.
    */
-  virtual void init(const vsg::ref_ptr<vsg::Group>& root,
+  virtual void init(vsg::ref_ptr<vsg::Group> root,
                     VSGViewer* master) = 0;
 
   /** Undo the initialisation */
-  virtual void unInit(const vsg::ref_ptr<vsg::Group>& root) = 0;
+  virtual void unInit(vsg::ref_ptr<vsg::Group> root) = 0;
 
   /** Returns true if the object needs drawing post-access. */
   virtual bool requirePostDrawAccess() { return false; }
