@@ -215,6 +215,12 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
     // read the image data
     auto image = vsg::read_cast<vsg::Data>(spec.overlay, options);
 
+    // this may go wrong, check
+    if (!image) {
+      W_MOD("Failed to load overlay image " << spec.overlay);
+    }
+    return;
+    
     // build a quad
     auto builder = vsg::Builder::create();
     vsg::StateInfo state;
