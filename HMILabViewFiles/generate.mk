@@ -1,6 +1,6 @@
 # Where are we??
 CNFPATH := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-
+RUNDIR := $(shell pwd)
 MASKFILES = hmilabmaskleft-blur.png hmilabmaskright-blur.png hmilabmaskfront-blur.png
 TESTFILES = hmilabmaskleft-test.png hmilabmaskright-test.png hmilabmaskfront-test.png
 
@@ -30,7 +30,7 @@ clean:
 	${CONVERT} ${<} -channel RGBA -blur 0x5 -gamma 0.45 png32:${@}
 
 %-sharp.png:
-	inkscape --export-filename=${@} \
+	inkscape --export-filename=${RUNDIR}/${@} \
 		${MASKOPTS} ${CNFPATH}/${@:-sharp.png=.svg}
 
 %-test.png:

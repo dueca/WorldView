@@ -18,7 +18,7 @@ else
 fi
 
 # run the link script in the hmi lab data dir; the -t is for test files
-../../../../WorldView/HMILabViewFiles/generate
+make -f ../../../../WorldView/HMILabViewFiles/generate.mk
 
 if [ -d /usr/share/vsgExamples ]; then
     ln -sf /usr/share/vsgExamples/models/lz.vsgt .
