@@ -2,7 +2,17 @@
 CNFPATH := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 MASKFILES = hmilabmaskleft-blur.png hmilabmaskright-blur.png hmilabmaskfront-blur.png
-CONVERT := /usr/bin/magick
+
+ifeq (, $(shell which magick))
+ifeq (, $(shell which convert))
+$(error "Missing magick and convert install one of these")
+else
+CONVERT := $(shell which convert)
+endif
+else
+CONVERT := $(shell which magick)
+endif
+
 MASKOPTS = --export-area-page
 
 # default target
