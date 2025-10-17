@@ -6,7 +6,7 @@
    height="1080"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
    version="1.0"
    sodipodi:docname="hmilabmaskleft.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
@@ -42,22 +42,24 @@
      objecttolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.4166666"
-     inkscape:cx="1624.9656"
-     inkscape:cy="483.51725"
+     inkscape:zoom="0.42721034"
+     inkscape:cx="1331.8966"
+     inkscape:cy="1072.0714"
      inkscape:document-units="px"
-     inkscape:current-layer="layer3"
+     inkscape:current-layer="aligner"
      width="1024px"
      height="768px"
-     inkscape:window-width="1858"
-     inkscape:window-height="1016"
-     inkscape:window-x="62"
-     inkscape:window-y="27"
+     inkscape:window-width="1076"
+     inkscape:window-height="991"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
      showgrid="true"
-     inkscape:window-maximized="1"
+     inkscape:window-maximized="0"
      inkscape:pagecheckerboard="0"
      units="px"
-     scale-x="1">
+     scale-x="1"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        type="xygrid"
        id="grid3007"
@@ -97,7 +99,7 @@
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="mid"
+     inkscape:label="testbar"
      sodipodi:insensitive="true"
      style="display:none">
     <rect
@@ -109,9 +111,9 @@
        y="550" />
   </g>
   <g
-     inkscape:label="Layer 1"
+     inkscape:label="aligner"
      inkscape:groupmode="layer"
-     id="layer1"
+     id="aligner"
      transform="translate(0,312)"
      style="display:none"
      sodipodi:insensitive="true">
