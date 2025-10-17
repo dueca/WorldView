@@ -125,7 +125,7 @@ class objects. Please also add a description (c-style string). */
       "   - transform      - Transform with external 3D position\n"
       "   - centered-transform - Transform with position attached to observer\n"
       "   Transformations are either absolute (with root as parent), or can "
-      "be\n"
+      "   be\n"
       "   made relative by using a moving parent (\"observer\" or other)\n"
       "   Note that the factory is extendable, by adding object files with\n"
       "   factory connections, e.g., to create a HUD overlay\n."

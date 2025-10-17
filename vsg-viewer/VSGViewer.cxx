@@ -220,7 +220,7 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
       W_MOD("Failed to load overlay image " << spec.overlay);
     }
     return;
-    
+
     // build a quad
     auto builder = vsg::Builder::create();
     vsg::StateInfo state;
@@ -258,7 +258,9 @@ VSGViewer::VSGViewer() :
   controlled_objects(),
   active_objects(),
   static_objects(),
-  post_draw(),
+  cleanup_list(),
+  cleanup_delay(0),
+  /* post_draw(), */
   viewspec(),
   resourcepath(),
   keep_pointer(false),
@@ -559,7 +561,17 @@ void VSGViewer::redraw(bool wait, bool reset_context)
   }
 }
 
-void VSGViewer::waitSwap() { viewer->advanceToNextFrame(); }
+void VSGViewer::waitSwap()
+{
+  if (cleanup_delay) {
+    if (--cleanup_delay == 0U) {
+      I_MOD("Cleaning up " << cleanup_list.size());
+      cleanup_list.clear();
+    }
+  }
+
+  viewer->advanceToNextFrame();
+}
 
 bool VSGViewer::setXMLReader(const std::string &definitions)
 {
@@ -596,18 +608,19 @@ bool VSGViewer::readModelFromXML(const std::string &file)
 
 void VSGViewer::clearModels()
 {
-  static_objects.reverse();
-  active_objects.reverse();
   if (root) {
-    for (auto &so : static_objects) {
-      so->unInit(root);
+    while (active_objects.size()) {
+      active_objects.back()->unInit(root);
+      cleanup_list.push_back(active_objects.back());
+      active_objects.pop_back();
     }
-    for (auto &so : active_objects) {
-      so->unInit(root);
+    while (static_objects.size()) {
+      static_objects.back()->unInit(root);
+      cleanup_list.push_back(static_objects.back());
+      static_objects.pop_back();
     }
+    cleanup_delay = 10;
   }
-  static_objects.clear();
-  active_objects.clear();
 }
 
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
@@ -630,7 +643,7 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
         }
       }
 
-      // initialize these objects again
+      // initialize the new objects again
       for (auto &so : active_objects) {
         so->init(root, this);
       }
@@ -672,14 +685,18 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       for (auto so = static_objects.begin(); so != static_objects.end(); so++) {
         if ((*so)->getName() == adapt.config.name) {
           (*so)->unInit(root);
-          static_objects.erase(so);
+          cleanup_list.push_back(*so);
+          so = static_objects.erase(so);
+          cleanup_delay = 10;
           doneit = true;
         }
       }
       for (auto so = active_objects.begin(); so != active_objects.end(); so++) {
         if ((*so)->getName() == adapt.config.name) {
           (*so)->unInit(root);
-          active_objects.erase(so);
+          cleanup_list.push_back(*so);
+          so = active_objects.erase(so);
+          cleanup_delay = 10;
           doneit = true;
         }
       }
