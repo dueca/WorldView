@@ -43,7 +43,7 @@ if [ -d ${HOME}/gdapps/VisualModels ]; then
     for VM in $VISMODELS; do
 	NAME=`basename $VM`
 	if [ \! -f ${NAME}.glb ]; then
-            blender --python \
+            blender --background --python \
 		~/gdapps/VisualModels/VisualModels/exporter/bake-a-blend.py \
 		-- ~/gdapps/VisualModels/VisualModels/${VM}.blend glb
 	fi

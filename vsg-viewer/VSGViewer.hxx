@@ -82,6 +82,12 @@ private:
   /** Reader for xml definitions */
   boost::scoped_ptr<VSGXMLReader> xml_reader;
 
+  /** Buffer of loaded models, for re-use/sharing */
+  typedef std::map<std::string, vsg::ref_ptr<vsg::Node>> buffermap_t;
+
+  /** Buffer */
+  buffermap_t model_buffer;
+
 private:
   /** counter dynamical creation */
   unsigned config_dynamic_created;
@@ -299,6 +305,9 @@ public:
 
   /** Clear models */
   void clearModels();
+
+  /** Load a model from a file */
+  vsg::ref_ptr<vsg::Node> loadModel(const std::string& fname);
 
 protected:
   /** Path to the resources */

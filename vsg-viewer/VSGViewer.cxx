@@ -623,6 +623,20 @@ void VSGViewer::clearModels()
   }
 }
 
+vsg::ref_ptr<vsg::Node> VSGViewer::loadModel(const std::string &fname)
+{
+  auto ib = model_buffer.find(fname);
+  if (ib != model_buffer.end()) {
+    return ib->second;
+  }
+
+  auto model = vsg::read_cast<vsg::Node>(fname, this->options);
+  if (model) {
+    model_buffer[fname] = model;
+  }
+  return model;
+}
+
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 {
   try {
