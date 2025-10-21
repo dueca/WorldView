@@ -18,7 +18,7 @@ else
 fi
 
 # run the link script in the hmi lab data dir; the -t is for test files
-../../../../WorldView/HMILabViewFiles/generate
+make -f ../../../../WorldView/HMILabViewFiles/generate.mk
 
 if [ -d /usr/share/vsgExamples ]; then
     ln -sf /usr/share/vsgExamples/models/lz.vsgt .
@@ -35,14 +35,15 @@ if [ -d ../../../../WorldView/icy-world ]; then
 fi
 
 ln -sf ${DATADIR}/vsg/exampleworld.xml .
+ln -sf ${DATADIR}/vsg/worldmod.xml .
 ln -sf ../../../../WorldView/vsg-viewer/shaders .
 
 if [ -d ${HOME}/gdapps/VisualModels ]; then
-    VISMODELS="orientation/arrows landrover/Defender skydome/skydome skydome/grass"
+    VISMODELS="orientation/arrows landrover/Defender skydome/skydome skydome/grass piper/piper_pa18"
     for VM in $VISMODELS; do
 	NAME=`basename $VM`
 	if [ \! -f ${NAME}.glb ]; then
-            blender --python \
+            blender --background --python \
 		~/gdapps/VisualModels/VisualModels/exporter/bake-a-blend.py \
 		-- ~/gdapps/VisualModels/VisualModels/${VM}.blend glb
 	fi

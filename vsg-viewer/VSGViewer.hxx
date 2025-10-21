@@ -82,6 +82,12 @@ private:
   /** Reader for xml definitions */
   boost::scoped_ptr<VSGXMLReader> xml_reader;
 
+  /** Buffer of loaded models, for re-use/sharing */
+  typedef std::map<std::string, vsg::ref_ptr<vsg::Node>> buffermap_t;
+
+  /** Buffer */
+  buffermap_t model_buffer;
+
 private:
   /** counter dynamical creation */
   unsigned config_dynamic_created;
@@ -214,8 +220,14 @@ private:
   /** Objects that are static, dont get calls about new positioning */
   ObjectListType static_objects;
 
+  /** Objects that need cleaning */
+  ObjectListType cleanup_list;
+
+  /** Cleanup delay */
+  unsigned cleanup_delay;
+
   /** Objects that need post-draw access */
-  ObjectListType post_draw;
+  // ObjectListType post_draw;
 
   /** List of specifications for the wiews, will be applied later */
   std::list<ViewSpec> viewspec;
@@ -293,6 +305,9 @@ public:
 
   /** Clear models */
   void clearModels();
+
+  /** Load a model from a file */
+  vsg::ref_ptr<vsg::Node> loadModel(const std::string& fname);
 
 protected:
   /** Path to the resources */
