@@ -12,6 +12,7 @@ generation:
 - PlibViewer, with plib, a very simple scene graph library
 - OSGViewer, interacting with OpenSceneGraph
 - FlightGearViewer, interacting with FlightGear
+- VSGViewer, interacting with the new VulkanSceneGraph
 
 ## Application
 
@@ -21,8 +22,14 @@ views. Using `dueca-gproject`, borrow the following:
     WorldView/WorldView
 	WorldView/SpecificationBase
 	
-and one of the backends. Note that the `OSGViewer` and `OgreViewer`
-back-ends had most testing, ymmv on the other backends.
+and one of the backends. The new 'VSGViewer' back-end currently
+gets most testing, after that the `OSGViewer` and `OgreViewer`
+back-ends, ymmv on the other backends.
+
+The FlightGearViewer needs a running flightgear, to be started
+together with DUECA; check the run folder. It is also able to,
+provided youhave the visual models and configuration, show other 
+vehicles (like aircraft and ground vehicles).
 
 ## Author(s)
 
