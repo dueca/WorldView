@@ -27,7 +27,7 @@ void setCoordinates(unsigned offset, unsigned ncoord, const T &values)
 template <typename T>
 void setStrings(unsigned offset, unsigned ns, const T &values)
 {
-  if (ncoord + offset > filename.size()) {
+  if (ns + offset > filename.size()) {
     filename.resize(offset + ns);
   }
   for (unsigned idx = 0; idx < ns && idx < values.size(); idx++) {
