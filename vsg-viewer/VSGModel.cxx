@@ -72,7 +72,8 @@ static auto VSGStaticModel_maker =
     "static-model", "3D model from external modeling application");
 
 VSGModel::VSGModel(const WorldDataSpec &data) :
-  VSGMatrixTransform(data)
+  VSGMatrixTransform(data),
+  modelfile(data.filename.size() ? data.filename[0] : "")
 {
   name = data.name;
   parent = data.parent;
