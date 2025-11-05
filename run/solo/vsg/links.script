@@ -35,7 +35,7 @@ if [ -d ../../../../WorldView/icy-world ]; then
 fi
 
 ln -sf ${DATADIR}/vsg/exampleworld.xml .
-ln -sf ${DATADIR}/vsg/worldmod.xml .
+# ln -sf ${DATADIR}/vsg/worldmod.xml .
 ln -sf ../../../../WorldView/vsg-viewer/shaders .
 
 if [ -d ${HOME}/gdapps/VisualModels ]; then
