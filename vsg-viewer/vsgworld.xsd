@@ -1,20 +1,18 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="https://dueca.tudelft.nl"
-           xmlns="https://dueca.tudelft.nl"
-           elementFormDefault="qualified">
+  targetNamespace="https://dueca.tudelft.nl"
+  xmlns="https://dueca.tudelft.nl"
+  elementFormDefault="qualified">
 
   <!-- Main element, graphics world -->
   <xs:element name="world">
     <xs:complexType>
-      <xs:sequence>
+      <xs:choice maxOccurs="unbounded" minOccurs="0">
         <!-- Declarations group the definition of objects in the world -->
-        <xs:element name="declaration" type="declaration_t"
-                    maxOccurs="unbounded"/>
+        <xs:element name="template" type="template_t" />
         <!-- Statics group the instantiation of static objects in the world -->
-        <xs:element name="static" type="static_t"
-                    minOccurs="0" maxOccurs="unbounded"/>
-      </xs:sequence>
+        <xs:element name="static" type="static_t" />
+      </xs:choice>
     </xs:complexType>
   </xs:element>
 
@@ -22,31 +20,37 @@
        object type created somewhere in a factory, and a key by which
        it can be created. The key may match on a channel entry or on a
        static defined later. -->
-  <xs:complexType name="declaration_t">
-    <xs:sequence>
-      <xs:element name="file" type="xs:string" maxOccurs="unbounded"/>
-      <xs:element name="coordinate" type="coordinate_t" maxOccurs="unbounded"/>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string"/>
-    <xs:attribute name="parent" type="xs:string"/>
-    <xs:attribute name="type" type="xs:string" use="required"/>
-    <xs:attribute name="key" type="xs:string" use="required"/>
+  <xs:complexType name="template_t">
+    <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <xs:element name="file" type="xs:string" />
+      <xs:element name="param" type="param_t" />
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="parent" type="xs:string" />
+    <xs:attribute name="type" type="xs:string" use="required" />
+    <xs:attribute name="key" type="xs:string" use="required" />
   </xs:complexType>
 
-  <xs:complexType name="coordinate_t">
-    <xs:attribute name="name" type="xs:string"/>
+  <xs:complexType name="param_t">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="name" type="xs:string" />
+      </xs:extension>
+    </xs:simpleContent>
   </xs:complexType>
 
   <!-- A static instantiates an object of a previously given declaration,
        matching with the key.
-       The static provides the name, parent, and may override coordinates. -->
+       The static provides the name, parent, and may override coordinates and files. -->
   <xs:complexType name="static_t">
-    <xs:sequence>
-      <xs:element name="coordinate" type="coordinate_t" maxOccurs="unbounded"/>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string"/>
-    <xs:attribute name="parent" type="xs:string"/>
-    <xs:attribute name="key" type="xs:string" use="required"/>
+    <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <xs:element name="file" type="xs:string" />
+      <xs:element name="param" type="param_t" />
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="type" type="xs:string" />
+    <xs:attribute name="parent" type="xs:string" />
+    <xs:attribute name="key" type="xs:string" />
   </xs:complexType>
 
 </xs:schema>

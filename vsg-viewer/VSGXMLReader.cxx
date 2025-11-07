@@ -134,7 +134,7 @@ namespace vsgviewer {
       WorldDataSpec spec;
 
       // required stuff is key and type
-      auto _key = def.attribute("id");
+      auto _key = def.attribute("key");
       auto _type = def.attribute("type");
       auto _name = def.attribute("name");
       auto _parent = def.attribute("parent");
@@ -187,7 +187,7 @@ namespace vsgviewer {
     for (auto sta = world.child("static"); sta;
          sta = sta.next_sibling("static")) {
 
-      auto template_id = sta.attribute("template-id");
+      auto template_id = sta.attribute("key");
       auto name = sta.attribute("name");
       auto parent = sta.attribute("parent");
       auto type = sta.attribute("type");
