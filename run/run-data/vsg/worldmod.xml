@@ -3,49 +3,16 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="https://dueca.tudelft.nl vsgworld.xsd">
 
-  <!-- base for static objects -->
-  <template key="carbase" parent="root" type="static-transform">
-    <param name="xyz">
-      0, 10, 3
-    </param>
-    <param name="scalexyz">
-      30, 30, 30
-    </param>
-    <param name="phithetapsi">
-      0, 0, 0
-    </param>
-  </template>
-
-  <template key="car" type="model">
-    <file>Defender.glb</file>
-  </template>
-
-  <!-- controlled objects are all of type car? -->
-  <template key="ObjectMotion" type="model" name="car #">
-    <file>Defender.glb</file>
-  </template>
-
-
   <!-- transform node to the car location -->
-  <static name="car1base" key="carbase">
-    <param name="xyz">4, 2, 0</param>
+  <static name="car2base" type="static-transform">
+    <param name="xyz">4, -2, -2</param>
   </static>
+
 
 
   <!-- car model linked to the transform -->
-  <static name="car1" key="car" parent="car1base">
+  <static name="car3" parent="car2base" type="model">
     <file>piper_pa18.glb</file>
-  </static>
-
-  <!-- modified transform node -->
-  <static name="car2base" parent="root" key="carbase">
-    <param name="scalexyz"> 1, 1, 1 </param>
-    <param name="xyz"> 0, 0, -121 </param>
-  </static>
-
-  <!-- second instance of car -->
-  <static name="car2" parent="car2base" type="static-model">
-    <file>skydome.glb</file>
   </static>
 
   <!-- world orientation -->
@@ -116,5 +83,6 @@
     <param name="intensity"> 0.8 </param>
     <param name="direction"> 0.2, -0.0, 0.7 </param>
   </static>
+
 
 </world>
