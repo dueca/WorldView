@@ -19,11 +19,11 @@
 namespace vsgviewer {
 
 VSGAmbientLight::VSGAmbientLight(const WorldDataSpec &data) :
+  VSGObject(data),
   color(data.coordinates[0], data.coordinates[1], data.coordinates[2]),
   intensity(data.coordinates[3]),
   light()
 {
-  name = data.name;
   D_MOD("Created ambient light, name=" << name);
 }
 
@@ -32,9 +32,11 @@ VSGAmbientLight::~VSGAmbientLight()
   D_MOD("Destroying ambient light, name=" << name);
 }
 
-void VSGAmbientLight::init(vsg::ref_ptr<vsg::Group> root,
-                           VSGViewer *master)
+void VSGAmbientLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
+  if (light)
+    return;
+
   light = vsg::AmbientLight::create();
   light->name = name;
   light->color = color;
@@ -56,13 +58,12 @@ static auto VSGAmbientLight_maker =
     "ambient-light", "Ambient light level definitions");
 
 VSGDirectionalLight::VSGDirectionalLight(const WorldDataSpec &data) :
+  VSGObject(data),
   color(data.coordinates[0], data.coordinates[1], data.coordinates[2]),
   intensity(data.coordinates[3]),
   direction(data.coordinates[5], data.coordinates[4], data.coordinates[6]),
   light()
 {
-  name = data.name;
-  parent = data.parent;
   D_MOD("Created directional light, name=" << name);
 }
 
@@ -71,9 +72,11 @@ VSGDirectionalLight::~VSGDirectionalLight()
   D_MOD("Destroying directional light, name=" << name);
 }
 
-void VSGDirectionalLight::init(vsg::ref_ptr<vsg::Group> root,
-                               VSGViewer *master)
+void VSGDirectionalLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
+  if (light)
+    return;
+
   light = vsg::DirectionalLight::create();
   light->name = name;
   light->color = color;
@@ -81,9 +84,9 @@ void VSGDirectionalLight::init(vsg::ref_ptr<vsg::Group> root,
   light->direction = direction;
   light->shadowSettings = master->getShadowSettings();
 
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
                                  << ", attaching to root");
     par = root;
   }
@@ -93,7 +96,7 @@ void VSGDirectionalLight::init(vsg::ref_ptr<vsg::Group> root,
 
 void VSGDirectionalLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par)
     par = root;
   auto it = std::find(par->children.begin(), par->children.end(), light);
@@ -107,6 +110,7 @@ static auto VSGDirectionalLight_maker =
     "directional-light", "Light coming from a specific direction");
 
 VSGPointLight::VSGPointLight(const WorldDataSpec &data) :
+  VSGObject(data),
   color(data.coordinates[0], data.coordinates[1], data.coordinates[2]),
   intensity(data.coordinates[3]),
   position(data.coordinates[5], data.coordinates[4], data.coordinates[6]),
@@ -114,8 +118,6 @@ VSGPointLight::VSGPointLight(const WorldDataSpec &data) :
   light(),
   cull()
 {
-  name = data.name;
-  parent = data.parent;
   D_MOD("Created point light, name=" << name);
 }
 
@@ -124,9 +126,11 @@ VSGPointLight::~VSGPointLight()
   D_MOD("Destroying point light, name=" << name);
 }
 
-void VSGPointLight::init(vsg::ref_ptr<vsg::Group> root,
-                         VSGViewer *master)
+void VSGPointLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
+  if (light)
+    return;
+
   light = vsg::PointLight::create();
   cull = vsg::CullGroup::create();
 
@@ -138,9 +142,9 @@ void VSGPointLight::init(vsg::ref_ptr<vsg::Group> root,
   cull->bound.center = light->position;
   cull->bound.radius = span;
   cull->addChild(light);
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
                                  << ", attaching to root");
     par = root;
   }
@@ -150,7 +154,7 @@ void VSGPointLight::init(vsg::ref_ptr<vsg::Group> root,
 
 void VSGPointLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par)
     par = root;
 
@@ -166,6 +170,7 @@ static auto VSGPointLight_maker =
                                                      "Point-type light");
 
 VSGSpotLight::VSGSpotLight(const WorldDataSpec &data) :
+  VSGObject(data),
   color(data.coordinates[0], data.coordinates[1], data.coordinates[2]),
   intensity(data.coordinates[3]),
   position(data.coordinates[5], data.coordinates[4], data.coordinates[6]),
@@ -176,8 +181,6 @@ VSGSpotLight::VSGSpotLight(const WorldDataSpec &data) :
   light(),
   cull()
 {
-  name = data.name;
-  parent = data.parent;
   D_MOD("Created spot light, name=" << name);
 }
 
@@ -188,6 +191,9 @@ VSGSpotLight::~VSGSpotLight()
 
 void VSGSpotLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
+  if (light)
+    return;
+
   light = vsg::SpotLight::create();
   cull = vsg::CullGroup::create();
 
@@ -202,9 +208,9 @@ void VSGSpotLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   cull->bound.center = light->position;
   cull->bound.radius = span;
   cull->addChild(light);
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
                                  << ", attaching to root");
     par = root;
   }
@@ -214,7 +220,7 @@ void VSGSpotLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 
 void VSGSpotLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par)
     par = root;
 

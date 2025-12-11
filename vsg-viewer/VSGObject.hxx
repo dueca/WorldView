@@ -11,6 +11,7 @@
 #pragma once
 #include <vsg/all.h>
 #include <WorldObjectBase.hxx>
+#include <WorldDataSpec.hxx>
 #include <string>
 
 namespace vsgviewer {
@@ -33,10 +34,11 @@ class VSGViewer;
 class VSGObject: public WorldObjectBase
 {
 protected:
-  std::string    parent;
+  WorldDataSpec spec;
+
 public:
   /** Constructor */
-  VSGObject();
+  VSGObject(const WorldDataSpec& spec);
 
   /** Destructor */
   virtual ~VSGObject();
@@ -66,6 +68,12 @@ public:
   /** Add to active group; these object will receive updates on the
       Observer/view position. */
   virtual bool forceActive();
+
+  /** modify, new parameters etc */
+  virtual void adapt(const WorldDataSpec &data);
+
+  /** return the original specification */
+  inline const WorldDataSpec& getSpec() const { return spec; }
 };
 
 /** Grouping that offers a culling possibility */

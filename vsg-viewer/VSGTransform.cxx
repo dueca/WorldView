@@ -17,7 +17,8 @@
 
 namespace vsgviewer {
 
-VSGBaseTransform::VSGBaseTransform() :
+VSGBaseTransform::VSGBaseTransform(const WorldDataSpec &data) :
+  VSGObject(data),
   transform()
 {
   //
@@ -28,9 +29,9 @@ VSGBaseTransform::~VSGBaseTransform() {}
 // should be? https://github.com/vsg-dev/VulkanSceneGraph/discussions/1050
 void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
                                  << ", detaching from root");
     par = root;
   }
@@ -43,10 +44,14 @@ void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> root)
 
 // ----------------- static transformation, non-moving objects ----------
 VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
-  VSGBaseTransform()
+  VSGBaseTransform(data)
 {
-  name = data.name;
-  parent = data.parent;
+  adapt(data);
+  D_MOD("Created static matrix transform, name=" << spec.name);
+}
+
+void VSGStaticMatrixTransform::adapt(const WorldDataSpec &data)
+{
   if (data.coordinates.size() >= 9) {
     base_transform = vsg::scale(vsgScale(vrange(data.coordinates, 6, 3)));
   }
@@ -60,7 +65,6 @@ VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
     base_transform =
       vsg::translate(vsgPos(vrange(data.coordinates, 0, 3))) * base_transform;
   }
-  D_MOD("Created static matrix transform, name=" << name);
 }
 
 VSGStaticMatrixTransform::~VSGStaticMatrixTransform()
@@ -71,12 +75,15 @@ VSGStaticMatrixTransform::~VSGStaticMatrixTransform()
 void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> root,
                                     VSGViewer *master)
 {
+  if (transform)
+    return;
+
   transform = vsg::MatrixTransform::create();
   transform->matrix = base_transform;
   transform->setValue("name", name);
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
                                  << ", attaching to root");
     par = root;
   }
@@ -90,10 +97,14 @@ static auto VSGStaticMatrixTransform_maker =
 
 // ---------------------- centered on observer ----------------------
 VSGCenteredTransform::VSGCenteredTransform(const WorldDataSpec &data) :
-  VSGBaseTransform()
+  VSGBaseTransform(data)
 {
-  name = data.name;
-  parent = data.parent;
+  adapt(data);
+  D_MOD("Created centered matrix transform, name=" << spec.name);
+}
+
+void VSGCenteredTransform::adapt(const WorldDataSpec &data)
+{
   if (data.coordinates.size() >= 9) {
     base_transform =
       vsg::scale(data.coordinates[6], data.coordinates[7], data.coordinates[8]);
@@ -111,27 +122,29 @@ VSGCenteredTransform::VSGCenteredTransform(const WorldDataSpec &data) :
     base_transform =
       vsg::translate(vsgPos(vrange(data.coordinates, 0, 3))) * base_transform;
   }
-  D_MOD("Created centered matrix transform, name=" << name);
 }
 
 VSGCenteredTransform::~VSGCenteredTransform()
 {
-  D_MOD("Destroying centered matrix transform, name=" << name);
+  D_MOD("Destroying centered matrix transform, spec.name=" << spec.name);
 }
 
 void VSGCenteredTransform::init(const vsg::ref_ptr<vsg::Group> root,
                                 VSGViewer *master)
 {
+  if (transform)
+    return;
+
   transform = vsg::MatrixTransform::create();
-  transform->setValue("name", name);
-  auto par = findParent(root, parent);
+  transform->setValue("name", spec.name);
+  auto par = findParent(root, spec.parent);
   if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
                                  << ", attaching to root");
     par = root;
   }
   par->addChild(transform);
-  D_MOD("VSG create centered transform, name=" << name);
+  D_MOD("VSG create centered transform, name=" << spec.name);
 }
 
 void VSGCenteredTransform::iterate(TimeTickType ts,
@@ -149,11 +162,14 @@ static auto VSGCenteredTransform_maker =
 
 // ---------------------- tiled, following observer ---------------------
 VSGTiledTransform::VSGTiledTransform(const WorldDataSpec &data) :
-  VSGBaseTransform()
+  VSGBaseTransform(data)
 {
-  name = data.name;
-  parent = data.parent;
+  adapt(data);
+  D_MOD("Created Tiled matrix transform, name=" << spec.name);
+}
 
+void VSGTiledTransform::adapt(const WorldDataSpec &data)
+{
   // coordinates 4-12 are prientation, scale and offset position
   if (data.coordinates.size() >= 12) {
     base_transform = vsg::scale(data.coordinates[9], data.coordinates[10],
@@ -182,7 +198,6 @@ VSGTiledTransform::VSGTiledTransform(const WorldDataSpec &data) :
   else {
     tile_size = vsg::dvec3(1.0, 1.0, 1.0);
   }
-  D_MOD("Created Tiled matrix transform, name=" << name);
 }
 
 VSGTiledTransform::~VSGTiledTransform()
@@ -193,11 +208,14 @@ VSGTiledTransform::~VSGTiledTransform()
 void VSGTiledTransform::init(const vsg::ref_ptr<vsg::Group> root,
                              VSGViewer *master)
 {
+  if (transform)
+    return;
+
   transform = vsg::MatrixTransform::create();
   transform->setValue("name", name);
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
                                  << ", attaching to root");
     par = root;
   }
@@ -226,14 +244,18 @@ static auto VSGTiledTransform_maker =
 
 // -------- dynamic, entity-controlled transformation -------------------
 VSGMatrixTransform::VSGMatrixTransform(const WorldDataSpec &data) :
-  VSGBaseTransform(),
+  VSGBaseTransform(data),
   scale()
+{
+  adapt(data);
+  D_MOD("Created matrix transform, name=" << spec.name);
+}
+
+void VSGMatrixTransform::adapt(const WorldDataSpec &data)
 {
   if (data.coordinates.size() >= 3) {
     scale = vsg::scale(vsgScale(vrange(data.coordinates, 0, 3)));
   }
-  name = data.name;
-  D_MOD("Created matrix transform, name=" << name);
 }
 
 VSGMatrixTransform::~VSGMatrixTransform()
@@ -244,11 +266,14 @@ VSGMatrixTransform::~VSGMatrixTransform()
 void VSGMatrixTransform::init(const vsg::ref_ptr<vsg::Group> root,
                               VSGViewer *master)
 {
+  if (transform)
+    return;
+
   transform = vsg::MatrixTransform::create();
   transform->setValue("name", name);
-  auto par = findParent(root, parent);
+  auto par = findParent(root, spec.parent);
   if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
+    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
                                  << ", attaching to root");
     par = root;
   }
@@ -289,8 +314,8 @@ void VSGMatrixTransform::iterate(TimeTickType ts, const BaseObjectMotion &base,
       }
     }
     catch (const std::exception &e) {
-      W_MOD("Cannot read BaseObjectMotion data for object " << name << " error "
-                                                            << e.what());
+      W_MOD("Cannot read BaseObjectMotion data for object "
+            << spec.name << " error " << e.what());
     }
   }
 }

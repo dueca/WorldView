@@ -27,7 +27,7 @@
 
 
   <!-- transform node to the car location -->
-  <static name="car1base" key="carbase">
+  <static name="car1base" key="carbase" type="transform">
     <param name="xyz">4, 2, 0</param>
   </static>
 

@@ -13,7 +13,9 @@
         <!-- Statics group the instantiation of static objects in the world -->
         <xs:element name="static" type="static_t" />
         <!-- Deletion, clearing -->
-         <xs:element name="remove" type="remove_t" />
+        <xs:element name="remove" type="remove_t" />
+        <!-- Adaptation, of a static -->
+        <xs:element name="modify" type="modify_t" />
       </xs:choice>
     </xs:complexType>
   </xs:element>
@@ -55,8 +57,18 @@
     <xs:attribute name="key" type="xs:string" />
   </xs:complexType>
 
+  <!-- a static can be removed, by specifying the name -->
   <xs:complexType name="remove_t">
     <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
 
+  <!-- modification of a static; identify by name, change parameters,
+   or parent -->
+  <xs:complexType name="modify_t">
+    <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <xs:element name="param" type="param_t" />
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="parent" type="xs:string" />
+  </xs:complexType>
 </xs:schema>

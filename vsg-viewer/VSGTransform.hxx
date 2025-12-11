@@ -23,7 +23,7 @@ protected:
 
 public:
   /** Constructor */
-  VSGBaseTransform();
+  VSGBaseTransform(const WorldDataSpec &data);
 
   /** Destructor */
   ~VSGBaseTransform();
@@ -49,6 +49,9 @@ public:
 
   /** Initialise the transform with the VSG scene */
   void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
+
+  /** Adapt the model */
+  void adapt(const WorldDataSpec &data) override;
 };
 
 /** Matrix location centered on observer x, y position (skydomes).
@@ -69,7 +72,7 @@ public:
   ~VSGCenteredTransform();
 
   /** Initialise the transform with the VSG scene */
-  void init( vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
+  void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
 
   /** Update on the observer position */
   void iterate(TimeTickType ts, const BaseObjectMotion &base, double late,
@@ -77,6 +80,9 @@ public:
 
   /** Force in active list */
   bool forceActive() final;
+
+  /** Adapt the model */
+  void adapt(const WorldDataSpec &data) override;
 };
 
 /** Matrix location roughly centered on observer x, y position (floor tiles).
@@ -101,7 +107,7 @@ public:
   ~VSGTiledTransform();
 
   /** Initialise the transform with the VSG scene */
-  void init( vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
+  void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
 
   /** Update on the observer position */
   void iterate(TimeTickType ts, const BaseObjectMotion &base, double late,
@@ -109,10 +115,13 @@ public:
 
   /** Force in active list */
   bool forceActive() final;
+
+  /** Adapt the model */
+  void adapt(const WorldDataSpec &data) override;
 };
 
 /** Move and orient a transform according to (world) channel data. */
-class VSGMatrixTransform : virtual public VSGBaseTransform
+class VSGMatrixTransform : public VSGBaseTransform
 {
 protected:
   /** Scale */
@@ -141,8 +150,10 @@ public:
                bool freeze = false) override;
 
   /** Initialise the transform with the VSG scene */
-  virtual void init(vsg::ref_ptr<vsg::Group> root,
-                    VSGViewer *master) override;
+  virtual void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) override;
+
+  /** Adapt the model */
+  void adapt(const WorldDataSpec &data) override;
 };
 
 }; // namespace vsgviewer

@@ -14,9 +14,11 @@
 
 namespace vsgviewer {
 
-VSGObject::VSGObject()
+VSGObject::VSGObject(const WorldDataSpec &spec) :
+  WorldObjectBase(),
+  spec(spec)
 {
-  //
+  name = spec.name;
 }
 
 VSGObject::~VSGObject()
@@ -27,14 +29,12 @@ VSGObject::~VSGObject()
 bool VSGObject::forceActive() { return false; }
 
 VSGCullGroup::VSGCullGroup(const WorldDataSpec &data) :
-  VSGObject()
+  VSGObject(data)
 {
-  name = data.name;
-  parent = data.parent;
   D_MOD("Created cull group, name=" << name);
 }
 
-VSGCullGroup::~VSGCullGroup() { D_MOD("Destroying cull group, name=" << name); }
+VSGCullGroup::~VSGCullGroup() { D_MOD("Destroying cull group, name=" << spec.name); }
 
 static vsg::ref_ptr<vsg::Group> _findParent(vsg::ref_ptr<vsg::Group> node,
                                             const std::string &name)
@@ -87,5 +87,7 @@ void VSGObject::visible(bool vis)
 {
   // nothing
 }
+
+void VSGObject::adapt(const WorldDataSpec &spec) {}
 
 }; // namespace vsgviewer

@@ -637,19 +637,80 @@ vsg::ref_ptr<vsg::Node> VSGViewer::loadModel(const std::string &fname)
   return model;
 }
 
+bool VSGViewer::removeStatic(const std::string &name)
+{
+  for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
+    if ((*ii)->getName() == name) {
+      (*ii)->unInit(root);
+      cleanup_list.push_back(*ii);
+      active_objects.erase(ii);
+      cleanup_delay = 10;
+      return true;
+    }
+  }
+  for (auto ii = static_objects.begin(); ii != static_objects.end(); ii++) {
+    if ((*ii)->getName() == name) {
+      (*ii)->unInit(root);
+      cleanup_list.push_back(*ii);
+      static_objects.erase(ii);
+      cleanup_delay = 10;
+      return true;
+    }
+  }
+  W_MOD("Cannot find object " << name << " for removal");
+  return false;
+}
+
+bool VSGViewer::modifyStatic(const WorldDataSpec & spec)
+{
+  for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
+    if ((*ii)->getName() == spec.name) {
+      (*ii)->adapt(spec);
+      return true;
+    }
+  }
+  for (auto ii = static_objects.begin(); ii != static_objects.end(); ii++) {
+    if ((*ii)->getName() == spec.name) {
+      (*ii)->adapt(spec);
+      return true;
+    }
+  }
+  W_MOD("Cannot find object " << spec.name << " to adapt");
+  return false;
+}
+
+bool VSGViewer::findExisting(WorldDataSpec & spec)
+{
+  for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
+    if ((*ii)->getName() == spec.name) {
+      spec = (*ii)->getSpec();
+      return true;
+    }
+  }
+  for (auto ii = static_objects.begin(); ii != static_objects.end(); ii++) {
+    if ((*ii)->getName() == spec.name) {
+      spec = (*ii)->getSpec();
+      return true;
+    }
+  }
+  W_MOD("Cannot find object " << spec.name << " to adapt");
+  return false;
+}
+
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 {
   try {
 
     switch (adapt.command) {
 
-    case WorldViewConfig::ReadScene:
     case WorldViewConfig::ClearModels: {
 
       // removes non-controlled objects
       viewer->deviceWaitIdle();
       clearModels();
+    } break;
 
+    case WorldViewConfig::ReadScene: {
       // read additional/replacing scene data
       if (adapt.command == WorldViewConfig::ReadScene) {
         for (const auto &fn : adapt.config.filename) {

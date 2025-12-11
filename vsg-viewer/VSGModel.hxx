@@ -25,9 +25,6 @@ protected:
   /** Single 3D model */
   vsg::ref_ptr<vsg::Node> model;
 
-  /** Filename */
-  std::string modelfile;
-
 public:
   /** Constructor
 
@@ -38,7 +35,7 @@ public:
   */
   VSGStaticModel(const WorldDataSpec &data);
 
-    /** Destructor */
+  /** Destructor */
   ~VSGStaticModel();
 
   /** Initialise the model with the VSG scene */
@@ -53,9 +50,6 @@ class VSGModel : public VSGMatrixTransform
   /** Single 3D model */
   vsg::ref_ptr<vsg::Node> model;
 
-  /** Filename */
-  std::string modelfile;
-
 public:
   /** Constructor */
   VSGModel(const WorldDataSpec &data);
@@ -68,6 +62,7 @@ public:
 
   /** Undo the initialisation */
   void unInit(vsg::ref_ptr<vsg::Group> root) override;
+
 };
 
 }; // namespace vsgviewer

@@ -278,6 +278,15 @@ public:
   /** Create a static (not controlled) controllable object. */
   bool createStatic(const WorldDataSpec &spec);
 
+  /** Remove a static object */
+  bool removeStatic(const std::string &name);
+
+  /** Modify a static object */
+  bool modifyStatic(const WorldDataSpec &spec);
+
+  /** Find an existing static, and fill its spec data with defaults */
+  bool findExisting(WorldDataSpec &spec);
+
   /** Do a re-draw
       @param wait   If true, do now swap the buffers. The application
                     must later wait and swap with the waitSwap function.
