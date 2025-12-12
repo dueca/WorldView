@@ -31,11 +31,11 @@
 
 
   <!-- transform node to the car location -->
-  <static name="car1base" parent="staticcars" type="transform">
+  <static name="car1base" parent="staticcars" type="static-transform">
     <param name="xyz">4, 2, 0</param>
   </static>
 
-  <static name="car2base" parent="staticcars" type="transform">
+  <static name="car2base" parent="staticcars" type="static-transform">
     <param name="xyz">4, 2, 0</param>
   </static>
 
