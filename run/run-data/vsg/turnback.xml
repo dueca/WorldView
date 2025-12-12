@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<world xmlns="https://dueca.tudelft.nl"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://dueca.tudelft.nl vsgworld.xsd">
+
+  <modify name="road-base">
+    <param name="xyz">0, 0, 0</param>
+  </modify>
+  <modify name="staticcars">
+    <param name="selected_child">0</param>
+  </modify>
+
+
+</world>

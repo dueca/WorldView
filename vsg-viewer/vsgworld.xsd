@@ -54,7 +54,7 @@
     <xs:attribute name="name" type="xs:string" />
     <xs:attribute name="type" type="xs:string" />
     <xs:attribute name="parent" type="xs:string" />
-    <xs:attribute name="key" type="xs:string" />
+    <xs:attribute name="template" type="xs:string" />
   </xs:complexType>
 
   <!-- a static can be removed, by specifying the name -->
@@ -62,13 +62,11 @@
     <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
 
-  <!-- modification of a static; identify by name, change parameters,
-   or parent -->
+  <!-- modification of a static; identify by name, change parameters -->
   <xs:complexType name="modify_t">
     <xs:choice maxOccurs="unbounded" minOccurs="0">
       <xs:element name="param" type="param_t" />
     </xs:choice>
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="parent" type="xs:string" />
   </xs:complexType>
 </xs:schema>

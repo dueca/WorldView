@@ -16,6 +16,10 @@
     </param>
   </template>
 
+  <static name="staticcars" type="switch">
+    <param name="selected_child">0</param>
+  </static>
+
   <template key="car" type="model">
     <file>Defender.glb</file>
   </template>
@@ -27,25 +31,23 @@
 
 
   <!-- transform node to the car location -->
-  <static name="car1base" key="carbase" type="transform">
+  <static name="car1base" parent="staticcars" type="transform">
+    <param name="xyz">4, 2, 0</param>
+  </static>
+
+  <static name="car2base" parent="staticcars" type="transform">
     <param name="xyz">4, 2, 0</param>
   </static>
 
 
   <!-- car model linked to the transform -->
-  <static name="car1" key="car" parent="car1base">
+  <static name="car1" template="car" parent="car1base">
     <file>piper_pa18.glb</file>
   </static>
 
-  <!-- modified transform node -->
-  <static name="car2base" parent="root" key="carbase">
-    <param name="scalexyz"> 1, 1, 1 </param>
-    <param name="xyz"> 0, 0, -121 </param>
-  </static>
-
-  <!-- second instance of car -->
-  <static name="car2" parent="car2base" type="static-model">
-    <file>skydome.glb</file>
+  <!-- car model linked to the transform -->
+  <static name="car2" template="car" parent="car2base">
+    <file>Defender.glb</file>
   </static>
 
   <!-- world orientation -->
@@ -62,10 +64,6 @@
     <param name="phithetapsi">0, 0, 0 </param>
   </static>
 
-  <!-- <static name="world" parent="world-base" type="static-model">
-    <file>lz.vsgt</file>
-  </static>
-  -->
   <static name="grass" parent="world-base" type="static-model">
     <file>grass.glb</file>
   </static>
@@ -90,7 +88,7 @@
   <!-- simple ambient light -->
   <static name="ambient" type="ambient-light">
     <param name="color"> 1, 1, 1</param>
-    <param name="intensity"> 0.4 </param>
+    <param name="intensity"> 0.2 </param>
   </static>
 
   <static name="road-base" parent="root" type="static-transform">
@@ -113,7 +111,7 @@
   <!-- directed light -->
   <static name="sun" type="directional-light">
     <param name="color"> 1, 1, 1</param>
-    <param name="intensity"> 0.8 </param>
+    <param name="intensity"> 0.4 </param>
     <param name="direction"> 0.2, -0.0, 0.7 </param>
   </static>
 

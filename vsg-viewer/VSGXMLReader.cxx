@@ -78,7 +78,7 @@ bool VSGXMLReader::ObjectCoordinateMapping::getMapping(unsigned &offset,
     return false;
   }
   offset = idx->second.offset;
-  size = idx->second.size;
+  size = idx->second.size ? idx->second.size : size;
   return true;
 }
 
@@ -194,7 +194,7 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
   }
 
     // process removals
-  for (auto sta = world.child("remove"); sta; sta.next_sibling("remove")) {
+  for (auto sta = world.child("remove"); sta; sta = sta.next_sibling("remove")) {
     auto name = sta.attribute("name");
     viewer.removeStatic(name.as_string());
   }
@@ -203,7 +203,7 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
   for (auto sta = world.child("static"); sta;
        sta = sta.next_sibling("static")) {
 
-    auto template_id = sta.attribute("key");
+    auto template_id = sta.attribute("template");
     auto name = sta.attribute("name");
     auto parent = sta.attribute("parent");
     auto type = sta.attribute("type");
@@ -276,37 +276,46 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
     viewer.createStatic(spec);
   }
 
-    // modifications
-  for (auto sta = world.child("modify"); sta; sta.next_sibling("modify")) {
+  // modifications
+  for (auto sta = world.child("modify"); sta; sta = sta.next_sibling("modify")) {
     auto name = sta.attribute("name");
+
+    // fill in the name
     WorldDataSpec spec;
     spec.name = name.value();
+
+    // get existing config
     if (viewer.findExisting(spec)) {
 
-    // run the coordinates, overwrite or modify
-    for (auto coord = sta.child("param"); coord;
-         coord = coord.next_sibling("param")) {
-      std::string _label = coord.attribute("name").value();
-      auto values = getValues(coord.child_value());
-      unsigned offset = 0;
-      unsigned n = values.size();
-      auto idx = object_mappings.find(spec.type);
+      // run the coordinates, overwrite or modify
+      for (auto coord = sta.child("param"); coord;
+           coord = coord.next_sibling("param")) {
+        std::string _label = coord.attribute("name").value();
+        auto values = getValues(coord.child_value());
+        unsigned offset = 0;
+        unsigned n = values.size();
+        auto idx = object_mappings.find(spec.type);
 
-      if (idx != object_mappings.end()) {
-        if (!idx->second.getMapping(offset, n, _label)) {
-          W_MOD("Param index '" << _label << "' for type '" << spec.type
-                                << "' missing");
+        if (idx != object_mappings.end()) {
+          if (!idx->second.getMapping(offset, n, _label)) {
+            W_MOD("Param index '" << _label << "' for type '" << spec.type
+                                  << "' missing");
+            continue;
+          }
+        }
+        else if (_label.size()) {
+          W_MOD("Param mappings for type '" << spec.type << "' missing");
           continue;
         }
+        spec.setCoordinates(offset, n, values);
       }
-      else if (_label.size()) {
-        W_MOD("Param mappings for type '" << spec.type << "' missing");
-        continue;
-      }
-      spec.setCoordinates(offset, n, values);
-    }
 
-    viewer.modifyStatic(spec);
+      // make the update
+      viewer.modifyStatic(spec);
+    }
+    else {
+
+      W_MOD("Cannot find existing for modification:" << spec.name);
     }
   }
 

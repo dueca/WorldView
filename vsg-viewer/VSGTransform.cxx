@@ -52,8 +52,12 @@ VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
 
 void VSGStaticMatrixTransform::adapt(const WorldDataSpec &data)
 {
+  spec = data;
   if (data.coordinates.size() >= 9) {
     base_transform = vsg::scale(vsgScale(vrange(data.coordinates, 6, 3)));
+  }
+  else {
+    base_transform = vsg::dmat4();
   }
   if (data.coordinates.size() >= 6) {
     base_transform = vsgRotation(vsg::radians(data.coordinates[3]),
@@ -64,6 +68,9 @@ void VSGStaticMatrixTransform::adapt(const WorldDataSpec &data)
   if (data.coordinates.size() >= 3) {
     base_transform =
       vsg::translate(vsgPos(vrange(data.coordinates, 0, 3))) * base_transform;
+  }
+  if (transform) {
+    transform->matrix = base_transform;
   }
 }
 
@@ -105,6 +112,7 @@ VSGCenteredTransform::VSGCenteredTransform(const WorldDataSpec &data) :
 
 void VSGCenteredTransform::adapt(const WorldDataSpec &data)
 {
+  spec = data;
   if (data.coordinates.size() >= 9) {
     base_transform =
       vsg::scale(data.coordinates[6], data.coordinates[7], data.coordinates[8]);
@@ -170,6 +178,8 @@ VSGTiledTransform::VSGTiledTransform(const WorldDataSpec &data) :
 
 void VSGTiledTransform::adapt(const WorldDataSpec &data)
 {
+  spec = data;
+
   // coordinates 4-12 are prientation, scale and offset position
   if (data.coordinates.size() >= 12) {
     base_transform = vsg::scale(data.coordinates[9], data.coordinates[10],
