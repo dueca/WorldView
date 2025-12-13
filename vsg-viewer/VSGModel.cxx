@@ -42,29 +42,15 @@ void VSGStaticModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
                                                  << ", file=" << spec.filename[0]);
     return;
   }
-  model->setValue("name", spec.name);
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", attaching to root");
-    par = root;
-  }
-  par->addChild(model);
+  insertNode(model);
   D_MOD("VSG create visual model, name=" << spec.name);
 }
 
 void VSGStaticModel::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", detaching from root");
-    par = root;
-  }
-
-  auto it = std::find(par->children.begin(), par->children.end(), model);
-  if (it != par->children.end()) {
-    par->children.erase(it);
+  if (model) {
+    removeNode(model);
+    model.reset();
   }
 }
 
@@ -101,12 +87,8 @@ void VSGModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 
 void VSGModel::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto it =
-    std::find(transform->children.begin(), transform->children.end(), model);
-  if (it != transform->children.end()) {
-    transform->children.erase(it);
-  }
   VSGMatrixTransform::unInit(root);
+  model.reset();
 }
 
 static auto VSGModel_maker = new SubContractor<VSGObjectTypeKey, VSGModel>(

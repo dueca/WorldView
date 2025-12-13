@@ -38,6 +38,11 @@ void VSGSwitch::init(const vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 
   node = vsg::Switch::create();
   node->setValue("name", name);
+  for (auto const &child: spec.children) {
+    auto ch = findNode(root, child.name) {
+
+    }
+  }
   auto par = findParent(root, spec.parent);
   if (!par) {
     W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name

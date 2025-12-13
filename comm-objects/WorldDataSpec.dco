@@ -8,10 +8,13 @@
                           (c) 2022 RvP")
 
 (Type vstring "#include <stringoptions.h>")
-(IterableType std::vector<double> "#include <vector>")
-(IterableType std::vector<vstring> "
+(Type std::vector<double> "#include <vector>")
+(Type std::vector<vstring> "
 #include <vector>
 #include <stringoptions.h>")
+(Type Children "#include <ChildRelation.hxx>
+#include <list>
+typedef std::list<ChildRelation> Children;")
 
 ;; Helper struct that defines the parameters for an object in a 3D scene graph, or
 ;; a sound in a soundscape. The WorldDataSpec objects are typically created through
@@ -24,7 +27,9 @@
 
        ;; Parent, if applicable, can be used to find a location for inserting
        ;; in a scene graph
-       (vstring parent)
+       ;;(vstring parent)
+       ;; Children of this node
+       (Children children)
 
        ;; Type, determines (through a factory) what code will implement the object,
        ;; and thereby the behavior of the object

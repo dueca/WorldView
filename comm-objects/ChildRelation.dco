@@ -1,0 +1,29 @@
+;; -*-scheme-*-
+(Header "
+        from item       : ChildRelation.dco
+        date            : Sat Dec 13 10:00:52 2025
+        category        : Dueca Communication Object specification
+        author          : repa
+        description     : Helper, describes children in an scene graph
+        copyright       : (c) 2025
+        language        : C++")
+
+;; Definitions/includes for the different datatypes used in the object
+(Type std::string "#include <string>")
+(Type int)
+(Type float)
+
+;; DCO object <replace this comment>
+(Object ChildRelation
+        (Option msgpack)
+        (Option hdf5nest)
+
+        ;; Name of the child object
+        (std::string name)
+
+        ;; Optionally, child number
+        (int index (Default -1))
+
+        ;; Optionally used, LOD ratio
+        (float ratio (Default 0.0f))
+        )

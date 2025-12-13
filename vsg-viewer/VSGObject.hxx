@@ -13,6 +13,7 @@
 #include <WorldObjectBase.hxx>
 #include <WorldDataSpec.hxx>
 #include <string>
+#include <map>
 
 namespace vsgviewer {
 
@@ -33,6 +34,9 @@ class VSGViewer;
 */
 class VSGObject: public WorldObjectBase
 {
+  // name - node association
+  static std::map<std::string,vsg::ref_ptr<vsg::Node>> name_node;
+
 protected:
   WorldDataSpec spec;
 
@@ -74,6 +78,15 @@ public:
 
   /** return the original specification */
   inline const WorldDataSpec& getSpec() const { return spec; }
+
+  /** Get a node */
+  vsg::ref_ptr<vsg::Node> findNode(const std::string& name) const;
+
+  /** Insert a node in the map */
+  void insertNode(vsg::ref_ptr<vsg::Node> mynode) const;
+
+  /** Insert a node in the map */
+  void removeNode(vsg::ref_ptr<vsg::Node> mynode) const;
 };
 
 /** Grouping that offers a culling possibility */
@@ -90,9 +103,5 @@ public:
   /** Destructor */
   virtual ~VSGCullGroup();
 };
-
-/** Helper, to find a named node in the tree */
-vsg::ref_ptr<vsg::Group> findParent(vsg::ref_ptr<vsg::Group> root,
-                                    const std::string& name);
 
 };

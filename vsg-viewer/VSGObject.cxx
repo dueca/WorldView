@@ -9,8 +9,8 @@
 */
 
 #include "VSGObject.hxx"
-#include <vsgXchange/all.h>
 #include <dueca/debug.h>
+#include <vsgXchange/all.h>
 
 namespace vsgviewer {
 
@@ -34,7 +34,10 @@ VSGCullGroup::VSGCullGroup(const WorldDataSpec &data) :
   D_MOD("Created cull group, name=" << name);
 }
 
-VSGCullGroup::~VSGCullGroup() { D_MOD("Destroying cull group, name=" << spec.name); }
+VSGCullGroup::~VSGCullGroup()
+{
+  D_MOD("Destroying cull group, name=" << spec.name);
+}
 
 static vsg::ref_ptr<vsg::Group> _findParent(vsg::ref_ptr<vsg::Group> node,
                                             const std::string &name)
@@ -56,31 +59,38 @@ static vsg::ref_ptr<vsg::Group> _findParent(vsg::ref_ptr<vsg::Group> node,
   return res;
 }
 
-vsg::ref_ptr<vsg::Group> findParent(vsg::ref_ptr<vsg::Group> root,
-                                    const std::string &name)
+vsg::ref_ptr<vsg::Node> VSGObject::findNode(const std::string &name) const
 {
-  std::string iname;
-  vsg::ref_ptr<vsg::Group> res;
-
-  if (!name.size()) {
-    D_MOD("Searching for parent with empty name, assume root");
-    return root;
+  auto elt = name_node.find(name);
+  if (elt == name_node.end()) {
+    W_MOD("Cannot find vsg object '" << name << "'");
+    return vsg::ref_ptr<vsg::Node>();
   }
-  if (root->getValue("name", iname) && iname == name) {
-    return root;
-  }
+  return elt->second;
+}
 
-  for (auto const &i : root->children) {
-    vsg::ref_ptr<vsg::Group> g = i.cast<vsg::Group>();
-    if (g) {
-      res = _findParent(g, name);
-      if (res)
-        return res;
-    }
+void VSGObject::insertNode(vsg::ref_ptr<vsg::Node> node) const
+{
+  if (name_node.count(getName())) {
+    W_MOD("VSG object with name '" << getName() << "' already exits");
   }
+  else {
+    name_node.emplace(getName(), node);
+  }
+}
 
-  D_MOD("Could not find node '" << name << "', attaching to root");
-  return root;
+void VSGObject::removeNode(vsg::ref_ptr<vsg::Node> node) const
+{
+  auto n = name_node.find(getName());
+  if (n == name_node.end()) {
+    W_MOD("VSG object with name '" << getName() << "' not found for removal");
+  }
+  else if (n->second != node) {
+     W_MOD("VSG object with name '" << getName() << "' removal does not match node");
+  }
+  else {
+    name_node.erase(n);
+  }
 }
 
 void VSGObject::visible(bool vis)

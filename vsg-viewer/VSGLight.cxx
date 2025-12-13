@@ -83,25 +83,16 @@ void VSGDirectionalLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   light->intensity = intensity;
   light->direction = direction;
   light->shadowSettings = master->getShadowSettings();
+  insertNode(light);
 
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
-                                 << ", attaching to root");
-    par = root;
-  }
-  par->addChild(light);
   D_MOD("Init directional light, name=" << name);
 }
 
 void VSGDirectionalLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, spec.parent);
-  if (!par)
-    par = root;
-  auto it = std::find(par->children.begin(), par->children.end(), light);
-  if (it != par->children.end()) {
-    par->children.erase(it);
+  if (light) {
+    removeNode(light);
+    light.reset();
   }
 }
 
