@@ -16,7 +16,6 @@
 #include <string>
 #include <vector>
 
-#include "VSGObjectFactory.hxx"
 #include "VSGPBRShaderSet.hxx"
 #include "VSGXMLReader.hxx"
 #include <WorldViewerBase.hxx>
@@ -42,12 +41,10 @@ namespace vsgviewer {
     encapsulation in a DUECA module. */
 class VSGViewer : public WorldViewerBase
 {
-  // Advance definition, collection of data for a window.
+  /// Advance definition, collection of data for a window.
   struct WindowSet;
 
-  // Advance definition, collection of data for a viewport
-  struct Private;
-
+  /// Definition of the window and viewport layouts
   std::list<WinSpec> winspec;
 
 public:
@@ -70,11 +67,31 @@ private:
   /** Specific pipeline */
   vsg::ref_ptr<vsg::PipelineLayout> layout;
 
-  /** observer transform will be updated with the ego motion */
-  vsg::ref_ptr<vsg::AbsoluteTransform> observer_transform;
+  /** Because the observer needs to be accessible for adding children,
+      it is a class */
+  struct Observer: public VSGObject
+  {
+    /** observer transform will be updated with the ego motion */
+    vsg::ref_ptr<vsg::AbsoluteTransform> observer_transform;
 
-  /** observer is a node in the scene */
-  vsg::ref_ptr<vsg::Group> observer;
+    /** observer is a node in the scene */
+    vsg::ref_ptr<vsg::Group> observer;
+
+    /** Constructor */
+    Observer();
+
+    /** Destructor */
+    ~Observer();
+
+    /** Initialize */
+    void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) override;
+
+    /** Undo the initialisation */
+    void unInit(vsg::ref_ptr<vsg::Group> root) override;
+  };
+
+  /** observer/vehicle viewpoint */
+  boost::scoped_ptr<Observer> observer;
 
   /** A single viewer, matching a single scene */
   vsg::ref_ptr<vsg::Viewer> viewer;
@@ -222,6 +239,9 @@ private:
 
   /** Objects that need cleaning */
   ObjectListType cleanup_list;
+
+  /** Objects that need initialisation */
+  ObjectListType init_objects;
 
   /** Cleanup delay */
   unsigned cleanup_delay;

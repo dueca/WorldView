@@ -15,6 +15,7 @@
 (Type Children "#include <ChildRelation.hxx>
 #include <list>
 typedef std::list<ChildRelation> Children;")
+(Type bool)
 
 ;; Helper struct that defines the parameters for an object in a 3D scene graph, or
 ;; a sound in a soundscape. The WorldDataSpec objects are typically created through
@@ -25,9 +26,9 @@ typedef std::list<ChildRelation> Children;")
        ;; Name for the object
        (vstring name)
 
-       ;; Parent, if applicable, can be used to find a location for inserting
-       ;; in a scene graph
-       ;;(vstring parent)
+       ;; Child of the root
+       (bool rootchild (Default false))
+
        ;; Children of this node
        (Children children)
 

@@ -37,35 +37,21 @@ void VSGSwitch::init(const vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
     return;
 
   node = vsg::Switch::create();
-  node->setValue("name", name);
-  for (auto const &child: spec.children) {
-    auto ch = findNode(root, child.name) {
+  insertNode(node, root);
 
-    }
+  bool visible = true;
+  for (const auto &ch: spec.children) {
+    auto child = findNode(ch.name);
+    node->addChild(visible, child);
+    visible = false;
   }
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", attaching to root");
-    par = root;
-  }
-  par->addChild(node);
-  if (spec.coordinates.size())
-    node->setSingleChildOn(size_t(spec.coordinates[0]));
 }
 
 void VSGSwitch::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", detaching from root");
-    par = root;
-  }
-
-  auto it = std::find(par->children.begin(), par->children.end(), node);
-  if (it != par->children.end()) {
-    par->children.erase(it);
+  if (node) {
+    removeNode(node, root);
+    node.reset();
   }
 }
 

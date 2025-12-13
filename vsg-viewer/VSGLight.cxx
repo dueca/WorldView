@@ -41,15 +41,15 @@ void VSGAmbientLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   light->name = name;
   light->color = color;
   light->intensity = intensity;
-  root->addChild(light);
+  insertNode(light, root);
   D_MOD("VSG create ambient light, name=" << name);
 }
 
 void VSGAmbientLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto it = std::find(root->children.begin(), root->children.end(), light);
-  if (it != root->children.end()) {
-    root->children.erase(it);
+  if (light) {
+    removeNode(light, root);
+    light.reset();
   }
 }
 
@@ -83,7 +83,7 @@ void VSGDirectionalLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   light->intensity = intensity;
   light->direction = direction;
   light->shadowSettings = master->getShadowSettings();
-  insertNode(light);
+  insertNode(light, root);
 
   D_MOD("Init directional light, name=" << name);
 }
@@ -91,7 +91,7 @@ void VSGDirectionalLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 void VSGDirectionalLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
   if (light) {
-    removeNode(light);
+    removeNode(light, root);
     light.reset();
   }
 }
@@ -133,26 +133,15 @@ void VSGPointLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   cull->bound.center = light->position;
   cull->bound.radius = span;
   cull->addChild(light);
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
-                                 << ", attaching to root");
-    par = root;
-  }
-  par->addChild(cull);
+  insertNode(cull, root);
   D_MOD("VSG create point light, name=" << name);
 }
 
 void VSGPointLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, spec.parent);
-  if (!par)
-    par = root;
-
-  cull->children.clear();
-  auto it = std::find(par->children.begin(), par->children.end(), cull);
-  if (it != par->children.end()) {
-    par->children.erase(it);
+  if (cull) {
+    removeNode(cull, root);
+    cull.reset();
   }
 }
 
@@ -199,26 +188,15 @@ void VSGSpotLight::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   cull->bound.center = light->position;
   cull->bound.radius = span;
   cull->addChild(light);
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
-                                 << ", attaching to root");
-    par = root;
-  }
-  par->addChild(cull);
+  insertNode(cull, root);
   D_MOD("VSG create spot light, name=" << name);
 }
 
 void VSGSpotLight::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, spec.parent);
-  if (!par)
-    par = root;
-
-  cull->children.clear();
-  auto it = std::find(par->children.begin(), par->children.end(), cull);
-  if (it != par->children.end()) {
-    par->children.erase(it);
+  if (cull) {
+    removeNode(cull, root);
+    cull.reset();
   }
 }
 

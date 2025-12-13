@@ -11,7 +11,6 @@
 
 #include "VSGGroup.hxx"
 #include "VSGObjectFactory.hxx"
-#include <algorithm>
 #include <dueca/debug.h>
 
 namespace vsgviewer {
@@ -34,28 +33,21 @@ void VSGGroup::init(const vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
     return;
 
   node = vsg::Group::create();
-  node->setValue("name", name);
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", attaching to root");
-    par = root;
+  insertNode(node, root);
+
+  for (auto const &ch: spec.children) {
+    auto child = findNode(ch.name);
+    if (child) {
+      node->addChild(child);
+    }
   }
-  par->addChild(node);
 }
 
 void VSGGroup::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", detaching from root");
-    par = root;
-  }
-
-  auto it = std::find(par->children.begin(), par->children.end(), node);
-  if (it != par->children.end()) {
-    par->children.erase(it);
+  if (node) {
+    removeNode(node, root);
+    node.reset();
   }
 }
 

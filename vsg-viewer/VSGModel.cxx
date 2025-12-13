@@ -10,8 +10,8 @@
 */
 
 #include "VSGModel.hxx"
-#include "VSGViewer.hxx"
 #include "VSGObjectFactory.hxx"
+#include "VSGViewer.hxx"
 #include <dueca/debug.h>
 
 namespace vsgviewer {
@@ -33,23 +33,28 @@ VSGStaticModel::~VSGStaticModel()
 void VSGStaticModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
   // once and only once
-  if (model || !spec.filename.size())
+  if (model)
     return;
+
+  if (!spec.filename.size()) {
+    W_MOD("No filename supplied for visual model");
+    return;
+  }
 
   model = master->loadModel(spec.filename[0]);
   if (!model) {
-    W_MOD("Could not create static model, name=" << name
-                                                 << ", file=" << spec.filename[0]);
+    W_MOD("Could not create static model, name=" << name << ", file="
+                                                 << spec.filename[0]);
     return;
   }
-  insertNode(model);
+  insertNode(model, root);
   D_MOD("VSG create visual model, name=" << spec.name);
 }
 
 void VSGStaticModel::unInit(vsg::ref_ptr<vsg::Group> root)
 {
   if (model) {
-    removeNode(model);
+    removeNode(model, root);
     model.reset();
   }
 }
@@ -78,7 +83,8 @@ void VSGModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   VSGMatrixTransform::init(root, master);
 
   if (!model) {
-    W_MOD("Could not create model, name=" << spec.name << ", file=" << spec.filename[0]);
+    W_MOD("Could not create model, name=" << spec.name
+                                          << ", file=" << spec.filename[0]);
     return;
   }
   transform->addChild(model);

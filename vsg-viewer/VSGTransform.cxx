@@ -29,16 +29,9 @@ VSGBaseTransform::~VSGBaseTransform() {}
 // should be? https://github.com/vsg-dev/VulkanSceneGraph/discussions/1050
 void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", detaching from root");
-    par = root;
-  }
-
-  auto it = std::find(par->children.begin(), par->children.end(), transform);
-  if (it != par->children.end()) {
-    par->children.erase(it);
+  if (transform) {
+    removeNode(transform, root);
+    transform.reset();
   }
 }
 
@@ -87,15 +80,13 @@ void VSGStaticMatrixTransform::init(const vsg::ref_ptr<vsg::Group> root,
 
   transform = vsg::MatrixTransform::create();
   transform->matrix = base_transform;
-  transform->setValue("name", name);
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", attaching to root");
-    par = root;
+  insertNode(transform, root);
+
+  for (const auto &ch : spec.children) {
+    auto child = findNode(ch.name);
+    if (child)
+      transform->addChild(child);
   }
-  par->addChild(transform);
-  // D_MOD("VSG create static matrix transform, name=" << name);
 }
 
 static auto VSGStaticMatrixTransform_maker =
@@ -144,15 +135,12 @@ void VSGCenteredTransform::init(const vsg::ref_ptr<vsg::Group> root,
     return;
 
   transform = vsg::MatrixTransform::create();
-  transform->setValue("name", spec.name);
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << spec.name
-                                 << ", attaching to root");
-    par = root;
+  insertNode(transform, root);
+  for (const auto &ch : spec.children) {
+    auto child = findNode(ch.name);
+    if (child)
+      transform->addChild(child);
   }
-  par->addChild(transform);
-  D_MOD("VSG create centered transform, name=" << spec.name);
 }
 
 void VSGCenteredTransform::iterate(TimeTickType ts,
@@ -222,14 +210,13 @@ void VSGTiledTransform::init(const vsg::ref_ptr<vsg::Group> root,
     return;
 
   transform = vsg::MatrixTransform::create();
-  transform->setValue("name", name);
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
-                                 << ", attaching to root");
-    par = root;
+  insertNode(transform, root);
+
+  for (const auto &ch : spec.children) {
+    auto child = findNode(ch.name);
+    if (child)
+      transform->addChild(child);
   }
-  par->addChild(transform);
   D_MOD("VSG create Tiled transform, name=" << name);
 }
 
@@ -280,14 +267,11 @@ void VSGMatrixTransform::init(const vsg::ref_ptr<vsg::Group> root,
     return;
 
   transform = vsg::MatrixTransform::create();
-  transform->setValue("name", name);
-  auto par = findParent(root, spec.parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << spec.parent << "', for name=" << name
-                                 << ", attaching to root");
-    par = root;
+  for (const auto &ch : spec.children) {
+    auto child = findNode(ch.name);
+    if (child)
+      transform->addChild(child);
   }
-  par->addChild(transform);
   D_MOD("VSG create matrix transform, name=" << name);
 }
 

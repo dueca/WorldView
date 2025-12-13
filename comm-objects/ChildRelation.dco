@@ -21,9 +21,6 @@
         ;; Name of the child object
         (std::string name)
 
-        ;; Optionally, child number
-        (int index (Default -1))
-
         ;; Optionally used, LOD ratio
         (float ratio (Default 0.0f))
         )

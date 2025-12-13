@@ -11,9 +11,9 @@
 
 #include "VSGViewer.hxx"
 #include "VSGXMLReader.hxx"
-#include <pugixml.hpp>
 #include <dueca/debug.h>
 #include <exception>
+#include <pugixml.hpp>
 
 namespace vsgviewer {
 
@@ -123,51 +123,49 @@ VSGXMLReader::VSGXMLReader(const std::string &definitions)
 bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
 {
   pugi::xml_document doc;
-  auto result = doc.load_file(file.c_str());
+  auto result = doc.load_file(file.c_str(), pugi::parse_trim_pcdata);
   if (!result) {
     W_MOD("Cannot read vsg world from " << file);
     return false;
   }
 
-    // get the container
+  // get the container
   auto world = doc.child("world");
 
-    // each declaration gets translated in data for a createable object
-    // either through direct creation or from a channel entry
+  // each declaration gets translated in data for a createable object
+  // either through direct creation or from a channel entry
   for (auto def = world.child("template"); def;
        def = def.next_sibling("template")) {
 
-      // Prepare the data for the object
+    // Prepare the data for the object
     WorldDataSpec spec;
 
-      // required stuff is key and type
+    // required stuff is key and type
     auto _key = def.attribute("key");
     auto _type = def.attribute("type");
     auto _name = def.attribute("name");
-    auto _parent = def.attribute("parent");
+    bool rootchild = def.attribute("root").as_bool(false);
 
-      // test required attributes are there
+    // test required attributes are there
     if (!_key || !_type) {
       W_MOD("Skipping template, missing key and type");
       continue;
     }
 
-      // store the data
+    // store the data
     spec.type = _type.value();
+    spec.rootchild = rootchild;
     if (_name) {
       spec.name = _name.value();
     }
-    if (_parent) {
-      spec.parent = _parent.value();
-    }
 
-      // get all the files/string data
+    // get all the files/string data
     for (auto fname = def.child("file"); fname;
          fname = fname.next_sibling("file")) {
       spec.filename.push_back(trim_copy(fname.child_value()));
     }
 
-      // now get&translate all coordinates
+    // now get&translate all coordinates
     for (auto coord = def.child("param"); coord;
          coord = coord.next_sibling("param")) {
       std::string _label = coord.attribute("name").value();
@@ -190,23 +188,35 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
       spec.setCoordinates(offset, n, values);
     }
 
+    // and are there any children
+    for (auto child = def.child("child"); child;
+         child = child.next_sibling("child")) {
+      float ratio = child.attribute("ratio").as_float(0.0f);
+      auto name = child.child_value();
+      if (name) {
+        spec.children.emplace_back(name, ratio);
+      }
+    }
+
     viewer.addFactorySpec(_key.value(), spec);
   }
 
-    // process removals
-  for (auto sta = world.child("remove"); sta; sta = sta.next_sibling("remove")) {
+  // process removals
+  for (auto sta = world.child("remove"); sta;
+       sta = sta.next_sibling("remove")) {
     auto name = sta.attribute("name");
     viewer.removeStatic(name.as_string());
   }
 
-    // process the static additions
+  // process the static additions
   for (auto sta = world.child("static"); sta;
        sta = sta.next_sibling("static")) {
 
     auto template_id = sta.attribute("template");
     auto name = sta.attribute("name");
-    auto parent = sta.attribute("parent");
     auto type = sta.attribute("type");
+    bool rootchild = sta.attribute("root").as_bool(false);
+
     WorldDataSpec spec;
 
     if (!template_id && !type) {
@@ -227,7 +237,7 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
       }
     }
 
-      // overwrite with the type if specified
+    // overwrite with the type if specified
     if (type) {
       spec.type = type.value();
     }
@@ -236,11 +246,9 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
     if (name) {
       spec.name = name.value();
     }
-    if (parent) {
-      spec.parent = parent.value();
-    }
+    spec.rootchild = rootchild;
 
-      // run the files, overwrite all if available
+    // run the files, overwrite all if available
     if (sta.child("file")) {
       spec.filename.clear();
     }
@@ -272,12 +280,23 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
       spec.setCoordinates(offset, n, values);
     }
 
-      // create the object
+    // and see if there are any children
+    for (auto child = sta.child("child"); child;
+         child = child.next_sibling("child")) {
+      float ratio = child.attribute("ratio").as_float(0.0f);
+      auto name = child.child_value();
+      if (name) {
+        spec.children.emplace_back(name, ratio);
+      }
+    }
+
+    // create the object
     viewer.createStatic(spec);
   }
 
   // modifications
-  for (auto sta = world.child("modify"); sta; sta = sta.next_sibling("modify")) {
+  for (auto sta = world.child("modify"); sta;
+       sta = sta.next_sibling("modify")) {
     auto name = sta.attribute("name");
 
     // fill in the name

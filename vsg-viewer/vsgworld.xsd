@@ -33,6 +33,7 @@
     <xs:attribute name="name" type="xs:string" />
     <xs:attribute name="type" type="xs:string" use="required" />
     <xs:attribute name="key" type="xs:string" use="required" />
+    <xs:attribute name="root" type="xs:boolean" />
   </xs:complexType>
 
   <xs:complexType name="param_t">
@@ -46,7 +47,6 @@
   <xs:complexType name="child_t">
     <xs:simpleContent>
       <xs:extension base="xs:string">
-        <xs:attribute name="idx" type="xs:integer" />
         <xs:attribute name="ratio" type="xs:float" />
       </xs:extension>
     </xs:simpleContent>
@@ -64,6 +64,7 @@
     <xs:attribute name="name" type="xs:string" />
     <xs:attribute name="type" type="xs:string" />
     <xs:attribute name="template" type="xs:string" />
+    <xs:attribute name="root" type="xs:boolean" />
   </xs:complexType>
 
   <!-- a static can be removed, by specifying the name -->

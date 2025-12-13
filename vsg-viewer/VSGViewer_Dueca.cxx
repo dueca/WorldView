@@ -400,16 +400,7 @@ bool VSGViewer_Dueca::addObjectClassData(const std::vector<std::string> &names)
 
   WorldDataSpec obj;
   obj.type = names[2];
-
-    // check if the name is given as parent/name
-  auto slash = names[1].find('/');
-  if (slash != std::string::npos) {
-    obj.parent = names[1].substr(0, slash);
-    obj.name = names[1].substr(slash + 1);
-  }
-  else {
-    obj.name = names[1];
-  }
+  obj.name = names[1];
 
   for (size_t ii = 3; ii < names.size(); ii++) {
     obj.filename.push_back(names[ii]);

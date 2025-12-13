@@ -14,6 +14,8 @@
 
 namespace vsgviewer {
 
+std::map<std::string,vsg::ref_ptr<vsg::Node>> VSGObject::name_node;
+
 VSGObject::VSGObject(const WorldDataSpec &spec) :
   WorldObjectBase(),
   spec(spec)
@@ -69,7 +71,7 @@ vsg::ref_ptr<vsg::Node> VSGObject::findNode(const std::string &name) const
   return elt->second;
 }
 
-void VSGObject::insertNode(vsg::ref_ptr<vsg::Node> node) const
+void VSGObject::insertNode(vsg::ref_ptr<vsg::Node> node, vsg::ref_ptr<vsg::Group> root) const
 {
   if (name_node.count(getName())) {
     W_MOD("VSG object with name '" << getName() << "' already exits");
@@ -77,9 +79,12 @@ void VSGObject::insertNode(vsg::ref_ptr<vsg::Node> node) const
   else {
     name_node.emplace(getName(), node);
   }
+  if (spec.rootchild) {
+    root->addChild(node);
+  }
 }
 
-void VSGObject::removeNode(vsg::ref_ptr<vsg::Node> node) const
+void VSGObject::removeNode(vsg::ref_ptr<vsg::Node> node, vsg::ref_ptr<vsg::Group> root) const
 {
   auto n = name_node.find(getName());
   if (n == name_node.end()) {
@@ -90,6 +95,14 @@ void VSGObject::removeNode(vsg::ref_ptr<vsg::Node> node) const
   }
   else {
     name_node.erase(n);
+  }
+
+  // remove from root list if there
+  if (spec.rootchild) {
+    auto rchild = find(root->children.begin(), root->children.end(), node);
+    if (rchild != root->children.end()) {
+      root->children.erase(rchild);
+    }
   }
 }
 

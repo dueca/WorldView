@@ -10,12 +10,12 @@
 
 #include "VSGPBRShaderSet.hxx"
 #define VSGViewer_cxx
+
 #include "AxisTransform.hxx"
+#include "VSGObjectFactory.hxx"
 #include "VSGViewer.hxx"
 #include "WorldObjectBase.hxx"
 #include <boost/lexical_cast.hpp>
-#include <cmath>
-#include <deque>
 #include <unistd.h>
 
 #define W_MOD
@@ -379,6 +379,30 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
 #endif
 }
 
+VSGViewer::Observer::Observer() :
+  VSGObject(WorldDataSpec("observer", true, {}, "group", {}, {})),
+  observer_transform(vsg::AbsoluteTransform::create()),
+  observer(vsg::Group::create())
+{
+  //
+}
+
+VSGViewer::Observer::~Observer() {}
+
+void VSGViewer::Observer::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
+{
+  observer_transform->addChild(observer);
+  insertNode(observer, root);
+}
+
+void VSGViewer::Observer::unInit(vsg::ref_ptr<vsg::Group> root)
+{
+  if (observer_transform) {
+    removeNode(observer, root);
+    observer_transform.reset();
+  }
+}
+
 void VSGViewer::init(bool waitswap)
 {
   // based on vsgcustomshaderset
@@ -434,11 +458,15 @@ void VSGViewer::init(bool waitswap)
   options->inheritedState = root->stateCommands;
 
   // and the observer/eye group
+  observer.reset(new Observer());
+  observer->init(root, this);
+
+#if 0
   observer_transform = vsg::AbsoluteTransform::create();
   observer = vsg::Group::create();
-  observer->setValue("name", std::string("observer"));
   observer_transform->addChild(observer);
-  root->addChild(observer_transform);
+  VSGObject::name_node.emplace("observer", observer);
+#endif
 
   // std::list<vsg::ref_ptr<vsg::Group>> observer_path;
   // observer_path.push_back(observer);
@@ -517,6 +545,12 @@ void VSGViewer::init(bool waitswap)
   }
 
   // if applicable, initialize static objects and dynamic objects
+  for (auto &io : init_objects) {
+    io->init(root, this);
+  }
+  init_objects.clear();
+
+#if 0
   for (auto &ao : controlled_objects) {
     try {
       ao.second->init(root, this);
@@ -532,7 +566,7 @@ void VSGViewer::init(bool waitswap)
   for (auto &so : static_objects) {
     so->init(root, this);
   }
-
+#endif
     // add it all to the viewer
     // vsgUtil::Optimizer optimizer;
     // optimizer.optimize(root);
@@ -661,7 +695,7 @@ bool VSGViewer::removeStatic(const std::string &name)
   return false;
 }
 
-bool VSGViewer::modifyStatic(const WorldDataSpec & spec)
+bool VSGViewer::modifyStatic(const WorldDataSpec &spec)
 {
   for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
     if ((*ii)->getName() == spec.name) {
@@ -679,8 +713,12 @@ bool VSGViewer::modifyStatic(const WorldDataSpec & spec)
   return false;
 }
 
-bool VSGViewer::findExisting(WorldDataSpec & spec)
+bool VSGViewer::findExisting(WorldDataSpec &spec)
 {
+  if (spec.name == "observer") {
+    spec = observer->getSpec();
+    return true;
+  }
   for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
     if ((*ii)->getName() == spec.name) {
       spec = (*ii)->getSpec();
@@ -823,7 +861,7 @@ void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion &ownm,
     vsg::translate(o2.xyz[1], o2.xyz[0], o2.xyz[2]);
 
   // update the observer position
-  observer_transform->transform(camerapnt);
+  observer->observer_transform->transform(camerapnt);
 
   // update all cameras, as they are in the viewset list
   for (auto &win : windows) {
@@ -865,11 +903,14 @@ bool VSGViewer::createControllable(const GlobalId &master_id,
 
     op = VSGObjectFactory::instance().create(obj.type, obj);
     op->connect(master_id, cname, entry_id, time_aspect);
+    boost::intrusive_ptr<VSGObject> bop(op);
     if (root) {
       op->init(root, this);
       viewer->compile();
     }
-    boost::intrusive_ptr<VSGObject> bop(op);
+    else {
+      init_objects.push_back(bop);
+    }
     controlled_objects[keypair] = bop;
     return true;
   }
@@ -920,14 +961,18 @@ bool VSGViewer::createStatic(const std::vector<std::string> &name)
   return createStatic(obj);
 }
 
+
 bool VSGViewer::createStatic(const WorldDataSpec &obj)
 {
   try {
     VSGObject *op = VSGObjectFactory::instance().create(obj.type, obj);
+    boost::intrusive_ptr<VSGObject> bop(op);
     if (root) {
       op->init(root, this);
     }
-    boost::intrusive_ptr<VSGObject> bop(op);
+    else {
+      init_objects.push_back(bop);
+    }
     if (op->forceActive()) {
       active_objects.push_back(bop);
     }
