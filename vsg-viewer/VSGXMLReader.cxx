@@ -329,6 +329,17 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
         spec.setCoordinates(offset, n, values);
       }
 
+      // run the children, add these
+      for (auto child = sta.child("child"); child;
+         child = child.next_sibling("child")) {
+      float ratio = child.attribute("ratio").as_float(0.0f);
+      auto name = child.child_value();
+      if (name) {
+        spec.children.emplace_back(name, ratio);
+      }
+    }
+
+
       // make the update
       viewer.modifyStatic(spec);
     }

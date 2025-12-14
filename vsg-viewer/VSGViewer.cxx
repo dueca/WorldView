@@ -458,7 +458,8 @@ void VSGViewer::init(bool waitswap)
   options->inheritedState = root->stateCommands;
 
   // and the observer/eye group
-  observer.reset(new Observer());
+  if (!observer)
+    observer.reset(new Observer());
   observer->init(root, this);
 
 #if 0
@@ -716,6 +717,8 @@ bool VSGViewer::modifyStatic(const WorldDataSpec &spec)
 bool VSGViewer::findExisting(WorldDataSpec &spec)
 {
   if (spec.name == "observer") {
+    if (!observer)
+      observer.reset(new Observer());
     spec = observer->getSpec();
     return true;
   }
