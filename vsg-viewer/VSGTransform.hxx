@@ -30,6 +30,9 @@ public:
 
   /** Undo the initialisation */
   void unInit(vsg::ref_ptr<vsg::Group> root) override;
+
+  /** Adapt the model */
+  void adapt(const WorldDataSpec &data) override;
 };
 
 /** Fixed, static transform, can be child of any node. When child

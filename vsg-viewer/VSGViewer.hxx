@@ -48,7 +48,6 @@ class VSGViewer : public WorldViewerBase
   std::list<WinSpec> winspec;
 
 public:
-
   /** Options object,
     @note To avoid problems in construction/destruction, vsg object are
           listed in the order of ::create() use. Check with valgrind */
@@ -69,7 +68,7 @@ private:
 
   /** Because the observer needs to be accessible for adding children,
       it is a class */
-  struct Observer: public VSGObject
+  struct Observer : public VSGObject
   {
     /** observer transform will be updated with the ego motion */
     vsg::ref_ptr<vsg::AbsoluteTransform> observer_transform;
@@ -88,6 +87,9 @@ private:
 
     /** Undo the initialisation */
     void unInit(vsg::ref_ptr<vsg::Group> root) override;
+
+    /** Adapt the model */
+    void adapt(const WorldDataSpec &data) override;
   };
 
   /** observer/vehicle viewpoint */
@@ -336,7 +338,7 @@ public:
   void clearModels();
 
   /** Load a model from a file */
-  vsg::ref_ptr<vsg::Node> loadModel(const std::string& fname);
+  vsg::ref_ptr<vsg::Node> loadModel(const std::string &fname);
 
 protected:
   /** Path to the resources */

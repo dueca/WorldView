@@ -333,7 +333,7 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
   // get screen size
   traits->windowTitle = ws.name;
 
-    // do we share a device?
+  // do we share a device?
   for (auto const &ow : windows) {
     if (ow.second.display == ws.display) {
       I_MOD("VSG window '" << ws.name << "' shares with '" << ow.second.name
@@ -357,11 +357,11 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
     traits->fullscreen = false;
   }
 
-    // double buffer
+  // double buffer
   traits->swapchainPreferences.imageCount = 2;
   traits->synchronizationLayer = synchronization_layer;
 
-    // multi sampling options
+  // multi sampling options
   for (unsigned sbits = 0; sbits < buffer_nsamples; sbits++) {
     traits->samples |= (1U << sbits);
   }
@@ -393,6 +393,11 @@ void VSGViewer::Observer::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
   observer_transform->addChild(observer);
   insertNode(observer, root);
+  for (const auto &ch : spec.children) {
+    auto child = findNode(ch.name);
+    if (child)
+      observer->addChild(child);
+  }
 }
 
 void VSGViewer::Observer::unInit(vsg::ref_ptr<vsg::Group> root)
@@ -401,6 +406,21 @@ void VSGViewer::Observer::unInit(vsg::ref_ptr<vsg::Group> root)
     removeNode(observer, root);
     observer_transform.reset();
   }
+}
+
+void VSGViewer::Observer::adapt(const WorldDataSpec &data)
+{
+  if (observer && data.children.size() > spec.children.size()) {
+    auto ch = data.children.begin();
+    for (auto idx = spec.children.size(); idx--;)
+      ch++;
+    for (; ch != data.children.end(); ch++) {
+      auto child = findNode(ch->name);
+      if (child)
+        observer->addChild(child);
+    }
+  }
+  spec = data;
 }
 
 void VSGViewer::init(bool waitswap)
@@ -698,6 +718,10 @@ bool VSGViewer::removeStatic(const std::string &name)
 
 bool VSGViewer::modifyStatic(const WorldDataSpec &spec)
 {
+  if (spec.name == "observer") {
+    observer->adapt(spec);
+    return true;
+  }
   for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
     if ((*ii)->getName() == spec.name) {
       (*ii)->adapt(spec);
@@ -963,7 +987,6 @@ bool VSGViewer::createStatic(const std::vector<std::string> &name)
   }
   return createStatic(obj);
 }
-
 
 bool VSGViewer::createStatic(const WorldDataSpec &obj)
 {

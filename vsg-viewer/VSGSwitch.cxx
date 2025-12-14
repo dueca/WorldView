@@ -9,8 +9,8 @@
         copyright       : (c) 25 TUDelft-AE-C&S
 */
 
-#include "VSGSwitch.hxx"
 #include "VSGObjectFactory.hxx"
+#include "VSGSwitch.hxx"
 #include <algorithm>
 #include <dueca/debug.h>
 
@@ -25,10 +25,20 @@ VSGSwitch::~VSGSwitch() {}
 
 void VSGSwitch::adapt(const WorldDataSpec &data)
 {
-  this->spec = data;
+  if (node && data.children.size() > spec.children.size()) {
+    auto ch = data.children.begin();
+    for (const auto &dum: spec.children)
+      ch++;
+    for (; ch != data.children.end(); ch++) {
+      auto child = findNode(ch->name);
+    if (child)
+      node->addChild(1UL, child);
+    }
+  }
   if (node && spec.coordinates.size()) {
     node->setSingleChildOn(size_t(spec.coordinates[0]));
   }
+  this->spec = data;
 }
 
 void VSGSwitch::init(const vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
@@ -40,9 +50,10 @@ void VSGSwitch::init(const vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   insertNode(node, root);
 
   bool visible = true;
-  for (const auto &ch: spec.children) {
+  for (const auto &ch : spec.children) {
     auto child = findNode(ch.name);
-    node->addChild(visible, child);
+    if (child)
+      node->addChild(visible, child);
     visible = false;
   }
 }
@@ -55,8 +66,7 @@ void VSGSwitch::unInit(vsg::ref_ptr<vsg::Group> root)
   }
 }
 
-static auto VSGSwitch_maker =
-  new SubContractor<VSGObjectTypeKey, VSGSwitch>(
-    "switch", "Child selection switch");
+static auto VSGSwitch_maker = new SubContractor<VSGObjectTypeKey, VSGSwitch>(
+  "switch", "Child selection switch");
 
 } // namespace vsgviewer

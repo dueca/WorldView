@@ -24,6 +24,16 @@ VSGGroup::~VSGGroup() {}
 
 void VSGGroup::adapt(const WorldDataSpec &data)
 {
+  if (node && data.children.size() > spec.children.size()) {
+    auto ch = data.children.begin();
+    for (const auto &dum : spec.children)
+      ch++;
+    for (; ch != data.children.end(); ch++) {
+      auto child = findNode(ch->name);
+      if (child)
+        node->addChild(child);
+    }
+  }
   this->spec = data;
 }
 
@@ -35,7 +45,7 @@ void VSGGroup::init(const vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
   node = vsg::Group::create();
   insertNode(node, root);
 
-  for (auto const &ch: spec.children) {
+  for (auto const &ch : spec.children) {
     auto child = findNode(ch.name);
     if (child) {
       node->addChild(child);
@@ -52,7 +62,6 @@ void VSGGroup::unInit(vsg::ref_ptr<vsg::Group> root)
 }
 
 static auto VSGGroup_maker =
-  new SubContractor<VSGObjectTypeKey, VSGGroup>(
-    "group", "Node group");
+  new SubContractor<VSGObjectTypeKey, VSGGroup>("group", "Node group");
 
 } // namespace vsgviewer

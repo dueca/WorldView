@@ -35,6 +35,21 @@ void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> root)
   }
 }
 
+void VSGBaseTransform::adapt(const WorldDataSpec &data)
+{
+  if (transform && data.children.size() > spec.children.size()) {
+    auto ch = data.children.begin();
+    for (const auto &dum : spec.children)
+      ch++;
+    for (; ch != data.children.end(); ch++) {
+      auto child = findNode(ch->name);
+      if (child)
+        transform->addChild(child);
+    }
+  }
+  this->spec = data;
+}
+
 // ----------------- static transformation, non-moving objects ----------
 VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
   VSGBaseTransform(data)
@@ -103,7 +118,7 @@ VSGCenteredTransform::VSGCenteredTransform(const WorldDataSpec &data) :
 
 void VSGCenteredTransform::adapt(const WorldDataSpec &data)
 {
-  spec = data;
+  VSGBaseTransform::adapt(data);
   if (data.coordinates.size() >= 9) {
     base_transform =
       vsg::scale(data.coordinates[6], data.coordinates[7], data.coordinates[8]);
@@ -166,7 +181,7 @@ VSGTiledTransform::VSGTiledTransform(const WorldDataSpec &data) :
 
 void VSGTiledTransform::adapt(const WorldDataSpec &data)
 {
-  spec = data;
+  VSGBaseTransform::adapt(data);
 
   // coordinates 4-12 are prientation, scale and offset position
   if (data.coordinates.size() >= 12) {
@@ -250,6 +265,7 @@ VSGMatrixTransform::VSGMatrixTransform(const WorldDataSpec &data) :
 
 void VSGMatrixTransform::adapt(const WorldDataSpec &data)
 {
+  VSGBaseTransform::adapt(data);
   if (data.coordinates.size() >= 3) {
     scale = vsg::scale(vsgScale(vrange(data.coordinates, 0, 3)));
   }
