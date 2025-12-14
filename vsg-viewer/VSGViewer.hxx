@@ -71,10 +71,7 @@ private:
   struct Observer : public VSGObject
   {
     /** observer transform will be updated with the ego motion */
-    vsg::ref_ptr<vsg::AbsoluteTransform> observer_transform;
-
-    /** observer is a node in the scene */
-    vsg::ref_ptr<vsg::Group> observer;
+    vsg::ref_ptr<vsg::AbsoluteTransform> observer;
 
     /** Constructor */
     Observer();

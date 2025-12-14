@@ -381,8 +381,7 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
 
 VSGViewer::Observer::Observer() :
   VSGObject(WorldDataSpec("observer", true, {}, "group", {}, {})),
-  observer_transform(vsg::AbsoluteTransform::create()),
-  observer(vsg::Group::create())
+  observer()
 {
   //
 }
@@ -391,7 +390,9 @@ VSGViewer::Observer::~Observer() {}
 
 void VSGViewer::Observer::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
-  observer_transform->addChild(observer);
+  if (observer)
+    return;
+  observer = vsg::AbsoluteTransform::create();
   insertNode(observer, root);
   for (const auto &ch : spec.children) {
     auto child = findNode(ch.name);
@@ -402,9 +403,9 @@ void VSGViewer::Observer::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 
 void VSGViewer::Observer::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  if (observer_transform) {
+  if (observer) {
     removeNode(observer, root);
-    observer_transform.reset();
+    observer.reset();
   }
 }
 
@@ -888,7 +889,7 @@ void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion &ownm,
     vsg::translate(o2.xyz[1], o2.xyz[0], o2.xyz[2]);
 
   // update the observer position
-  observer->observer_transform->transform(camerapnt);
+  observer->observer->transform(camerapnt);
 
   // update all cameras, as they are in the viewset list
   for (auto &win : windows) {
