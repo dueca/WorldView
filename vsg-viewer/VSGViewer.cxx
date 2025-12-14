@@ -481,7 +481,6 @@ void VSGViewer::init(bool waitswap)
   // and the observer/eye group
   if (!observer)
     observer.reset(new Observer());
-  observer->init(root, this);
 
 #if 0
   observer_transform = vsg::AbsoluteTransform::create();
@@ -572,26 +571,8 @@ void VSGViewer::init(bool waitswap)
   }
   init_objects.clear();
 
-#if 0
-  for (auto &ao : controlled_objects) {
-    try {
-      ao.second->init(root, this);
-    }
-    catch (const vsg::Exception &ve) {
-      E_MOD("Trying to create object '" << ao.first
-                                        << "' vsg error: " << ve.message);
-    }
-  }
-  for (auto &so : active_objects) {
-    so->init(root, this);
-  }
-  for (auto &so : static_objects) {
-    so->init(root, this);
-  }
-#endif
-    // add it all to the viewer
-    // vsgUtil::Optimizer optimizer;
-    // optimizer.optimize(root);
+  // observer last, so observer-carried objects are seen
+  observer->init(root, this);
 
 #if 1
     // if not created, windows are not drawn
