@@ -37,7 +37,7 @@ void VSGBaseTransform::unInit(const vsg::ref_ptr<vsg::Group> root)
 
 void VSGBaseTransform::adapt(const WorldDataSpec &data)
 {
-  if (transform && data.children.size() > spec.children.size()) {
+  if (transform && (data.children.size() > spec.children.size())) {
     auto ch = data.children.begin();
     for (const auto &dum : spec.children)
       ch++;
@@ -60,7 +60,8 @@ VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
 
 void VSGStaticMatrixTransform::adapt(const WorldDataSpec &data)
 {
-  spec = data;
+  VSGBaseTransform::adapt(data);
+  
   if (data.coordinates.size() >= 9) {
     base_transform = vsg::scale(vsgScale(vrange(data.coordinates, 6, 3)));
   }
