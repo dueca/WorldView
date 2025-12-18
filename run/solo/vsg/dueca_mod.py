@@ -135,7 +135,7 @@ if this_node_id == ecs_node:
                 ('set-xml-definitions',
                  '../../../../WorldView/vsg-viewer/vsgobjects.xml'),
                 ('read-xml-definitions', 'exampleworld.xml'),
-                ('set-fog', (0.2, 1.0, 1.0, 1.0, 2.0, 50.0, 0.0))
+                ('set-fog', (0.001, 1.0, 1.0, 1.0, 200.0, 5000.0, 0.0))
             ).complete(),
             initial_camera = ( 0, 0, -30, 0, 0, 0)
         ))
@@ -145,17 +145,17 @@ if this_node_id == ecs_node:
         ('set-timing', sim_timing),
 	    ('check-timing', (10000, 20000)),
 	    ('add-motion', "myself"),
-	    ('position', (-80, 0, -3)),
+	    ('position', (15, 3, -3)),
 	    ('orientation', (0, 0, 0)),
 	    ('speed', (1.0, 0, 0)),
 	    ('dt', 0.1),
 	    ('rotation', (0, 0, 0.4)),
 	    ('add-motion', "houseX"),
-	    ('position', (0, 0, -30)),
+	    ('position', (0, 6, -3)),
 	    ('rotation', (1, 0, 0)),
 	    ('dt', 0.1),
 	    ('add-motion', "head"),
-	    ('position', (160, 40, -40)),
+	    ('position', (16, -4, -4)),
 	    ('orientation', (0, 0, 0)),
 	    ('rotation', (1, 1, 10)),
 	    ('dt', 0.1)

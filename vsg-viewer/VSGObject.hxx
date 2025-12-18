@@ -9,9 +9,11 @@
 */
 
 #pragma once
-#include <vsg/all.h>
+#include <WorldDataSpec.hxx>
 #include <WorldObjectBase.hxx>
+#include <map>
 #include <string>
+#include <vsg/all.h>
 
 namespace vsgviewer {
 
@@ -30,26 +32,31 @@ class VSGViewer;
     - an iterate() function that reads the channel data and updates
       the object
 */
-class VSGObject: public WorldObjectBase
+class VSGObject : public WorldObjectBase
 {
+  /// name - node association
+  static std::map<std::string, vsg::ref_ptr<vsg::Node>> name_node;
+
+  /// access to the viewer
+  friend class VSGViewer;
+
 protected:
-  std::string    parent;
+  WorldDataSpec spec;
+
 public:
   /** Constructor */
-  VSGObject();
+  VSGObject(const WorldDataSpec &spec);
 
   /** Destructor */
   virtual ~VSGObject();
 
 public:
-
   /** Initialise the vsg side of the object.
 
       @param root   Root node of the scene graph
       @param master Pointer to the viewer.
    */
-  virtual void init(vsg::ref_ptr<vsg::Group> root,
-                    VSGViewer* master) = 0;
+  virtual void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) = 0;
 
   /** Undo the initialisation */
   virtual void unInit(vsg::ref_ptr<vsg::Group> root) = 0;
@@ -66,10 +73,27 @@ public:
   /** Add to active group; these object will receive updates on the
       Observer/view position. */
   virtual bool forceActive();
+
+  /** modify, new parameters etc */
+  virtual void adapt(const WorldDataSpec &data);
+
+  /** return the original specification */
+  inline const WorldDataSpec &getSpec() const { return spec; }
+
+  /** Get a node */
+  vsg::ref_ptr<vsg::Node> findNode(const std::string &name) const;
+
+  /** Insert a node in the map */
+  void insertNode(vsg::ref_ptr<vsg::Node> mynode,
+                  vsg::ref_ptr<vsg::Group> root) const;
+
+  /** Insert a node in the map */
+  void removeNode(vsg::ref_ptr<vsg::Node> mynode,
+                  vsg::ref_ptr<vsg::Group> root) const;
 };
 
 /** Grouping that offers a culling possibility */
-class VSGCullGroup: public VSGObject
+class VSGCullGroup : public VSGObject
 {
 protected:
   /** a cullgroup */
@@ -77,14 +101,10 @@ protected:
 
 public:
   /** Constructor */
-  VSGCullGroup(const WorldDataSpec& data);
+  VSGCullGroup(const WorldDataSpec &data);
 
   /** Destructor */
   virtual ~VSGCullGroup();
 };
 
-/** Helper, to find a named node in the tree */
-vsg::ref_ptr<vsg::Group> findParent(vsg::ref_ptr<vsg::Group> root,
-                                    const std::string& name);
-
-};
+}; // namespace vsgviewer

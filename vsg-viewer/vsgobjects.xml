@@ -60,4 +60,8 @@
 
   <type name="static-model"></type>
 
+  <type name="switch">
+    <param offset="0" size="1">selected_child</param>
+  </type>
+
 </maps>

@@ -9,14 +9,18 @@
 */
 
 #include "VSGObject.hxx"
-#include <vsgXchange/all.h>
 #include <dueca/debug.h>
+#include <vsgXchange/all.h>
 
 namespace vsgviewer {
 
-VSGObject::VSGObject()
+std::map<std::string,vsg::ref_ptr<vsg::Node>> VSGObject::name_node;
+
+VSGObject::VSGObject(const WorldDataSpec &spec) :
+  WorldObjectBase(),
+  spec(spec)
 {
-  //
+  name = spec.name;
 }
 
 VSGObject::~VSGObject()
@@ -27,14 +31,15 @@ VSGObject::~VSGObject()
 bool VSGObject::forceActive() { return false; }
 
 VSGCullGroup::VSGCullGroup(const WorldDataSpec &data) :
-  VSGObject()
+  VSGObject(data)
 {
-  name = data.name;
-  parent = data.parent;
   D_MOD("Created cull group, name=" << name);
 }
 
-VSGCullGroup::~VSGCullGroup() { D_MOD("Destroying cull group, name=" << name); }
+VSGCullGroup::~VSGCullGroup()
+{
+  D_MOD("Destroying cull group, name=" << spec.name);
+}
 
 static vsg::ref_ptr<vsg::Group> _findParent(vsg::ref_ptr<vsg::Group> node,
                                             const std::string &name)
@@ -56,36 +61,56 @@ static vsg::ref_ptr<vsg::Group> _findParent(vsg::ref_ptr<vsg::Group> node,
   return res;
 }
 
-vsg::ref_ptr<vsg::Group> findParent(vsg::ref_ptr<vsg::Group> root,
-                                    const std::string &name)
+vsg::ref_ptr<vsg::Node> VSGObject::findNode(const std::string &name) const
 {
-  std::string iname;
-  vsg::ref_ptr<vsg::Group> res;
-
-  if (!name.size()) {
-    D_MOD("Searching for parent with empty name, assume root");
-    return root;
+  auto elt = name_node.find(name);
+  if (elt == name_node.end()) {
+    W_MOD("Cannot find vsg object '" << name << "'");
+    return vsg::ref_ptr<vsg::Node>();
   }
-  if (root->getValue("name", iname) && iname == name) {
-    return root;
+  return elt->second;
+}
+
+void VSGObject::insertNode(vsg::ref_ptr<vsg::Node> node, vsg::ref_ptr<vsg::Group> root) const
+{
+  if (name_node.count(getName())) {
+    W_MOD("VSG object with name '" << getName() << "' already exits");
+  }
+  else {
+    name_node.emplace(getName(), node);
+  }
+  if (spec.rootchild) {
+    root->addChild(node);
+  }
+}
+
+void VSGObject::removeNode(vsg::ref_ptr<vsg::Node> node, vsg::ref_ptr<vsg::Group> root) const
+{
+  auto n = name_node.find(getName());
+  if (n == name_node.end()) {
+    W_MOD("VSG object with name '" << getName() << "' not found for removal");
+  }
+  else if (n->second != node) {
+     W_MOD("VSG object with name '" << getName() << "' removal does not match node");
+  }
+  else {
+    name_node.erase(n);
   }
 
-  for (auto const &i : root->children) {
-    vsg::ref_ptr<vsg::Group> g = i.cast<vsg::Group>();
-    if (g) {
-      res = _findParent(g, name);
-      if (res)
-        return res;
+  // remove from root list if there
+  if (spec.rootchild) {
+    auto rchild = find(root->children.begin(), root->children.end(), node);
+    if (rchild != root->children.end()) {
+      root->children.erase(rchild);
     }
   }
-
-  D_MOD("Could not find node '" << name << "', attaching to root");
-  return root;
 }
 
 void VSGObject::visible(bool vis)
 {
   // nothing
 }
+
+void VSGObject::adapt(const WorldDataSpec &spec) {}
 
 }; // namespace vsgviewer

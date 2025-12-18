@@ -16,7 +16,6 @@
 #include <string>
 #include <vector>
 
-#include "VSGObjectFactory.hxx"
 #include "VSGPBRShaderSet.hxx"
 #include "VSGXMLReader.hxx"
 #include <WorldViewerBase.hxx>
@@ -42,16 +41,13 @@ namespace vsgviewer {
     encapsulation in a DUECA module. */
 class VSGViewer : public WorldViewerBase
 {
-  // Advance definition, collection of data for a window.
+  /// Advance definition, collection of data for a window.
   struct WindowSet;
 
-  // Advance definition, collection of data for a viewport
-  struct Private;
-
+  /// Definition of the window and viewport layouts
   std::list<WinSpec> winspec;
 
 public:
-
   /** Options object,
     @note To avoid problems in construction/destruction, vsg object are
           listed in the order of ::create() use. Check with valgrind */
@@ -70,11 +66,31 @@ private:
   /** Specific pipeline */
   vsg::ref_ptr<vsg::PipelineLayout> layout;
 
-  /** observer transform will be updated with the ego motion */
-  vsg::ref_ptr<vsg::AbsoluteTransform> observer_transform;
+  /** Because the observer needs to be accessible for adding children,
+      it is a class */
+  struct Observer : public VSGObject
+  {
+    /** observer transform will be updated with the ego motion */
+    vsg::ref_ptr<vsg::AbsoluteTransform> observer;
 
-  /** observer is a node in the scene */
-  vsg::ref_ptr<vsg::Group> observer;
+    /** Constructor */
+    Observer();
+
+    /** Destructor */
+    ~Observer();
+
+    /** Initialize */
+    void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) override;
+
+    /** Undo the initialisation */
+    void unInit(vsg::ref_ptr<vsg::Group> root) override;
+
+    /** Adapt the model */
+    void adapt(const WorldDataSpec &data) override;
+  };
+
+  /** observer/vehicle viewpoint */
+  boost::scoped_ptr<Observer> observer;
 
   /** A single viewer, matching a single scene */
   vsg::ref_ptr<vsg::Viewer> viewer;
@@ -223,6 +239,9 @@ private:
   /** Objects that need cleaning */
   ObjectListType cleanup_list;
 
+  /** Objects that need initialisation */
+  ObjectListType init_objects;
+
   /** Cleanup delay */
   unsigned cleanup_delay;
 
@@ -278,6 +297,15 @@ public:
   /** Create a static (not controlled) controllable object. */
   bool createStatic(const WorldDataSpec &spec);
 
+  /** Remove a static object */
+  bool removeStatic(const std::string &name);
+
+  /** Modify a static object */
+  bool modifyStatic(const WorldDataSpec &spec);
+
+  /** Find an existing static, and fill its spec data with defaults */
+  bool findExisting(WorldDataSpec &spec);
+
   /** Do a re-draw
       @param wait   If true, do now swap the buffers. The application
                     must later wait and swap with the waitSwap function.
@@ -307,7 +335,7 @@ public:
   void clearModels();
 
   /** Load a model from a file */
-  vsg::ref_ptr<vsg::Node> loadModel(const std::string& fname);
+  vsg::ref_ptr<vsg::Node> loadModel(const std::string &fname);
 
 protected:
   /** Path to the resources */

@@ -20,7 +20,7 @@ namespace vsgviewer {
 struct Fog
 {
   /// Color of the fog, RGB
-  vsg::vec3 color = { 1.0, 1.0, 1.0 };
+  vsg::vec3 color = { 0.5, 0.5, 0.5 };
 
   /// Density, determines depth.
   float density = 0.05;
@@ -29,7 +29,7 @@ struct Fog
   float start = 0.0;
 
   ///
-  float end = 1.0;
+  float end = 1000.0;
 
   /// exponent
   float exponent = 1.0;

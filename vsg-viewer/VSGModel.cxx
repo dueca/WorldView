@@ -10,60 +10,52 @@
 */
 
 #include "VSGModel.hxx"
-#include "VSGViewer.hxx"
 #include "VSGObjectFactory.hxx"
+#include "VSGViewer.hxx"
 #include <dueca/debug.h>
 
 namespace vsgviewer {
 
 VSGStaticModel::VSGStaticModel(const WorldDataSpec &data) :
-  model(),
-  modelfile(data.filename.size() ? data.filename[0] : std::string())
+  VSGObject(data),
+  model()
 {
-  name = data.name;
-  parent = data.parent;
   if (!data.filename.size()) {
     W_MOD("Static model needs a model filename");
   }
-  D_MOD("Created visual model, name=" << name);
 }
 
 VSGStaticModel::~VSGStaticModel()
 {
-  D_MOD("Destroying visual model, name=" << name);
+  D_MOD("Destroying visual model, name=" << spec.name);
 }
 
 void VSGStaticModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
-  model = master->loadModel(modelfile); vsg::read_cast<vsg::Node>(modelfile, master->options);
-  if (!model) {
-    W_MOD("Could not create static model, name=" << name
-                                                 << ", file=" << modelfile);
+  // once and only once
+  if (model)
+    return;
+
+  if (!spec.filename.size()) {
+    W_MOD("No filename supplied for visual model");
     return;
   }
-  model->setValue("name", name);
-  auto par = findParent(root, parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
-                                 << ", attaching to root");
-    par = root;
+
+  model = master->loadModel(spec.filename[0]);
+  if (!model) {
+    W_MOD("Could not create static model, name=" << name << ", file="
+                                                 << spec.filename[0]);
+    return;
   }
-  par->addChild(model);
-  D_MOD("VSG create visual model, name=" << name);
+  insertNode(model, root);
+  D_MOD("VSG create visual model, name=" << spec.name);
 }
 
 void VSGStaticModel::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto par = findParent(root, parent);
-  if (!par) {
-    W_MOD("Cannot find parent='" << parent << "', for name=" << name
-                                 << ", detaching from root");
-    par = root;
-  }
-
-  auto it = std::find(par->children.begin(), par->children.end(), model);
-  if (it != par->children.end()) {
-    par->children.erase(it);
+  if (model) {
+    removeNode(model, root);
+    model.reset();
   }
 }
 
@@ -72,26 +64,27 @@ static auto VSGStaticModel_maker =
     "static-model", "3D model from external modeling application");
 
 VSGModel::VSGModel(const WorldDataSpec &data) :
-  VSGMatrixTransform(data),
-  modelfile(data.filename.size() ? data.filename[0] : "")
+  VSGMatrixTransform(data)
 {
-  name = data.name;
-  parent = data.parent;
   if (!data.filename.size()) {
     W_MOD("Model needs a model filename");
   }
-  D_MOD("Created visual model, name=" << name);
 }
 
 VSGModel::~VSGModel() { D_MOD("Destroying static model, name=" << name); }
 
 void VSGModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 {
-  model = vsg::read_cast<vsg::Node>(modelfile, master->options);
+  // only once
+  if (model || !spec.filename.size())
+    return;
+
+  model = master->loadModel(spec.filename[0]);
   VSGMatrixTransform::init(root, master);
 
   if (!model) {
-    W_MOD("Could not create model, name=" << name << ", file=" << modelfile);
+    W_MOD("Could not create model, name=" << spec.name
+                                          << ", file=" << spec.filename[0]);
     return;
   }
   transform->addChild(model);
@@ -100,12 +93,8 @@ void VSGModel::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
 
 void VSGModel::unInit(vsg::ref_ptr<vsg::Group> root)
 {
-  auto it =
-    std::find(transform->children.begin(), transform->children.end(), model);
-  if (it != transform->children.end()) {
-    transform->children.erase(it);
-  }
   VSGMatrixTransform::unInit(root);
+  model.reset();
 }
 
 static auto VSGModel_maker = new SubContractor<VSGObjectTypeKey, VSGModel>(

@@ -12,6 +12,10 @@
         <xs:element name="template" type="template_t" />
         <!-- Statics group the instantiation of static objects in the world -->
         <xs:element name="static" type="static_t" />
+        <!-- Deletion, clearing -->
+        <xs:element name="remove" type="remove_t" />
+        <!-- Adaptation, of a static -->
+        <xs:element name="modify" type="modify_t" />
       </xs:choice>
     </xs:complexType>
   </xs:element>
@@ -24,11 +28,12 @@
     <xs:choice maxOccurs="unbounded" minOccurs="0">
       <xs:element name="file" type="xs:string" />
       <xs:element name="param" type="param_t" />
+      <xs:element name="child" type="child_t" />
     </xs:choice>
     <xs:attribute name="name" type="xs:string" />
-    <xs:attribute name="parent" type="xs:string" />
     <xs:attribute name="type" type="xs:string" use="required" />
     <xs:attribute name="key" type="xs:string" use="required" />
+    <xs:attribute name="root" type="xs:boolean" />
   </xs:complexType>
 
   <xs:complexType name="param_t">
@@ -39,18 +44,39 @@
     </xs:simpleContent>
   </xs:complexType>
 
+  <xs:complexType name="child_t">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="ratio" type="xs:float" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
   <!-- A static instantiates an object of a previously given declaration,
        matching with the key.
-       The static provides the name, parent, and may override coordinates and files. -->
+       The static provides the name, and may override coordinates and files. -->
   <xs:complexType name="static_t">
     <xs:choice maxOccurs="unbounded" minOccurs="0">
       <xs:element name="file" type="xs:string" />
       <xs:element name="param" type="param_t" />
+      <xs:element name="child" type="child_t" />
     </xs:choice>
     <xs:attribute name="name" type="xs:string" />
     <xs:attribute name="type" type="xs:string" />
-    <xs:attribute name="parent" type="xs:string" />
-    <xs:attribute name="key" type="xs:string" />
+    <xs:attribute name="template" type="xs:string" />
+    <xs:attribute name="root" type="xs:boolean" />
   </xs:complexType>
 
+  <!-- a static can be removed, by specifying the name -->
+  <xs:complexType name="remove_t">
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <!-- modification of a static; identify by name, change parameters -->
+  <xs:complexType name="modify_t">
+    <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <xs:element name="param" type="param_t" />
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
 </xs:schema>

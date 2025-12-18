@@ -10,12 +10,12 @@
 
 #include "VSGPBRShaderSet.hxx"
 #define VSGViewer_cxx
+
 #include "AxisTransform.hxx"
+#include "VSGObjectFactory.hxx"
 #include "VSGViewer.hxx"
 #include "WorldObjectBase.hxx"
 #include <boost/lexical_cast.hpp>
-#include <cmath>
-#include <deque>
 #include <unistd.h>
 
 #define W_MOD
@@ -333,7 +333,7 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
   // get screen size
   traits->windowTitle = ws.name;
 
-    // do we share a device?
+  // do we share a device?
   for (auto const &ow : windows) {
     if (ow.second.display == ws.display) {
       I_MOD("VSG window '" << ws.name << "' shares with '" << ow.second.name
@@ -357,11 +357,11 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
     traits->fullscreen = false;
   }
 
-    // double buffer
+  // double buffer
   traits->swapchainPreferences.imageCount = 2;
   traits->synchronizationLayer = synchronization_layer;
 
-    // multi sampling options
+  // multi sampling options
   for (unsigned sbits = 0; sbits < buffer_nsamples; sbits++) {
     traits->samples |= (1U << sbits);
   }
@@ -377,6 +377,51 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
     // ensure render graph is called
   command_graph->addChild(render_graph);
 #endif
+}
+
+VSGViewer::Observer::Observer() :
+  VSGObject(WorldDataSpec("observer", true, {}, "group", {}, {})),
+  observer()
+{
+  //
+}
+
+VSGViewer::Observer::~Observer() {}
+
+void VSGViewer::Observer::init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master)
+{
+  if (observer)
+    return;
+  observer = vsg::AbsoluteTransform::create();
+  insertNode(observer, root);
+  for (const auto &ch : spec.children) {
+    auto child = findNode(ch.name);
+    if (child)
+      observer->addChild(child);
+  }
+}
+
+void VSGViewer::Observer::unInit(vsg::ref_ptr<vsg::Group> root)
+{
+  if (observer) {
+    removeNode(observer, root);
+    observer.reset();
+  }
+}
+
+void VSGViewer::Observer::adapt(const WorldDataSpec &data)
+{
+  if (observer && data.children.size() > spec.children.size()) {
+    auto ch = data.children.begin();
+    for (auto idx = spec.children.size(); idx--;)
+      ch++;
+    for (; ch != data.children.end(); ch++) {
+      auto child = findNode(ch->name);
+      if (child)
+        observer->addChild(child);
+    }
+  }
+  spec = data;
 }
 
 void VSGViewer::init(bool waitswap)
@@ -434,11 +479,15 @@ void VSGViewer::init(bool waitswap)
   options->inheritedState = root->stateCommands;
 
   // and the observer/eye group
+  if (!observer)
+    observer.reset(new Observer());
+
+#if 0
   observer_transform = vsg::AbsoluteTransform::create();
   observer = vsg::Group::create();
-  observer->setValue("name", std::string("observer"));
   observer_transform->addChild(observer);
-  root->addChild(observer_transform);
+  VSGObject::name_node.emplace("observer", observer);
+#endif
 
   // std::list<vsg::ref_ptr<vsg::Group>> observer_path;
   // observer_path.push_back(observer);
@@ -517,25 +566,13 @@ void VSGViewer::init(bool waitswap)
   }
 
   // if applicable, initialize static objects and dynamic objects
-  for (auto &ao : controlled_objects) {
-    try {
-      ao.second->init(root, this);
-    }
-    catch (const vsg::Exception &ve) {
-      E_MOD("Trying to create object '" << ao.first
-                                        << "' vsg error: " << ve.message);
-    }
+  for (auto &io : init_objects) {
+    io->init(root, this);
   }
-  for (auto &so : active_objects) {
-    so->init(root, this);
-  }
-  for (auto &so : static_objects) {
-    so->init(root, this);
-  }
+  init_objects.clear();
 
-    // add it all to the viewer
-    // vsgUtil::Optimizer optimizer;
-    // optimizer.optimize(root);
+  // observer last, so observer-carried objects are seen
+  observer->init(root, this);
 
 #if 1
     // if not created, windows are not drawn
@@ -637,19 +674,90 @@ vsg::ref_ptr<vsg::Node> VSGViewer::loadModel(const std::string &fname)
   return model;
 }
 
+bool VSGViewer::removeStatic(const std::string &name)
+{
+  for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
+    if ((*ii)->getName() == name) {
+      (*ii)->unInit(root);
+      cleanup_list.push_back(*ii);
+      active_objects.erase(ii);
+      cleanup_delay = 10;
+      return true;
+    }
+  }
+  for (auto ii = static_objects.begin(); ii != static_objects.end(); ii++) {
+    if ((*ii)->getName() == name) {
+      (*ii)->unInit(root);
+      cleanup_list.push_back(*ii);
+      static_objects.erase(ii);
+      cleanup_delay = 10;
+      return true;
+    }
+  }
+  W_MOD("Cannot find object " << name << " for removal");
+  return false;
+}
+
+bool VSGViewer::modifyStatic(const WorldDataSpec &spec)
+{
+  if (spec.name == "observer") {
+    observer->adapt(spec);
+    return true;
+  }
+  for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
+    if ((*ii)->getName() == spec.name) {
+      (*ii)->adapt(spec);
+      return true;
+    }
+  }
+  for (auto ii = static_objects.begin(); ii != static_objects.end(); ii++) {
+    if ((*ii)->getName() == spec.name) {
+      (*ii)->adapt(spec);
+      return true;
+    }
+  }
+  W_MOD("Cannot find object " << spec.name << " to adapt");
+  return false;
+}
+
+bool VSGViewer::findExisting(WorldDataSpec &spec)
+{
+  if (spec.name == "observer") {
+    if (!observer)
+      observer.reset(new Observer());
+    spec = observer->getSpec();
+    return true;
+  }
+  for (auto ii = active_objects.begin(); ii != active_objects.end(); ii++) {
+    if ((*ii)->getName() == spec.name) {
+      spec = (*ii)->getSpec();
+      return true;
+    }
+  }
+  for (auto ii = static_objects.begin(); ii != static_objects.end(); ii++) {
+    if ((*ii)->getName() == spec.name) {
+      spec = (*ii)->getSpec();
+      return true;
+    }
+  }
+  W_MOD("Cannot find object " << spec.name << " to adapt");
+  return false;
+}
+
 bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 {
   try {
 
     switch (adapt.command) {
 
-    case WorldViewConfig::ReadScene:
     case WorldViewConfig::ClearModels: {
 
       // removes non-controlled objects
       viewer->deviceWaitIdle();
       clearModels();
+    } break;
 
+    case WorldViewConfig::ReadScene: {
       // read additional/replacing scene data
       if (adapt.command == WorldViewConfig::ReadScene) {
         for (const auto &fn : adapt.config.filename) {
@@ -762,7 +870,7 @@ void VSGViewer::setBase(TimeTickType tick, const BaseObjectMotion &ownm,
     vsg::translate(o2.xyz[1], o2.xyz[0], o2.xyz[2]);
 
   // update the observer position
-  observer_transform->transform(camerapnt);
+  observer->observer->transform(camerapnt);
 
   // update all cameras, as they are in the viewset list
   for (auto &win : windows) {
@@ -804,11 +912,18 @@ bool VSGViewer::createControllable(const GlobalId &master_id,
 
     op = VSGObjectFactory::instance().create(obj.type, obj);
     op->connect(master_id, cname, entry_id, time_aspect);
+    boost::intrusive_ptr<VSGObject> bop(op);
+    if (!op->spec.rootchild) {
+      W_MOD("Adding controlled object " << op->spec.name
+                                        << " without connection to scene root");
+    }
     if (root) {
       op->init(root, this);
       viewer->compile();
     }
-    boost::intrusive_ptr<VSGObject> bop(op);
+    else {
+      init_objects.push_back(bop);
+    }
     controlled_objects[keypair] = bop;
     return true;
   }
@@ -863,10 +978,13 @@ bool VSGViewer::createStatic(const WorldDataSpec &obj)
 {
   try {
     VSGObject *op = VSGObjectFactory::instance().create(obj.type, obj);
+    boost::intrusive_ptr<VSGObject> bop(op);
     if (root) {
       op->init(root, this);
     }
-    boost::intrusive_ptr<VSGObject> bop(op);
+    else {
+      init_objects.push_back(bop);
+    }
     if (op->forceActive()) {
       active_objects.push_back(bop);
     }
