@@ -3,21 +3,22 @@
 # specify these with the .dco extension, examples:
 # RepaTest/comm-objects/MyDataObject.dco
 # Generic/comm-objects/PrimaryControls.dco
-# WorldView/comm-objects/AudioObjectMotion.dco
-#WorldView/comm-objects/BaseObjectPosition.dco #  Removed for Policy: 'replace-worldview-dco-position':'21-002'
-#WorldView/comm-objects/BaseObjectMotion.dco #  Removed for Policy: 'replace-worldview-dco-motion':'21-001'
-WorldView/comm-objects/ObjectMotion.dco
-WorldView/comm-objects/WorldViewerEvent.dco
-WorldView/comm-objects/WorldViewConfig.dco
-WorldView/comm-objects/ViewSpec.dco
-WorldView/comm-objects/WinSpec.dco
-WorldView/comm-objects/WorldDataSpec.dco
-WorldView/comm-objects/WorldContact.dco
+# comm-objects/AudioObjectMotion.dco
+#comm-objects/BaseObjectPosition.dco #  Removed for Policy: 'replace-worldview-dco-position':'21-002'
+#comm-objects/BaseObjectMotion.dco #  Removed for Policy: 'replace-worldview-dco-motion':'21-001'
+comm-objects/ObjectMotion.dco
+comm-objects/WorldViewerEvent.dco
+comm-objects/WorldViewConfig.dco
+comm-objects/ViewSpec.dco
+comm-objects/WinSpec.dco
+comm-objects/ChildRelation.dco
+comm-objects/WorldDataSpec.dco
+comm-objects/WorldContact.dco
 
-WorldView/comm-objects/BaseObjectMotion.dco  # Added for Policy: 'replace-worldview-dco-motion':'21-001'
+comm-objects/BaseObjectMotion.dco  # Added for Policy: 'replace-worldview-dco-motion':'21-001'
 
-WorldView/comm-objects/BaseObjectPosition.dco  # Added for Policy: 'replace-worldview-dco-position':'21-002'
+comm-objects/BaseObjectPosition.dco  # Added for Policy: 'replace-worldview-dco-position':'21-002'
 
-WorldView/comm-objects/BaseObjectPosition.dco  # Added for Policy: 'add-worldview-dco-position':'21-003'
+comm-objects/BaseObjectPosition.dco  # Added for Policy: 'add-worldview-dco-position':'21-003'
 
-WorldView/comm-objects/BaseObjectMotion.dco  # Added for Policy: 'add-worldview-dco-position':'21-003'
+comm-objects/BaseObjectMotion.dco  # Added for Policy: 'add-worldview-dco-position':'21-003'
