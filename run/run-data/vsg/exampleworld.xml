@@ -22,7 +22,7 @@
   </template>
 
   <!-- controlled objects are all of type car? -->
-  <template key="ObjectMotion" type="model" name="car #">
+  <template key="ObjectMotion" type="model" name="car #" root="true">
     <file>Defender.glb</file>
   </template>
 

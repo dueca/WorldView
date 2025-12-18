@@ -61,7 +61,7 @@ VSGStaticMatrixTransform::VSGStaticMatrixTransform(const WorldDataSpec &data) :
 void VSGStaticMatrixTransform::adapt(const WorldDataSpec &data)
 {
   VSGBaseTransform::adapt(data);
-  
+
   if (data.coordinates.size() >= 9) {
     base_transform = vsg::scale(vsgScale(vrange(data.coordinates, 6, 3)));
   }
@@ -284,6 +284,8 @@ void VSGMatrixTransform::init(const vsg::ref_ptr<vsg::Group> root,
     return;
 
   transform = vsg::MatrixTransform::create();
+  insertNode(transform, root);
+
   for (const auto &ch : spec.children) {
     auto child = findNode(ch.name);
     if (child)

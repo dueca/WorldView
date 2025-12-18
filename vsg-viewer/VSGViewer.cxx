@@ -913,6 +913,10 @@ bool VSGViewer::createControllable(const GlobalId &master_id,
     op = VSGObjectFactory::instance().create(obj.type, obj);
     op->connect(master_id, cname, entry_id, time_aspect);
     boost::intrusive_ptr<VSGObject> bop(op);
+    if (!op->spec.rootchild) {
+      W_MOD("Adding controlled object " << op->spec.name
+                                        << " without connection to scene root");
+    }
     if (root) {
       op->init(root, this);
       viewer->compile();
