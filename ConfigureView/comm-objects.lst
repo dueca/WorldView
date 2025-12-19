@@ -1,6 +1,6 @@
-# this file contains a list of all communicated objects needed by this 
+# this file contains a list of all communicated objects needed by this
 # specific module
 # specify these with the .dco extension, examples:
 # WorldView/comm-objects/MyDataObject.dco
 # Generic/comm-objects/PrimaryControls.dco
-WorldView/comm-objects/WorldViewConfig.dco
+comm-objects/WorldViewConfig.dco

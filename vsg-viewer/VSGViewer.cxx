@@ -449,50 +449,39 @@ void VSGViewer::init(bool waitswap)
   options->add(vsgXchange::all::create());
   arguments.read(options);
 
-  // ensure pbr use my new set of shaders.
-  // https://github.com/vsg-dev/VulkanSceneGraph/discussions/604
-  the_fog = FogValue::create();
-  the_fog->value() = my_fog;
-  the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
-  auto pbr = vsgPBRShaderSet(options, the_fog);
-  options->shaderSets["pbr"] = pbr;
-
   // create scene graph root
   root = vsg::StateGroup::create();
   root->setValue("name", std::string("root"));
   D_MOD("VSG create root node");
 
-  // the "inherit option in customshaderset"
-  layout = pbr->createPipelineLayout({}, { 0, 2 });
+  // ensure pbr use my new set of shaders.
+  // https://github.com/vsg-dev/VulkanSceneGraph/discussions/604
+  if (enable_simple_fog) {
+    the_fog = FogValue::create();
+    the_fog->value() = my_fog;
+    the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
+    auto pbr = vsgPBRShaderSet(options, the_fog);
+    options->shaderSets["pbr"] = pbr;
 
-  uint32_t vds_set = 1;
-  root->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                layout, vds_set));
-  uint32_t cm_set = 0;
-  auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
-  auto cm_db = vsg::DescriptorBuffer::create(the_fog);
-  auto cm_ds = vsg::DescriptorSet::create(cm_dsl, vsg::Descriptors{ cm_db });
-  auto cm_bds = vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               layout, cm_ds);
-  root->add(cm_bds);
+    // the "inherit option in customshaderset"
+    layout = pbr->createPipelineLayout({}, { 0, 2 });
 
+    uint32_t vds_set = 1;
+    root->add(vsg::BindViewDescriptorSets::create(
+      VK_PIPELINE_BIND_POINT_GRAPHICS, layout, vds_set));
+    uint32_t cm_set = 0;
+    auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
+    auto cm_db = vsg::DescriptorBuffer::create(the_fog);
+    auto cm_ds = vsg::DescriptorSet::create(cm_dsl, vsg::Descriptors{ cm_db });
+    auto cm_bds = vsg::BindDescriptorSet::create(
+      VK_PIPELINE_BIND_POINT_GRAPHICS, layout, cm_ds);
+    root->add(cm_bds);
+  }
   options->inheritedState = root->stateCommands;
 
-  // and the observer/eye group
+  // and the observer/eye group, if not created by config actions
   if (!observer)
     observer.reset(new Observer());
-
-#if 0
-  observer_transform = vsg::AbsoluteTransform::create();
-  observer = vsg::Group::create();
-  observer_transform->addChild(observer);
-  VSGObject::name_node.emplace("observer", observer);
-#endif
-
-  // std::list<vsg::ref_ptr<vsg::Group>> observer_path;
-  // observer_path.push_back(observer);
-
-  // auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
 
   // create viewer
   viewer = vsg::Viewer::create();
