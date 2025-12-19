@@ -462,7 +462,7 @@ void VSGViewer::init(bool waitswap)
     the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
     auto pbr = vsgPBRShaderSet(options, the_fog);
     options->shaderSets["pbr"] = pbr;
-
+#if 1
     // the "inherit option in customshaderset"
     layout = pbr->createPipelineLayout({}, { 0, 2 });
 
@@ -476,8 +476,9 @@ void VSGViewer::init(bool waitswap)
     auto cm_bds = vsg::BindDescriptorSet::create(
       VK_PIPELINE_BIND_POINT_GRAPHICS, layout, cm_ds);
     root->add(cm_bds);
+    options->inheritedState = root->stateCommands;
+#endif
   }
-  options->inheritedState = root->stateCommands;
 
   // and the observer/eye group, if not created by config actions
   if (!observer)
