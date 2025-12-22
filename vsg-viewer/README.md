@@ -48,7 +48,7 @@ The following objects are defined by default:
 |--------|-----------|------|--------------|
 | ambient-light | color | 3 float | scaled 0..1, comma-separated |
 |               | intensity | float |                            |
-| directional-light | color | 3 float |   |
+| directional-light | color | 3 float |                          |
 |               | intensity | float |                            |
 |               | direction | 3 float | direction vector, AE convention |
 | point-light   |  color | 3 float |                             |
@@ -80,7 +80,9 @@ The model and static-model take a file name for the visual model file.
 The transform and model are to be linked to a channel entry, and controlled
 from the entry position and attitude. The "model" type directly attaches the
 model in the file to the given position. If an offset is needed, a transform
-can be combined with a static-model.
+can be used. This transform describes the offset from the position and
+orientation controlled by the channel, and a static-model (or several) may be
+supplied as child to the transform.
 
 Files loaded by the xml loader follow the format in `vsgworld.xsd`. In summary
 a graphic object can be defined/manipulated as:
@@ -88,10 +90,18 @@ a graphic object can be defined/manipulated as:
 - `template`. The configuration given to a template can be used for a later
   definition which lists the template. Alternatively, it can be used to
   define visual objects created dynamically by the appearance of entries in
-  the channel with visible entries.
+  the channel with visible entries. The key attribute of the template
+  determines how it can be accessed.
+
+  To re-use the template in a static
+  definition, specify the key as the template attribute. For dynamic objects, linked to a channel, the key is used as the match to find the
+  right template. The matching process is further described in the documentation for the SpecificationBase class.
+
 - `static`. A static object does not move by itself, it is not controlled
   by a channel.
+
 - `remove`. With a remove entry, the named object is removed.
+
 - `modify`. With a modify entry, an existing named object can be modified
   (if possible). This is usually limited to addition of children, and
   changes in parameters.
@@ -105,6 +115,13 @@ data. The `vsgobjects.xml` file shows these bindings for the standard
 VSG objects available. By reading additional files, additional graphical
 types in the factory can be configured. The configuration there defines
 how named variables are linked to the coordinates array.
+
+### Extension
+
+The VSGViewer uses a factory to link object types to coded classes. To extend
+this factory, include the "VSGObjectFactory.hxx" header, and define a maker
+object in static text. linking the type name to your code. See the various
+VSGObject-derived classes.
 
 ## References
 
