@@ -40,6 +40,7 @@ of the "root" node, this designates a fixed location and orientation, when
 child of the "eye" */
 class VSGStaticMatrixTransform : public VSGBaseTransform
 {
+protected:
   /** Base transform */
   vsg::dmat4 base_transform;
 
@@ -51,7 +52,7 @@ public:
   ~VSGStaticMatrixTransform();
 
   /** Initialise the transform with the VSG scene */
-  void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) final;
+  void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) override;
 
   /** Adapt the model */
   void adapt(const WorldDataSpec &data) override;
@@ -124,12 +125,9 @@ public:
 };
 
 /** Move and orient a transform according to (world) channel data. */
-class VSGMatrixTransform : public VSGBaseTransform
+class VSGMatrixTransform : public VSGStaticMatrixTransform
 {
 protected:
-  /** Scale */
-  vsg::t_mat4<double> scale;
-
   /** Channel read token for motion input */
   boost::scoped_ptr<ChannelReadToken> r_motion;
 
@@ -154,9 +152,10 @@ public:
 
   /** Initialise the transform with the VSG scene */
   virtual void init(vsg::ref_ptr<vsg::Group> root, VSGViewer *master) override;
-
+#if 0
   /** Adapt the model */
   void adapt(const WorldDataSpec &data) override;
+#endif
 };
 
 }; // namespace vsgviewer
