@@ -766,6 +766,7 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
 
     } break;
     case WorldViewConfig::SetFog:
+      if (the_fog) {
       the_fog->value().density = adapt.config.coordinates[0];
       the_fog->value().color = { float(adapt.config.coordinates[6]),
                                  float(adapt.config.coordinates[7]),
@@ -774,6 +775,10 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       the_fog->value().end = adapt.config.coordinates[4];
       the_fog->value().exponent = adapt.config.coordinates[5];
       the_fog->dirty();
+      }
+      else {
+        W_MOD("This VSGViewer was configured without fog, cannot adjust.")
+      }
       break;
 
     case WorldViewConfig::EyeOffset: {
