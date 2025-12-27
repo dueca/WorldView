@@ -340,6 +340,7 @@ bool VSGXMLReader::readWorld(const std::string &file, VSGViewer &viewer)
       }
 
       // make the update
+      I_MOD("VSG object mod " << spec);
       viewer.modifyStatic(spec);
     }
     else {

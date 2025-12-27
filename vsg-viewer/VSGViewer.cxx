@@ -751,17 +751,20 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       // read additional/replacing scene data
       if (adapt.command == WorldViewConfig::ReadScene) {
         for (const auto &fn : adapt.config.filename) {
+          I_MOD("VSGViewer reading scene config " << fn);
           readModelFromXML(fn);
         }
       }
 
-      // initialize the new objects again
+      // initialize any new objects
       for (auto &so : active_objects) {
         so->init(root, this);
       }
       for (auto &so : static_objects) {
         so->init(root, this);
       }
+
+      // re-compile the viewer
       viewer->compile();
 
     } break;
