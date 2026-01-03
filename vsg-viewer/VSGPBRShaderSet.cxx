@@ -176,7 +176,7 @@ vsgPBRShaderSet(vsg::ref_ptr<const vsg::Options> options,
     "Fog", "", CUSTOM_DESCRIPTOR_SET, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
     VK_SHADER_STAGE_FRAGMENT_BIT, vsgviewer::FogValue::create());
 
-    // additional defines
+  // additional defines
   shaderSet->optionalDefines = {
     "VSG_GREYSCALE_DIFFUSE_MAP", "VSG_TWO_SIDED_LIGHTING", "VSG_POINT_SPRITE",
     "VSG_WORKFLOW_SPECGLOSS",    "VSG_SHADOWS_PCSS",       "VSG_SHADOWS_SOFT",

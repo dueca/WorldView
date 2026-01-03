@@ -211,6 +211,15 @@ class objects. Please also add a description (c-style string). */
       new VarProbe<_ThisObject_, float>(&_ThisObject_::penumbraRadius),
       "If zero, use PCSS shadows, otherwise soft shadows" },
 
+    { "multi-samples",
+      new VarProbe<_ThisObject_, unsigned>(&_ThisObject_::buffer_nsamples),
+      "Multi-sapling, number of samples per vertex (deflt=8)" },
+
+    { "shader-defines",
+      new VarProbe<_ThisObject_, std::vector<std::string>>(
+        &_ThisObject_::shader_defines),
+      "Define variables for the shader compilation" },
+
     /* The table is closed off with NULL pointers for the variable
        name and MemberCall/VarProbe object. The description is used to
        give an overall description of the module. */

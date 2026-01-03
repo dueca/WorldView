@@ -39,7 +39,7 @@ ln -sf ${DATADIR}/vsg/modifications.xml .
 ln -sf ../../../../WorldView/vsg-viewer/shaders .
 
 if [ -d ${HOME}/gdapps/VisualModels ]; then
-    VISMODELS="orientation/arrows landrover/Defender skydome/skydome skydome/grass piper/piper_pa18"
+    VISMODELS="orientation/arrows landrover/Defender skydome/skydome skydome/grass piper/piper_pa18 trees/pinet1"
     for VM in $VISMODELS; do
 	NAME=`basename $VM`
 	if [ \! -f ${NAME}.glb ]; then

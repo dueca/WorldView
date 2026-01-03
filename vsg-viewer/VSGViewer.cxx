@@ -361,7 +361,7 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
   traits->swapchainPreferences.imageCount = 2;
   traits->synchronizationLayer = synchronization_layer;
 
-  // multi sampling options
+  // multi sampling options, from VSGViewer
   for (unsigned sbits = 0; sbits < buffer_nsamples; sbits++) {
     traits->samples |= (1U << sbits);
   }
@@ -461,6 +461,13 @@ void VSGViewer::init(bool waitswap)
     the_fog->value() = my_fog;
     the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
     auto pbr = vsgPBRShaderSet(options, the_fog);
+
+    // compile these, with settings
+    auto shaderCompiler = vsg::ShaderCompiler::create();
+    if (shaderCompiler->supported()) {
+      shaderCompiler->compile(pbr->stages, shader_defines, options);
+    }
+
     options->shaderSets["pbr"] = pbr;
 #if 1
     // the "inherit option in customshaderset"
@@ -770,14 +777,14 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
     } break;
     case WorldViewConfig::SetFog:
       if (the_fog) {
-      the_fog->value().density = adapt.config.coordinates[0];
-      the_fog->value().color = { float(adapt.config.coordinates[6]),
-                                 float(adapt.config.coordinates[7]),
-                                 float(adapt.config.coordinates[8]) };
-      the_fog->value().start = adapt.config.coordinates[3];
-      the_fog->value().end = adapt.config.coordinates[4];
-      the_fog->value().exponent = adapt.config.coordinates[5];
-      the_fog->dirty();
+        the_fog->value().density = adapt.config.coordinates[0];
+        the_fog->value().color = { float(adapt.config.coordinates[6]),
+                                   float(adapt.config.coordinates[7]),
+                                   float(adapt.config.coordinates[8]) };
+        the_fog->value().start = adapt.config.coordinates[3];
+        the_fog->value().end = adapt.config.coordinates[4];
+        the_fog->value().exponent = adapt.config.coordinates[5];
+        the_fog->dirty();
       }
       else {
         W_MOD("This VSGViewer was configured without fog, cannot adjust.")
