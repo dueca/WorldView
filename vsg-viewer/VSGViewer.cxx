@@ -462,12 +462,12 @@ void VSGViewer::init(bool waitswap)
     the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
     auto pbr = vsgPBRShaderSet(options, the_fog);
 
-    // compile these, with settings
-    auto shaderCompiler = vsg::ShaderCompiler::create();
-    if (shaderCompiler->supported()) {
-      shaderCompiler->compile(pbr->stages, shader_defines, options);
+    // add any shader defines
+    auto shader_hints = vsg::ShaderCompileSettings::create();
+    for (const auto &h: shader_defines) {
+      shader_hints->defines.insert(h);
     }
-
+    pbr->defaultShaderHints = shader_hints;
     options->shaderSets["pbr"] = pbr;
 #if 1
     // the "inherit option in customshaderset"

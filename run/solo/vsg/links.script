@@ -29,7 +29,7 @@ fi
 if [ -d ../../../../WorldView/icy-world ]; then
     IWP=$(realpath ../../../../WorldView/icy-world)
     if [ \! -f skydome.glb ]; then
-        blender --python \
+        blender --background --python \
             $IWP/bake-a-blend.py -- $IWP/skydome.blend glb
     fi
 fi
@@ -53,13 +53,10 @@ if [ -d ${HOME}/gdapps/VisualModels ]; then
     done
 fi
 
-if [ -d ${HOME}/cssoft/roadgen ]; then
-    python ${HOME}/cssoft/roadgen/road.py \
-        ${HOME}/cssoft/roadgen/btest/Fofu_DOMLt_zf1.xml \
-        myroad.glb \
-        5.2 \
-        ${HOME}/cssoft/roadgen/btest/road_twolane.png \
-        ${HOME}/cssoft/roadgen/btest/normals_twolane.png
+if [ -d ${HOME}/gdapps/VisualModels/VisualModels ]; then
+    make -f ~/gdapps/VisualModels/VisualModels/roadgen/worldgen.mk \
+        road1-w2.8-road_onelane.glb
+    ln -s road1-w2.8-road_onelane.glb myroad.glb
 fi
 
 

@@ -600,12 +600,5 @@ void main()
         }
     }
 
-    //if (pbr.alphaMask == 1.0f && baseColor.a < pbr.alphaMaskCutoff) {
-    //    outColor = vec4(1.0f, 0.0f, 0.0f, 0.5f);
-    //}
-    //else {
-        outColor = vec4(color, baseColor.a);
-    //}
-
-   // outColor = vec4(color, baseColor.a);
+    outColor = vec4(color, baseColor.a);
 }
