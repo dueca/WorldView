@@ -30,8 +30,8 @@
                        tht: rotation about x axis
                        phi: rotation about -z axis
 
-    Vehicle Models:    -y front
-                       -x right
+    Vehicle Models:    -y "front"/north
+                       -x right/east
                        z  up
 
     Scenery models have the same orientation, drawn on the x y plane, with

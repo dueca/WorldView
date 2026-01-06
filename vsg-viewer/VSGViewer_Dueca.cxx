@@ -20,10 +20,10 @@
 #include "VSGObjectFactory.hxx"
 
 #define DO_INSTANTIATE
-#include <VarProbe.hxx>
+#include <CoreCreator.hxx>
 #include <MemberCall.hxx>
 #include <MemberCall2Way.hxx>
-#include <CoreCreator.hxx>
+#include <VarProbe.hxx>
 
 // include the debug writing header, by default, write warning and
 // error messages
@@ -209,7 +209,17 @@ class objects. Please also add a description (c-style string). */
 
     { "penumbra-radius",
       new VarProbe<_ThisObject_, float>(&_ThisObject_::penumbraRadius),
-      "If zero, use PCSS shadows, otherwise soft shadows" },
+      "If zero, use PCSS shadows, otherwise soft shadows. Only works with\n"
+      "appropriate define set in shader-defines" },
+
+    { "multi-samples",
+      new VarProbe<_ThisObject_, unsigned>(&_ThisObject_::buffer_nsamples),
+      "Multi-sapling, number of samples per vertex (deflt=8)" },
+
+    { "shader-defines",
+      new VarProbe<_ThisObject_, std::vector<std::string>>(
+        &_ThisObject_::shader_defines),
+      "Define variables for the shader compilation" },
 
     /* The table is closed off with NULL pointers for the variable
        name and MemberCall/VarProbe object. The description is used to

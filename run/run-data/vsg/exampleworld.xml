@@ -57,6 +57,16 @@
     <file>grass.glb</file>
   </static>
 
+  <static name="pinet1" type="static-model">
+    <file>pinet1.glb</file>
+  </static>
+
+  <static name="tree-base" type="static-transform" root="true">
+    <param name="xyz">7,2,0</param>
+    <param name="scalexyz">0.1,0.1,0.1</param>
+    <child>pinet1</child>
+  </static>
+
   <!-- world orientation -->
   <static name="world-base" root="true" type="tiled-transform">
     <param name="tilesizexyz">20.0, 20.0, 0.0</param>

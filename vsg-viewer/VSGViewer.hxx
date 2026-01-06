@@ -124,6 +124,9 @@ protected:
   /** Enable Khronos synchronization layer */
   bool synchronization_layer;
 
+  /** Shader compile options */
+  std::vector<std::string> shader_defines;
+
 private:
   /** This class can generate multiple views on the same world. A
       ViewSet encapsulates the stuff needed for a single view. */

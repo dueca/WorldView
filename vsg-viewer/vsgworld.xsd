@@ -36,14 +36,18 @@
     <xs:attribute name="root" type="xs:boolean" />
   </xs:complexType>
 
+  <!-- Parameters, typically with numerical content, or
+       with multiple, comma-separated, numbers -->
   <xs:complexType name="param_t">
     <xs:simpleContent>
       <xs:extension base="xs:string">
-        <xs:attribute name="name" type="xs:string" />
+        <xs:attribute name="name" type="xs:string" use="required" />
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
 
+  <!-- Child relations, the content is the child name Optionally,
+       for LOD nodes, the rario parameter is added -->
   <xs:complexType name="child_t">
     <xs:simpleContent>
       <xs:extension base="xs:string">
@@ -53,8 +57,11 @@
   </xs:complexType>
 
   <!-- A static instantiates an object of a previously given declaration,
-       matching with the key.
-       The static provides the name, and may override coordinates and files. -->
+
+       If a template attribute is used, the template with the given
+       key is used to provide the default values for this static object
+
+       The static provides the name, and may override coordinates. -->
   <xs:complexType name="static_t">
     <xs:choice maxOccurs="unbounded" minOccurs="0">
       <xs:element name="file" type="xs:string" />
@@ -72,10 +79,12 @@
     <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>
 
-  <!-- modification of a static; identify by name, change parameters -->
+  <!-- modification of a static; identify by name, change parameters
+       or add children. -->
   <xs:complexType name="modify_t">
     <xs:choice maxOccurs="unbounded" minOccurs="0">
       <xs:element name="param" type="param_t" />
+      <xs:element name="child" type="child_t" />
     </xs:choice>
     <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>

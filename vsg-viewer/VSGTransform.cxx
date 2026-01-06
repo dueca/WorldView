@@ -257,20 +257,22 @@ static auto VSGTiledTransform_maker =
 
 // -------- dynamic, entity-controlled transformation -------------------
 VSGMatrixTransform::VSGMatrixTransform(const WorldDataSpec &data) :
-  VSGBaseTransform(data),
-  scale()
+  VSGStaticMatrixTransform(data)
 {
   adapt(data);
   D_MOD("Created matrix transform, name=" << spec.name);
 }
 
+#if 0
 void VSGMatrixTransform::adapt(const WorldDataSpec &data)
 {
   VSGBaseTransform::adapt(data);
   if (data.coordinates.size() >= 3) {
     scale = vsg::scale(vsgScale(vrange(data.coordinates, 0, 3)));
   }
+  if (data.coordinates.size() >= )
 }
+#endif
 
 VSGMatrixTransform::~VSGMatrixTransform()
 {
@@ -319,11 +321,11 @@ void VSGMatrixTransform::iterate(TimeTickType ts, const BaseObjectMotion &base,
           o2.extrapolate(textra);
         }
         transform->matrix = vsg::translate(vsgPos(o2.xyz)) *
-                            vsg::rotate(vsgQuat(o2.attitude_q)) * scale;
+                            vsg::rotate(vsgQuat(o2.attitude_q)) * base_transform;
       }
       else {
         transform->matrix = vsg::translate(vsgPos(r.data().xyz)) *
-                            vsg::rotate(vsgQuat(r.data().attitude_q)) * scale;
+                            vsg::rotate(vsgQuat(r.data().attitude_q)) * base_transform;
       }
     }
     catch (const std::exception &e) {

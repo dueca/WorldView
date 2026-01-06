@@ -3,6 +3,7 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="https://dueca.tudelft.nl vsgobjects.xsd">
 
+  <!-- Light control for the whole scene -->
   <type name="ambient-light">
     <param offset="0" size="3">color</param>
     <param offset="3" size="1">
@@ -10,12 +11,14 @@
     </param>
   </type>
 
+  <!-- Light with a slant -->
   <type name="directional-light">
     <param offset="0" size="3">color</param>
     <param offset="3" size="1">intensity</param>
     <param offset="4" size="3">direction</param>
   </type>
 
+  <!-- Localized but omnidirectional light effect -->
   <type name="point-light">
     <param offset="0" size="3">color</param>
     <param offset="3" size="1">intensity</param>
@@ -23,6 +26,8 @@
     <param offset="7" size="1">span</param>
   </type>
 
+  <!-- Spot light, localized and shining in a specific direction, with a bundle
+       controlled by inner and outer angle -->
   <type name="spot-light">
     <param offset="0" size="3">color</param>
     <param offset="3" size="1">intensity</param>
@@ -33,18 +38,21 @@
     <param offset="12" size="3">direction</param>
   </type>
 
+  <!-- constant, non controllable transform relative or absolute placement -->
   <type name="static-transform">
     <param offset="0" size="3">xyz</param>
     <param offset="3" size="3">phithetapsi</param>
     <param offset="6" size="3">scalexyz</param>
   </type>
 
+  <!-- Transform centered on the observer in x and y direction. -->
   <type name="centered-transform">
     <param offset="0" size="3">xyz</param>
     <param offset="3" size="3">phithetapsi</param>
     <param offset="6" size="3">scalexyz</param>
   </type>
 
+  <!-- Transform shifting with tile size. Tile size 0 means no shift -->
   <type name="tiled-transform">
     <param offset="0" size="3">tilesizexyz</param>
     <param offset="3" size="3">xyz</param>
@@ -52,16 +60,25 @@
     <param offset="9" size="3">scalexyz</param>
   </type>
 
+  <!-- Transform with base controlled by a channel entry -->
   <type name="transform">
-     <param offset="0" size="3">scalexyz</param>
+    <param offset="0" size="3">xyz</param>
+    <param offset="3" size="3">phithetapsi</param>
+    <param offset="6" size="3">scalexyz</param>
   </type>
 
+  <!-- Model with base controlled by a channel entry -->
   <type name="model"></type>
 
+  <!-- Static model -->
   <type name="static-model"></type>
 
+  <!-- Selection of one of the children -->
   <type name="switch">
     <param offset="0" size="1">selected_child</param>
   </type>
+
+  <!-- Node group -->
+  <type name="group"></type>
 
 </maps>

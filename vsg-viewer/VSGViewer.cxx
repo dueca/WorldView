@@ -361,7 +361,7 @@ VSGViewer::WindowSet::WindowSet(const WinSpec &ws,
   traits->swapchainPreferences.imageCount = 2;
   traits->synchronizationLayer = synchronization_layer;
 
-  // multi sampling options
+  // multi sampling options, from VSGViewer
   for (unsigned sbits = 0; sbits < buffer_nsamples; sbits++) {
     traits->samples |= (1U << sbits);
   }
@@ -449,50 +449,47 @@ void VSGViewer::init(bool waitswap)
   options->add(vsgXchange::all::create());
   arguments.read(options);
 
-  // ensure pbr use my new set of shaders.
-  // https://github.com/vsg-dev/VulkanSceneGraph/discussions/604
-  the_fog = FogValue::create();
-  the_fog->value() = my_fog;
-  the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
-  auto pbr = vsgPBRShaderSet(options, the_fog);
-  options->shaderSets["pbr"] = pbr;
-
   // create scene graph root
   root = vsg::StateGroup::create();
   root->setValue("name", std::string("root"));
   D_MOD("VSG create root node");
 
-  // the "inherit option in customshaderset"
-  layout = pbr->createPipelineLayout({}, { 0, 2 });
+  // ensure pbr use my new set of shaders.
+  // https://github.com/vsg-dev/VulkanSceneGraph/discussions/604
+  if (enable_simple_fog) {
+    the_fog = FogValue::create();
+    the_fog->value() = my_fog;
+    the_fog->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
+    auto pbr = vsgPBRShaderSet(options, the_fog);
 
-  uint32_t vds_set = 1;
-  root->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                layout, vds_set));
-  uint32_t cm_set = 0;
-  auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
-  auto cm_db = vsg::DescriptorBuffer::create(the_fog);
-  auto cm_ds = vsg::DescriptorSet::create(cm_dsl, vsg::Descriptors{ cm_db });
-  auto cm_bds = vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               layout, cm_ds);
-  root->add(cm_bds);
+    // add any shader defines
+    auto shader_hints = vsg::ShaderCompileSettings::create();
+    for (const auto &h: shader_defines) {
+      shader_hints->defines.insert(h);
+    }
+    pbr->defaultShaderHints = shader_hints;
+    options->shaderSets["pbr"] = pbr;
+#if 1
+    // the "inherit option in customshaderset"
+    layout = pbr->createPipelineLayout({}, { 0, 2 });
 
-  options->inheritedState = root->stateCommands;
+    uint32_t vds_set = 1;
+    root->add(vsg::BindViewDescriptorSets::create(
+      VK_PIPELINE_BIND_POINT_GRAPHICS, layout, vds_set));
+    uint32_t cm_set = 0;
+    auto cm_dsl = pbr->createDescriptorSetLayout({}, cm_set);
+    auto cm_db = vsg::DescriptorBuffer::create(the_fog);
+    auto cm_ds = vsg::DescriptorSet::create(cm_dsl, vsg::Descriptors{ cm_db });
+    auto cm_bds = vsg::BindDescriptorSet::create(
+      VK_PIPELINE_BIND_POINT_GRAPHICS, layout, cm_ds);
+    root->add(cm_bds);
+    options->inheritedState = root->stateCommands;
+#endif
+  }
 
-  // and the observer/eye group
+  // and the observer/eye group, if not created by config actions
   if (!observer)
     observer.reset(new Observer());
-
-#if 0
-  observer_transform = vsg::AbsoluteTransform::create();
-  observer = vsg::Group::create();
-  observer_transform->addChild(observer);
-  VSGObject::name_node.emplace("observer", observer);
-#endif
-
-  // std::list<vsg::ref_ptr<vsg::Group>> observer_path;
-  // observer_path.push_back(observer);
-
-  // auto viewmatrix = vsg::TrackingViewMatrix::create(observer_path);
 
   // create viewer
   viewer = vsg::Viewer::create();
@@ -761,29 +758,37 @@ bool VSGViewer::adaptSceneGraph(const WorldViewConfig &adapt)
       // read additional/replacing scene data
       if (adapt.command == WorldViewConfig::ReadScene) {
         for (const auto &fn : adapt.config.filename) {
+          I_MOD("VSGViewer reading scene config " << fn);
           readModelFromXML(fn);
         }
       }
 
-      // initialize the new objects again
+      // initialize any new objects
       for (auto &so : active_objects) {
         so->init(root, this);
       }
       for (auto &so : static_objects) {
         so->init(root, this);
       }
+
+      // re-compile the viewer
       viewer->compile();
 
     } break;
     case WorldViewConfig::SetFog:
-      the_fog->value().density = adapt.config.coordinates[0];
-      the_fog->value().color = { float(adapt.config.coordinates[6]),
-                                 float(adapt.config.coordinates[7]),
-                                 float(adapt.config.coordinates[8]) };
-      the_fog->value().start = adapt.config.coordinates[3];
-      the_fog->value().end = adapt.config.coordinates[4];
-      the_fog->value().exponent = adapt.config.coordinates[5];
-      the_fog->dirty();
+      if (the_fog) {
+        the_fog->value().density = adapt.config.coordinates[0];
+        the_fog->value().color = { float(adapt.config.coordinates[6]),
+                                   float(adapt.config.coordinates[7]),
+                                   float(adapt.config.coordinates[8]) };
+        the_fog->value().start = adapt.config.coordinates[3];
+        the_fog->value().end = adapt.config.coordinates[4];
+        the_fog->value().exponent = adapt.config.coordinates[5];
+        the_fog->dirty();
+      }
+      else {
+        W_MOD("This VSGViewer was configured without fog, cannot adjust.")
+      }
       break;
 
     case WorldViewConfig::EyeOffset: {
