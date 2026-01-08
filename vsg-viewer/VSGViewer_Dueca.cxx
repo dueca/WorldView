@@ -120,7 +120,7 @@ class objects. Please also add a description (c-style string). */
       "See 'vsgobjects.xsd' for the format, and 'vsgobjects.xml' for an\n"
       "example. If not set, the default definitions will be read." },
 
-    { "read-xml-definitions",
+    { "read-modelfile",
       new MemberCall<_ThisObject_, std::string>(
         &_ThisObject_::readModelFromXML),
       "Read the graphics models from an XML file definition. See\n"
