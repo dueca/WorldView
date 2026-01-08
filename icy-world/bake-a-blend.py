@@ -4,17 +4,8 @@ import time
 import bpy
 from bpy import context
 
-print(sys.argv)
-
 # this converts a blender file to a "baked" model with the same base name
-if len(sys.argv) < 5 or not sys.argv[4].endswith('.blend') or \
-   (len(sys.argv) >= 6 and sys.argv[5] not in ('collada', 'glb', 'gltf')):
-    print("""Usage:
-    bake-a-blend file [collada|glb]""", file=sys.stderr)
-    sys.exit(0)
-
-infile = sys.argv[4]
-base = os.path.basename(infile)[:-6]
+# the arguments after '--' are for the script
 
 def writeglb():
     bpy.ops.export_scene.gltf(filepath=f'{base}.glb', export_animations=False,
@@ -37,10 +28,33 @@ def writecollada():
 
 writers = dict(glb=writeglb, collada=writecollada, gltf=writegltf)
 
-if len(sys.argv) >= 6:
-    writer = writers[sys.argv[5]]
-else:
-    writer = writeglb
+try:
+    idb = sys.argv.index('--')
+    if not idb:
+        raise ValueError("Give conversion arguments after '--'")
+
+    bakeargs = sys.argv[idb+1:]
+    if len(bakeargs) < 1 or not bakeargs[0].endswith(".blend"):
+        raise ValueError("Need blender filename argument")
+
+    infile = bakeargs[0]
+    base = os.path.basename(infile)[:-6]
+
+    if len(bakeargs) >= 2:
+        try:
+            writer = writers[bakeargs[1]]
+        except KeyError:
+            raise ValueError(f"Cannot convert to type {bakeargs[1]}")
+    else:
+        writer = writeglb
+
+except ValueError as e:
+    print(f"""Usage:
+    bake-a-blend file [collada|glb|gltf]
+
+    Error: {e}""", file=sys.stderr)
+    sys.exit(1)
+
 
 # had problems with non-unicode????
 def neuter(word):
@@ -79,7 +93,7 @@ def convert_to_mesh(obj):
         bpy.ops.object.convert(target='MESH')
         
 # load the file
-bpy.ops.wm.open_mainfile(filepath=sys.argv[4])
+bpy.ops.wm.open_mainfile(filepath=infile)
 
 # work in a context override (why? dunno)
 window = context.window_manager.windows[0]

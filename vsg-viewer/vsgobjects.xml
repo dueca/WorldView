@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <maps xmlns="https://dueca.tudelft.nl"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="https://dueca.tudelft.nl vsgobjects.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://dueca.tudelft.nl vsgobjects.xsd">
 
   <!-- Light control for the whole scene -->
   <type name="ambient-light">
@@ -68,10 +68,14 @@
   </type>
 
   <!-- Model with base controlled by a channel entry -->
-  <type name="model"></type>
+  <type name="model">
+    <param offset="0" size="1" isnumber="false">file</param>
+  </type>
 
   <!-- Static model -->
-  <type name="static-model"></type>
+  <type name="static-model">
+    <param offset="0" size="1" isnumber="false">file</param>
+  </type>
 
   <!-- Selection of one of the children -->
   <type name="switch">

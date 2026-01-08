@@ -96,61 +96,6 @@ class objects. Please also add a description (c-style string). */
       "<left> <right> <bottom> <top> of the near frustum plane\n"
       "in camera coordinates" },
 
-    { "add-object-class",
-      new MemberCall<_ThisObject_, std::vector<std::string>>(
-        &_ThisObject_::addObjectClassData),
-      "Add a class of objects, arguments:\n"
-      " - <matchstring>: The first argument is the match string;\n"
-      "   For objects controlled through a channel, matching is done on the\n"
-      "   basis of the channel entry data type, with the object's label, e.g.\n"
-      "   \"BaseObjectMotion:Cessna 550\". If after that, no match is found\n"
-      "   matching continues with parent classes of the given entry data type\n"
-      "   and the object label, then matching is done on the data class only.\n"
-      " - <object name>: The object name will be used as name in the VSG\n"
-      "   scene graph. If the last character of the name is a '#', the name\n"
-      "   will be suffixed with the channel entry creation number. When the\n"
-      "   object name consists of two parts with a '/' to separate these, the\n"
-      "   first part denotes the parent node in the scene graph, the second\n"
-      "   becomes the name. Note that special parent nodes \"root\" and\n"
-      "   \"observer\" are available to fix resp. carry objects.\n"
-      " - <factory class>: The type of an added object, currently the\n"
-      "   following are available:\n"
-      "   - static-model   - Object with parent's position/orientation\n"
-      "   - model          - Object that gets external 3D position\n"
-      "   - ambient-light  - Ambient light definition\n"
-      "   - directional-light - Light with direction\n"
-      "   - point-light    - Point-type light\n"
-      "   - spot-light     - Spotlight\n"
-      "   - static-transform - Constant transform (scale, rotate, translate)\n"
-      "   - transform      - Transform with external 3D position\n"
-      "   - centered-transform - Transform with position attached to observer\n"
-      "   Transformations are either absolute (with root as parent), or can "
-      "   be\n"
-      "   made relative by using a moving parent (\"observer\" or other)\n"
-      "   Note that the factory is extendable, by adding object files with\n"
-      "   factory connections, e.g., to create a HUD overlay\n."
-      " - [<additional strings>]: supply, depending on type of object, \n"
-      "   additional parameters like filenames etc." },
-
-    { "add-object-class-parameters",
-      new MemberCall<_ThisObject_, vector<double>>(
-        &_ThisObject_::addCoordinates),
-      "Set parameters for the object class\n"
-      "transformations: x, y, z, phi, theta, psi, optionally scale (3x)\n"
-      "all lights: color (r, g, b), intensity\n"
-      "directional-light: + light direction dx, dy, dz\n"
-      "point light: + light location x, y, z + radius\n"
-      "spot light: + position (x, y, z), span, inner angle, outer angle\n"
-      "            direction (dx, dy, dz)\n"
-      "To move lights / static-model, give them a transform as parent\n" },
-
-    { "create-static",
-      new MemberCall<_ThisObject_, std::vector<std::string>>(
-        &_ThisObject_::createStatic),
-      "Create an object through the factory that will not receive a\n"
-      "connection to a channel entry, specify match string and optionally\n"
-      "a string to override the name" },
-
     { "set-bg-color",
       new VarProbe<_ThisObject_, std::vector<float>>(&_ThisObject_::bg_color),
       "set the background color, R, G, B, A components, scaled 0 -- 1" },
@@ -158,11 +103,11 @@ class objects. Please also add a description (c-style string). */
     { "set-fog",
       new MemberCall<_ThisObject_, std::vector<double>>(&_ThisObject_::setFog),
       "Set fog parameters, expects 7 numbers:\n"
-      "fog density,\n"
-      "fog color (RGB, 3 elts)\n"
-      "fog start (when linear)\n"
-      "fog end\n"
-      "fog exponent" },
+      "- fog density,\n"
+      "- fog color (RGB, 3 elts 0 .. 1)\n"
+      "- fog start (when linear)\n"
+      "- fog end (when linear)\n"
+      "- fog exponent (when exponential, for linear fog set to 0)." },
 
     { "allow-unknown",
       new VarProbe<_ThisObject_, bool>(&_ThisObject_::allow_unknown),
@@ -173,15 +118,13 @@ class objects. Please also add a description (c-style string). */
       "Initialise the XML reader, argument is an XML file with mappings\n"
       "from named coordinates/parameters to ranges in the coordinate vectors.\n"
       "See 'vsgobjects.xsd' for the format, and 'vsgobjects.xml' for an\n"
-      "example." },
+      "example. If not set, the default definitions will be read." },
 
-    { "read-xml-definitions",
+    { "read-modelfile",
       new MemberCall<_ThisObject_, std::string>(
         &_ThisObject_::readModelFromXML),
       "Read the graphics models from an XML file definition. See\n"
-      "'vsgworld.xsd' for the format. This provides an alternative to using\n"
-      "the add_object_class, add_object_class_parameters and static_object\n"
-      "parameters.\n" },
+      "'vsgworld.xsd' for the format.\n" },
 
     { "debug-layer",
       new VarProbe<_ThisObject_, bool>(&_ThisObject_::debug_layer),
