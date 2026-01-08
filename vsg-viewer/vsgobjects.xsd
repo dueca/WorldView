@@ -41,6 +41,7 @@
       <xs:extension base="xs:string">
         <xs:attribute name="offset" type="offset_t" use="required" />
         <xs:attribute name="size" type="size_t" use="required" />
+        <xs:attribute name="isnumber" type="xs:boolean" default="true"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>

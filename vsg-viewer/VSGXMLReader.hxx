@@ -33,8 +33,11 @@ class VSGXMLReader
     /** Number of elements */
     const unsigned size;
 
+    /** Number or string */
+    const bool isnumber;
+
     /** Construct */
-    CoordinateMapping(unsigned offset, unsigned size);
+    CoordinateMapping(unsigned offset, unsigned size, bool isnumber);
   };
 
   /** Mappings per object for coordinates */
@@ -44,7 +47,7 @@ class VSGXMLReader
     std::map<std::string,CoordinateMapping> mappings;
 
     /** Get the values for a specific mapping */
-    bool getMapping(unsigned &offset, unsigned &size, const std::string& cname);
+    bool getMapping(unsigned &offset, unsigned &size, bool& isnumber, const std::string& cname) const;
   };
 
   /** All objects */
