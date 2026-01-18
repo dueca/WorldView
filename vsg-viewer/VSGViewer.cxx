@@ -218,8 +218,8 @@ void VSGViewer::ViewSet::init(const ViewSpec &spec, WindowSet &ws,
     // this may go wrong, check
     if (!image) {
       W_MOD("Failed to load overlay image " << spec.overlay);
+      return;
     }
-    return;
 
     // build a quad
     auto builder = vsg::Builder::create();

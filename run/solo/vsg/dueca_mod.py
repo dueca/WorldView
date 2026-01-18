@@ -105,7 +105,7 @@ if this_node_id == ecs_node:
                    -0.479274611399, 0.660621761658)
 #                 (1.0, 10000, 40)             # 40 deg fov
                  ),
-                ('set-mask', 'hmilabmaskfront2.png'),
+                ('set-mask', 'hmilabmaskfront-blur.png'),
 
                  ## window with side views
                 ('add-window', "sides"),
@@ -121,6 +121,7 @@ if this_node_id == ecs_node:
                     1.0, 10000,
                     -0.75011761385, 0.675155946186,
                     -0.376500155079, 0.51895967321)),
+                ('set-mask', "hmilabmaskleft-blur.png"),
 
                 ('add-viewport', "right side"),
                 ('viewport-window', "sides"),
@@ -131,7 +132,7 @@ if this_node_id == ecs_node:
                     1.0, 10000,
                     -1.21819795407, 0.588489166461,
                     -0.60996297175, 0.840759771872)),
-
+                ('set-mask', "hmilabmaskright-blur.png"),
                 ('set-xml-definitions',
                  '../../../../WorldView/vsg-viewer/vsgobjects.xml'),
                 ('read-modelfile', 'exampleworld.xml'),
