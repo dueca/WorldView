@@ -577,7 +577,7 @@ void main()
     // custom ShaderSets fog handling.
     if (fog.exponent != 0.0)
     {
-        float fogCoord = -eyePos.z;
+        float fogCoord = length(eyePos);
         const float e = 2.71828;
         float f = pow(e, -fog.density * pow(fogCoord, fog.exponent));
         color = mix(fog.color, color, f);
@@ -585,7 +585,8 @@ void main()
     else
     {
         // linear
-        float fogCoord = -eyePos.z;
+        // float fogCoord = -eyePos.z;
+        float fogCoord = length(eyePos);
         if (fogCoord > fog.start)
         {
             if (fogCoord < fog.end)

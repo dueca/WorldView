@@ -134,7 +134,7 @@ if this_node_id == ecs_node:
 
                 ('set-xml-definitions',
                  '../../../../WorldView/vsg-viewer/vsgobjects.xml'),
-                ('read-xml-definitions', 'exampleworld.xml'),
+                ('read-modelfile', 'exampleworld.xml'),
                 ('set-fog', (0.05, 1.0, 1.0, 1.0, 20.0, 100.0, 0.0)),
                 ('shader-defines', ('VSG_ALPHA_TEST', 'VSG_SHADOWS_PCSS'))
             ).complete(),
