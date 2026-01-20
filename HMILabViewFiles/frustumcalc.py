@@ -18,7 +18,10 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 import warnings
-warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+try:
+    warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+except AttributeError:
+    pass
 
 __eps = 1e-12
 
@@ -173,13 +176,13 @@ class Plane(np.matrix):
         try:
             # from point and normal vector
             normal = UnitVector(kwargs['normal'])
-            dist = float(np.inner(normal, kwargs['point0']))
+            dist = float(np.inner(normal, kwargs['point0'])[0,0])
         except KeyError:
             # from three points, positive clockwise?
             normal = UnitVector(np.cross(
                 kwargs['point1'] - kwargs['point0'],
                 kwargs['point2'] - kwargs['point1']))
-            dist = float(np.inner(normal, kwargs['point0']))
+            dist = float(np.inner(normal, kwargs['point0'])[0,0])
 #        print([float(normal[0, 0]), float(normal[0, 1]), float(normal[0, 2]), -dist])
         return super(Plane, cls).__new__(
             cls, [float(normal[0,0]), float(normal[0,1]),
@@ -261,7 +264,9 @@ proj_width = proj_height / res_height * res_width
 proj_bottom = 0.675
 
 # left eye(left seat), right eye(right seat)
-eye_left = Point((1.73, lab_depth-2.85, 0.7+0.95))
+# eye_left = Point((1.73, lab_depth-2.85, 0.7+0.95))
+# a bit higher, test image was deformed.
+eye_left = Point((1.73, lab_depth-2.85, 1.85))
 eye_right = Point((1.73+1.05, lab_depth-2.85, 1.85))
 
 # front screen, physical size
