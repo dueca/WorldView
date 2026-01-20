@@ -14,6 +14,7 @@ calculator!
 with suggestions from http://geomalgorithms.com/
 """
 
+import sys
 from matplotlib import pyplot as plt
 import numpy as np
 
@@ -22,6 +23,12 @@ try:
     warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 except AttributeError:
     pass
+
+try:
+    fnear = float(sys.argv[1])
+except (IndexError, ValueError):
+    fnear = 1.0
+
 
 __eps = 1e-12
 
@@ -334,16 +341,16 @@ screen_rlv = screen_fr - (screen_rr - screen_fr) * \
 
 print("Frustum values right seat")
 print("left screen frustum, right seat")
-frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_right, 1.0)
+frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_right, fnear)
 print("front screen frustum, right seat")
-frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_right, 1.0)
+frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_right, fnear)
 print("right screen frustum, right seat")
-frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_right, 1.0)
+frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_right, fnear)
 print("")
 print("Frustum values left seat")
 print("left screen frustum, left seat")
-frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_left, 1.0)
+frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_left, fnear)
 print("front screen frustum, left seat")
-frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_left, 1.0)
+frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_left, fnear)
 print("right screen frustum, left seat")
-frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_left, 1.0)
+frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_left, fnear)
