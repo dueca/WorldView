@@ -14,11 +14,21 @@ calculator!
 with suggestions from http://geomalgorithms.com/
 """
 
+import sys
 from matplotlib import pyplot as plt
 import numpy as np
 
 import warnings
-warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+try:
+    warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+except AttributeError:
+    pass
+
+try:
+    fnear = float(sys.argv[1])
+except (IndexError, ValueError):
+    fnear = 1.0
+
 
 __eps = 1e-12
 
@@ -173,13 +183,13 @@ class Plane(np.matrix):
         try:
             # from point and normal vector
             normal = UnitVector(kwargs['normal'])
-            dist = float(np.inner(normal, kwargs['point0']))
+            dist = float(np.inner(normal, kwargs['point0'])[0,0])
         except KeyError:
             # from three points, positive clockwise?
             normal = UnitVector(np.cross(
                 kwargs['point1'] - kwargs['point0'],
                 kwargs['point2'] - kwargs['point1']))
-            dist = float(np.inner(normal, kwargs['point0']))
+            dist = float(np.inner(normal, kwargs['point0'])[0,0])
 #        print([float(normal[0, 0]), float(normal[0, 1]), float(normal[0, 2]), -dist])
         return super(Plane, cls).__new__(
             cls, [float(normal[0,0]), float(normal[0,1]),
@@ -261,7 +271,9 @@ proj_width = proj_height / res_height * res_width
 proj_bottom = 0.675
 
 # left eye(left seat), right eye(right seat)
-eye_left = Point((1.73, lab_depth-2.85, 0.7+0.95))
+# eye_left = Point((1.73, lab_depth-2.85, 0.7+0.95))
+# a bit higher, test image was deformed.
+eye_left = Point((1.73, lab_depth-2.85, 1.85))
 eye_right = Point((1.73+1.05, lab_depth-2.85, 1.85))
 
 # front screen, physical size
@@ -329,16 +341,16 @@ screen_rlv = screen_fr - (screen_rr - screen_fr) * \
 
 print("Frustum values right seat")
 print("left screen frustum, right seat")
-frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_right, 1.0)
+frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_right, fnear)
 print("front screen frustum, right seat")
-frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_right, 1.0)
+frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_right, fnear)
 print("right screen frustum, right seat")
-frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_right, 1.0)
+frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_right, fnear)
 print("")
 print("Frustum values left seat")
 print("left screen frustum, left seat")
-frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_left, 1.0)
+frustum_calc(screen_ll, screen_lrv, screen_lrv+p_height, eye_left, fnear)
 print("front screen frustum, left seat")
-frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_left, 1.0)
+frustum_calc(screen_flv, screen_frv, screen_frv+p_height, eye_left, fnear)
 print("right screen frustum, left seat")
-frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_left, 1.0)
+frustum_calc(screen_rlv, screen_rr, screen_rr+p_height, eye_left, fnear)
