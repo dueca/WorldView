@@ -38,14 +38,12 @@ namespace vsgviewer {
     controlled by its user.
 
     <li> Add visible objects of class VSGObject to this world. These
-    objects can have any form, they may be overlays or 3D models. With
-    overlays one can add instrument panels, masks and the like to the
-    drawing, and the 3D models may be static, for creating lights and
-    scenery, or controlled by external data, for creating other moving
-    objects in the world.
+    objects can have any form, usually transforms and 3D models.
+
+    <li> Specify how channel entries in channels defining visual
+    objects should be visualised.
 
     <li> Report keyboard and cursor events back to the user.
-
     </ol>
 
     All object adding uses a standard mechanism. Object creation uses
@@ -54,41 +52,46 @@ namespace vsgviewer {
     extensible, and one may, e.g., create a specific instrument
     overlay type.
 
-    In the script interface, a link is created between a match name,
-    the factory class type, and supplemental files and coordinates.
-    These are stored into a "factory inventory", that can be
-    subsequently used to explicitly create static objects, or its
-    contents may match against entries in DUECA channels for the
-    creation of dynamic, controlled objects.
+    The visual world is defined in an xml-formatted script. This includes
+    both static objects, and templates for creating/moving objects
+    when entries in the channels driving the visualization appear.
+
+    The types of objects or templates are provided by the VSGObject
+    factory. Through extending this factory, new user-defined types
+    can be added
 
     Two examples:
 
-    * Object match string "static:world", object name "world",
-    with factory type "static",
-    uses file "schiphol.vsg" and is located at coordinates 0 0 0
-
-    * Object class string "BaseObjectMotion:KLMBoeing737", object name
-    "KLM737 #", with factory type "moving", uses file "KLM737.vsg",
-    no coordinates given, since the BaseObjectMotion DCO object in the
-    connected DUECA channel will provide position information.
-
-    The static world can be created from the script, using the argument
-    "add_static" (Python) or 'add-static (Scheme). e.g.
-
-    @code
-    'add-static "static:world"
+    * A static model, placement defined by a static transform, and
+      defined by a single visual file:
+    @code{.xml}
+    <static name="schiphol" type="static-model">
+      <file>schiphol.vsg</file>
+    </static>
+    <static name="model-placement" root="true">
+      <param name="xyz">0, 0, 0</param>
+      <child>schiphol</child>
+    </static>
     @endcode
 
-    In this case, the factory inventory is searched for the class
-    "static:world". The parameters for that class are found and used to
-    create a static object, with the name given ("world"). It is also
-    possible to add a second argument to 'add-static, to override the
-    name, e.g. to make a row of houses and give them all different names.
+    uses file "schiphol.vsg" and is located at coordinates 0 0 0
+
+    * Objects matching "BaseObjectMotion:KLMBoeing737", object name
+    "KLM737 #", use file "KLM737.vsg",
+    no coordinates given, since the BaseObjectMotion DCO object in the
+    connected DUECA channel will provide position information. The # will
+    be replaced by a number.
+
+    @code
+    <template key="BaseObjectMotion:KLMBoeing737" type="model" name="KLM737 #">
+      <file>KLM737.vsg</file>
+    </template>
+    @endcode
 
     For dynamic objects, the channel "ObjectMotion://world" channel is
-    monitored. If an entry is published in that channel with data class
-    BaseObjectMotion and label KLMBoeing737, that entry will match to
-    the object class name. The corresponding data ("KLM737.vsg") is used
+    by default monitored. If an entry is published in that channel with
+    data class BaseObjectMotion and label KLMBoeing737, that entry will
+    match to the template key. The corresponding file ("KLM737.vsg") is used
     to create the object. Since the name ends with a # token, the name
     will be modified to include an integer suffix, e.g. "KLM737 #1"
 
@@ -115,13 +118,12 @@ namespace vsgviewer {
     the eye with respect to the own vehicle position or base pilot
     position.
 
-    <li> Adding static objects in the world. Use the 'load-object
-    specification, specify a name for the object and a 3d file, and
-    use 'object-type "static".
+    <li> Adding static objects in the world by defining these in the
+    world xml.
 
     <li> Adding objects that stay centered on the observer, like a
-    skydome. Use 'object-type "centered", and 'object-coordinates .
-    the object coordinates that are true 0.0 stay centered, the others
+    skydome. Use type="centered-transform", and position ("xyz"),
+    parameters. Parameters that are truly 0 stay centered, the others
     are fixed to the world. E.g., with coordinates 0.0, 0.0, 1e-20 you
     can create a skydome that moves with the observer in x and y
     coordinates, but keeps its height.
@@ -129,18 +131,7 @@ namespace vsgviewer {
     <li> Adding objects that stay centered on the observer with a
     tiling step, for example a tiled floor, a repeating grassland
     pattern, etc. See the description below for the interpretation
-    of coordinates.
-
-    <li> Adding overlays, give the object a name and a file name, and
-    use 'object-coordinates to specify a list with viewports the overlay
-    should be on.
-
-    <li> Adding a class of simple objects that can be represented by a
-    single 3d model, use 'add-object-class with the name for the class
-    and a name for the model file. This adds to the "repertoire" of
-    objects that can be created.
-
-    <li> Add another object alltogether, with the
+    of coordinates. (type="tiled-transform")
 
     </ol>
 
@@ -148,14 +139,14 @@ namespace vsgviewer {
     read by the WorldView module and fed to the VSGViewer module
     contains class names for the type of these objects. These objects
     are automatically added to the drawn environment, based on the
-    data in the channel. Use 'add-object-class to define these classes
+    data in the channel. Use a `<template>` to  define these classes
     for simple objects defined by a single 3D file. However, it is
     also possible to add new classes programmatically. For that,
     include VSGObjectFactory.hxx, and create a SubContractor with the
     VSG model factory.
 
     This class has been derived from the ScriptCreatable base class,
-    and has a (scheme) script command to create it and optionally add
+    and has a script command to create it and optionally add
     parameters. This class encapsulates the VSGViewer objects, in
     this way these can be made and specified from a DUECA script.
 

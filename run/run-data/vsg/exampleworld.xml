@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <world xmlns="https://dueca.tudelft.nl"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="https://dueca.tudelft.nl vsgworld.xsd">
+  xsi:schemaLocation="https://dueca.tudelft.nl https://raw.githubusercontent.com/dueca/WorldView/master/vsg-viewer/vsgworld.xsd">
 
   <!-- base for static objects -->
   <template key="carbase" type="static-transform" root="true">
@@ -28,22 +28,22 @@
 
 
   <!-- transform node to the car location -->
-  <static name="car1base" parent="staticcars" type="static-transform">
+  <static name="car1base" type="static-transform">
     <param name="xyz">4, 2, 0</param>
   </static>
 
-  <static name="car2base" parent="staticcars" type="static-transform">
+  <static name="car2base" type="static-transform">
     <param name="xyz">4, 2, 0</param>
   </static>
 
 
   <!-- car model linked to the transform -->
-  <static name="car1" template="car" parent="car1base">
+  <static name="car1" template="car">
     <file>piper_pa18.glb</file>
   </static>
 
   <!-- car model linked to the transform -->
-  <static name="car2" template="car" parent="car2base">
+  <static name="car2" template="car">
     <file>Defender.glb</file>
   </static>
 
