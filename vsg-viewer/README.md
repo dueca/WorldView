@@ -44,36 +44,36 @@ translations, lights or the like.
 
 The following objects are defined by default:
 
-| Object | parameter | type | description |
-|--------|-----------|------|--------------|
-| ambient-light | color | 3 float | scaled 0..1, comma-separated |
-|               | intensity | float |                            |
-| directional-light | color | 3 float |                          |
-|               | intensity | float |                            |
+| Object        | parameter | type    | description                     |
+|---------------|-----------|---------|---------------------------------|
+| ambient-light | color     | 3 float | scaled 0..1, comma-separated    |
+|               | intensity | float   |                                 |
+| directional-light | color | 3 float |                                 |
+|               | intensity | float   |                                 |
 |               | direction | 3 float | direction vector, AE convention |
-| point-light   |  color | 3 float |                             |
-|               | intensity | float |                            |
-|               | xyz      | 3 float | location of the light     |
-|               | span     | float | range of the light          |
-| spot-light    |  color | 3 float |                             |
-|               | intensity | float |                            |
-|               | xyz      | 3 float | location of the light     |
-|               | span     | float | range of the light          |
-|               | innerAngle | float |                           |
-| static-transform | xyz   | 3 float |                           |
-|               | phithetapsi | 3 float |  degrees               |
-|               | scalexyz | 3 float |                           |
-| centered-transform | xyz   | 3 float | xy attached to observer  |
-|               | phithetapsi | 3 float |  degrees               |
-|               | scalexyz | 3 float |                           |
-| tiled-transform | tilesizexyz   | 3 float | jumps with tile size  |
-|                | xyz   | 3 float |         |
-|               | phithetapsi | 3 float |  degrees               |
-|               | scalexyz | 3 float |                           |
-| transform     | scalexyz | 3 float | pos+angles controlled by channel entry  |
-| model         | filename | str     |                           |
-| static-model  | filename | str     | pos+angles controlled by channel entry  |
-| switch        | selected_child | int    | initially active child   |
+| point-light   |  color    | 3 float |                                 |
+|               | intensity | float   |                                 |
+|               | xyz       | 3 float | location of the light           |
+|               | span      | float   | range of the light              |
+| spot-light    |  color    | 3 float |                                 |
+|               | intensity | float   |                                 |
+|               | xyz       | 3 float | location of the light           |
+|               | span      | float   | range of the light              |
+|               | innerAngle | float  |                                 |
+| static-transform | xyz    | 3 float |                                 |
+|               | phithetapsi | 3 float |  degrees                      |
+|               | scalexyz  | 3 float |                                 |
+| centered-transform | xyz  | 3 float | xy attached to observer         |
+|               | phithetapsi | 3 float |  degrees                      |
+|               | scalexyz  | 3 float |                                 |
+| tiled-transform | tilesizexyz | 3 float | jumps with tile size        |
+|               | xyz       | 3 float |                                 |
+|               | phithetapsi | 3 float |  degrees                      |
+|               | scalexyz  | 3 float |                                 |
+| transform     | scalexyz  | 3 float | pos+angles controlled by channel entry  |
+| model         | filename  | str     |                                 |
+| static-model  | filename  | str     | usually made child of transform |
+| switch        | selected_child | int | initially active child         |
 
 The model and static-model take a file name for the visual model file.
 
@@ -125,16 +125,17 @@ VSGObject-derived classes.
 
 ## References
 
-A project using Vulkan with a lot of experimental steps [Flower](https://github.com/qiutangu/Flower)
+A project using Vulkan with a lot of experimental steps
+[Flower](https://github.com/qiutangu/Flower)
 
-(VulkanSceneGraph code)[https://github.com/vsg-dev/VulkanSceneGraph)
+[VulkanSceneGraph code](https://github.com/vsg-dev/VulkanSceneGraph)
 
-(Example applications)[https://github.com/vsg-dev/vsgExamples)
+[Example applications](https://github.com/vsg-dev/vsgExamples)
 
-(Vulkan Guide)[https://vkguide.dev/]
+[Vulkan Guide](https://vkguide.dev/)
 
-(Learn Vulkan)[https://www.vulkan.org/learn]
+[Learn Vulkan](https://www.vulkan.org/learn)
 
-(Vulkan Examples)[https://github.com/SaschaWillems/Vulkan]
+[Vulkan Examples](https://github.com/SaschaWillems/Vulkan)
 
-(Godot as alternative)[https://github.com/Calinou/godot-reflection]
+[Godot as alternative](https://github.com/Calinou/godot-reflection)
