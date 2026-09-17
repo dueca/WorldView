@@ -108,7 +108,7 @@ void ObjectMotion::extrapolate(double span)
 #endif
   }
   else {
-    int iterations = max(1, int(span / dt + 0.5));
+    int iterations = std::max(1, int(span / dt + 0.5));
     double step = span / iterations;
     double ws_data[6*7];
     RungeKuttaWorkspace workspace(ws_data, 7);
