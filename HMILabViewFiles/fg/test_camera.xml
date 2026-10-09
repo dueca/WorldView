@@ -34,6 +34,7 @@
 					</frustum>
 					<view>
 						<heading-deg type="double">0</heading-deg>
+						<z-offset-m type="double">50</z-offset-m>
 					</view>
 				</camera>
 

@@ -110,7 +110,9 @@ if this_node_id == ecs_node:
                 mp_interface="127.0.0.1",
                 # multiplay_debug_dump=True,
                 mp_port=5002,
-                mp_client="127.0.0.1:5001").complete(),
+                mp_client="127.0.0.1:5001",
+                eye_offset=(0.0, 17.0, -1.0, 0.0, 15.0, 30.0)
+                ).complete(),
             initial_camera = ( 0, 0, -4, 0, 0, 0)
         ))
 
@@ -121,8 +123,8 @@ if this_node_id == ecs_node:
 	    ('add-motion', "myself"),
 	    ('position', (-80, 0, -2)),
 	    ('orientation', (0, 0, 180)),
-	    ('speed', (0.0, 0, 0)),
-        ('rotation', (0.0, 0.0, 0.0)),
+	    ('speed', (0, 0, 0)),
+        ('rotation', (0.0, 0.0, -0.5)),
 	    ('dt', 0.1),
 	    ('add-motion', "c172|head"),
 	    ('position', (-0, 0, -2)),

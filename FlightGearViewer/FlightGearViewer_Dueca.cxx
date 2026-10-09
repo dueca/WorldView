@@ -77,6 +77,12 @@ const ParameterTable *FlightGearViewer_Dueca::getParameterTable()
       "Coordinate system to select, either ECEF or LatLonAlt. To use a local\n"
       "coordinate system, define it with \"lat-lon-alt-psi0" },
 
+      { "eye-offset",
+      new MemberCall<_ThisModule_, vector<double>>(&_ThisModule_::setEyeOffset),
+      "Offset of the eye with respect to sent position for the current\n"
+      "viewport; 3 parameters for x, y and z location [m], and three parameters\n"
+      "for phi, theta, psi [deg]" },
+
     { "binary-packets",
       new VarProbe<_ThisModule_, bool>(
         &_ThisModule_::binary_packets),

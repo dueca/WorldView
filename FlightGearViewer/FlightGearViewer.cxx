@@ -74,7 +74,8 @@ FlightGearViewer::FlightGearViewer() :
   mp_radarrange(50.0), // nm
   mp_interface(),
   mp_sockfd(-1),
-  mp_time0(std::numeric_limits<double>::quiet_NaN())
+  mp_time0(std::numeric_limits<double>::quiet_NaN()),
+  eye_shift(false)
 {
   //
 }
@@ -173,12 +174,42 @@ bool FlightGearViewer::selectCoordinateSystem(const string &sel)
     axis.reset(new FGECEFAxis());
   }
   else if (sel == "LatLonAlt") {
+    if (eye_shift) {
+      E_MOD("Cannot combine LatLonAlt data with eye shift");
+      return false;
+    }
     axis.reset(new FGLatLonAltAxis());
   }
   else {
     E_MOD("Cannot specify the " << sel << " coordinate system.");
     return false;
   }
+  return true;
+}
+
+template <typename T> T radians(const T &r) { return M_PI / 180.0 * r; }
+
+bool FlightGearViewer::setEyeOffset(const std::vector<double> &eye)
+{
+  if (dynamic_cast<const FGLatLonAltAxis *>(axis.get())) {
+    E_MOD("Cannot (yet) set eye offset on latlonalt data");
+    return false;
+  }
+  if (eye.size() != 3 && eye.size() != 6) {
+    E_CNF("Need 3 or 6 parameters for eye offset");
+    return false;
+  }
+  if (eye.size() == 6) {
+    phithtpsi2Q(viewdir_q, radians(eye[3]), radians(eye[4]), radians(eye[5]));
+  }
+  else {
+    viewdir_q.setZero();
+    viewdir_q[0] = 1.0;
+  }
+  viewpoint_shift[0] = eye[0];
+  viewpoint_shift[1] = eye[1];
+  viewpoint_shift[2] = eye[2];
+  eye_shift = true;
   return true;
 }
 
@@ -401,7 +432,22 @@ void FlightGearViewer::setBase(TimeTickType tick, const BaseObjectMotion &base,
                                double late, bool freeze)
 {
   current_tick = tick;
-  axis->transform(fg_command.latlonalt_phithtpsi, base.xyz, base.attitude_q);
+
+  if (eye_shift) {
+    Eigen::Vector<double, 4> viewfinal_q;
+    Eigen::Matrix<double, 3, 3> Rfinal;
+    QxQ(viewfinal_q, base.attitude_q, viewdir_q);
+    Q2R(Rfinal, base.attitude_q);
+    Eigen::Vector<double, 3> xyz =
+      Eigen::Map<const Eigen::Vector<double, 3>>(base.xyz.ptr(), 3) +
+      Rfinal * viewpoint_shift;
+
+    axis->transform(fg_command.latlonalt_phithtpsi, xyz.data(),
+                    viewfinal_q.data());
+  }
+  else {
+    axis->transform(fg_command.latlonalt_phithtpsi, base.xyz, base.attitude_q);
+  }
 
   for (auto &obj : active_objects) {
     obj.second->iterate(tick, base, late, freeze);

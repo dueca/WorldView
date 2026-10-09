@@ -26,6 +26,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
 
 /** This is a class that can communicate with a flightgear
     visualisation. It derives from the WorldViewerBase, and can be used
@@ -134,6 +135,16 @@ private:
   /** Time offset */
   mutable double mp_time0;
 
+private:
+  /** Shifting eyepoint? */
+  bool eye_shift;
+
+  /** Matrix shifting given eye position. */
+  Eigen::Vector<double, 3> viewpoint_shift;
+
+  /** Quaternion defining eye viewing direction */
+  Eigen::Vector<float, 4> viewdir_q;
+
 public:
   /** Constructor */
   FlightGearViewer();
@@ -173,6 +184,9 @@ public:
 
   /** Select either ECEF or LatLonAlt as coordinate system */
   bool selectCoordinateSystem(const std::string &sel);
+
+  /** Set the offset of the eye wrt sent (cg?) position */
+  bool setEyeOffset(const std::vector<double>& eye);
 
   /** Send other object data */
   inline MultiplayerEncode &getEncoder() const { return *encoder; }

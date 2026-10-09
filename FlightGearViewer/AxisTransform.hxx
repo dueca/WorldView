@@ -300,12 +300,13 @@ struct FGAxis
   /** Destructor */
   virtual ~FGAxis();
 
-    /** Result of this transformation is latitude, in degrees,
-longitude, in degrees, and geodetic altitude, in feet,
-next roll, pitch and yaw angles, also in degrees.
-\param  result vector for result
-\param  xyz    position vector
-\param  quat   attitude quaternion. */
+  /** Result of this transformation is latitude, in degrees,
+      longitude, in degrees, and geodetic altitude, in feet,
+      next roll, pitch and yaw angles, also in degrees.
+      \param  result vector for result
+      \param  xyz    position vector
+      \param  quat   attitude quaternion.
+  */
   virtual void transform(double result[6], const double xyz[3],
                          const double quat[4]) = 0;
 
@@ -376,13 +377,13 @@ struct FGECEFAxis : public FGAxis
 
     /** Axis transformatio from ECEF
 
-        Result of this transformation is latitude, in degrees,
-        longitude, in degrees, and geodetic altitude, in feet,
-        next roll, pitch and yaw angles, also in degrees.
-        @param  result vector for result
-        @param  xyz    position vector, wrt ecef
-        @param  quat   attitude quaternion, wrt ecef
-        */
+      Result of this transformation is latitude, in degrees,
+      longitude, in degrees, and geodetic altitude, in feet,
+      next roll, pitch and yaw angles, also in degrees.
+      @param  result vector for result
+      @param  xyz    position vector, wrt ecef
+      @param  quat   attitude quaternion, wrt ecef
+      */
   void transform(double result[6], const double xyz[3],
                  const double quat[4]) final;
 

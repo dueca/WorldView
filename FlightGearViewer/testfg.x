@@ -4,9 +4,10 @@
 DIRECTORY=${PWD##*/}
 
 # Default for all non-configured platforms
+CAMERA_CONFIG=test_camera.xml
 LOGLEVEL=warn
 LOGCLASS=all
-CS=PHTEST
+CS=TEST
 
 # default location FG_ROOT?
 if test -z "${FG_ROOT}"; then
@@ -40,19 +41,17 @@ fgfs \
     --multiplay=out,100,127.0.0.1,${UDP2_MULTIPLAY} \
     --prop:int:/sim/multiplay/debug-level=0 \
     --airport=EHAM \
-    --aircraft=pc12  \
+    --aircraft=ufo \
     --fdm=external \
     --disable-real-weather-fetch \
     --start-date-lat=2024:08:23:14:00:00 \
     --enable-clouds3d \
     --prop:bool:/sim/menubar/visibility=false \
-    --enable-splash-screen \
     --enable-terrasync \
     --disable-random-objects \
     --disable-random-buildings \
     --disable-random-vegetation \
     --disable-sound \
-    --disable-rembrandt \
     --disable-distance-attenuation \
     --fog-nicest \
     --enable-specular-highlight \
@@ -61,19 +60,13 @@ fgfs \
     --disable-mouse-pointer \
     --disable-save-on-exit \
     --disable-splash-screen  \
+    --prop:/sim/rendering/multi-sample-buffers=1 \
+    --prop:/sim/rendering/multi-samples=4 \
+    --prop:/sim/rendering/shaders/skydome=true \
     --log-level=$LOGLEVEL \
     --log-class=$LOGCLASS \
     --log-dir="." \
     --enable-ai-models \
-    --disable-ai-traffic &
-
-if [ "$1" = 'nodueca' ]; then
-    echo "not starting dueca, one hour of testing" 
-   sleep 3600
-else
-    ./dueca_run.x
-fi
-
-killall fgfs
+    --disable-ai-traffic
 
 # --metar="XXXX 012345Z 15001KT 0800 BKN02 OVC005 OVC020 08/06 Q0990" \
