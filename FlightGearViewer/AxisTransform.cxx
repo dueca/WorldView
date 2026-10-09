@@ -3,8 +3,9 @@
         made by         : rvanpaassen
         date            : Mon Jun 29 12:58:26 2009
         category        : header file
-        description     : convert aircraft axes to Ogre objects
+        description     : convert aircraft axes to FlightGear objects
         changes         : Mon Jun 29 12:58:26 2009 first version
+                          261009 Add option for eye offset
         language        : C++
 */
 
