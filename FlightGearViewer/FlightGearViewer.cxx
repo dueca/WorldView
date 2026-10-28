@@ -434,12 +434,12 @@ void FlightGearViewer::setBase(TimeTickType tick, const BaseObjectMotion &base,
   current_tick = tick;
 
   if (eye_shift) {
-    Eigen::Vector<double, 4> viewfinal_q;
+    Eigen::Matrix<double, 4, 1> viewfinal_q;
     Eigen::Matrix<double, 3, 3> Rfinal;
     QxQ(viewfinal_q, base.attitude_q, viewdir_q);
     Q2R(Rfinal, base.attitude_q);
-    Eigen::Vector<double, 3> xyz =
-      Eigen::Map<const Eigen::Vector<double, 3>>(base.xyz.ptr(), 3) +
+    Eigen::Matrix<double, 3, 1> xyz =
+      Eigen::Map<const Eigen::Matrix<double, 3, 1>>(base.xyz.ptr(), 3) +
       Rfinal * viewpoint_shift;
 
     axis->transform(fg_command.latlonalt_phithtpsi, xyz.data(),

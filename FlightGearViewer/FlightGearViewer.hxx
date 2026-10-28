@@ -140,10 +140,10 @@ private:
   bool eye_shift;
 
   /** Matrix shifting given eye position. */
-  Eigen::Vector<double, 3> viewpoint_shift;
+  Eigen::Matrix<double, 3, 1> viewpoint_shift;
 
   /** Quaternion defining eye viewing direction */
-  Eigen::Vector<float, 4> viewdir_q;
+  Eigen::Matrix<float, 4, 1> viewdir_q;
 
 public:
   /** Constructor */
